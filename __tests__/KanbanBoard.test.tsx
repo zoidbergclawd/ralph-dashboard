@@ -86,4 +86,39 @@ describe("KanbanBoard", () => {
     expect(currentCard.className).toContain("animate-pulse");
     expect(currentCard.className).toContain("shadow-[0_0_18px_rgba(251,191,36,0.35)]");
   });
+
+  it("moves cards between columns as state changes", () => {
+    const { rerender } = render(<KanbanBoard items={items} />);
+    const inProgressColumn = screen.getByTestId("column-in_progress");
+    const doneColumn = screen.getByTestId("column-done");
+
+    expect(within(inProgressColumn).getByText("Current Item")).toBeInTheDocument();
+
+    const movedItems = items.map((item) =>
+      item.id === 2
+        ? {
+            ...item,
+            passes: true,
+            isCurrent: false,
+            status: "done" as const,
+          }
+        : item,
+    );
+
+    rerender(<KanbanBoard items={movedItems} />);
+    expect(within(doneColumn).getByText("Current Item")).toBeInTheDocument();
+  });
+
+  it("shows celebration when all items are complete", () => {
+    const completedItems = items.map((item) => ({
+      ...item,
+      passes: true,
+      isCurrent: false,
+      status: "done" as const,
+    }));
+
+    render(<KanbanBoard items={completedItems} />);
+    expect(screen.getByTestId("completion-celebration")).toBeInTheDocument();
+    expect(screen.getByText("All items complete")).toBeInTheDocument();
+  });
 });

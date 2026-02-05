@@ -268,7 +268,7 @@
       "title": "Project configuration",
       "description": "Allow configuring which project/path to monitor",
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "verification": "Can set project path via env var or URL param",
       "steps": [
         "Support RALPH_PROJECT_PATH env var",
