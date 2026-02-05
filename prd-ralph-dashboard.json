@@ -75,7 +75,7 @@
       "title": "Git state reader",
       "description": "Module to extract git information: branch, commits, diff stats",
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "verification": "Unit tests pass for git state parsing",
       "steps": [
         "Create lib/git-state.ts",

@@ -7,30 +7,28 @@ approval: never
 sandbox: danger-full-access
 reasoning effort: none
 reasoning summaries: auto
-session id: 019c2f4f-64b2-7453-85b1-cc9cc29903f0
+session id: 019c2f50-bf73-7131-a5c5-272f82b16968
 --------
 user
 You are working on the project: Ralph Dashboard
 
 Goal: A real-time web UI for watching Ralph runs. Kanban-style PRD progress, live metrics, git state, test coverage — watch the magic happen.
 
-Current Item (4/17): Git state reader
+Current Item (5/17): Code metrics reader
 Category: core
 Priority: 1
 
 Description:
-Module to extract git information: branch, commits, diff stats
+Module to gather code metrics: lines of code, file count, test count
 
 Steps:
-  1. Create lib/git-state.ts
-  2. Use simple-git or shell out to git commands
-  3. Get: current branch, commit count on branch, last N commit messages
-  4. Get: diff stats vs main/master (files changed, insertions, deletions)
-  5. Get: uncommitted changes summary
-  6. Write unit tests in __tests__/git-state.test.ts
+  1. Create lib/code-metrics.ts
+  2. Use simple file counting (no external deps)
+  3. Metrics: total LOC, LOC by language, file count, test file count
+  4. Write unit tests in __tests__/code-metrics.test.ts
 
 Verification:
-Unit tests pass for git state parsing
+Unit tests pass for metrics calculation
 
 Please implement this item. After completion:
 1. Ensure all tests pass
@@ -40,11 +38,11 @@ Please implement this item. After completion:
 mcp startup: no servers
 
 thinking
-**Deciding skill usage**
+**Preparing to use task queue skill**
 codex
-Using the `do-work` skill for this turn because you provided a specific queued work item with acceptance criteria. I’ll read that skill instructions first, then implement `git-state` with focused tests and run the suite.
+I’m implementing item 5/17 now and will keep scope to the code-metrics module plus its unit tests. I’ll first load the `do-work` skill instructions, then inspect the repository’s current patterns before adding `lib/code-metrics.ts` and `__tests__/code-metrics.test.ts`.
 exec
-/bin/zsh -lc 'cat /Users/mcbee/.agents/skills/do-work/SKILL.md' in /Users/mcbee/Projects/agent-dashboard succeeded in 199ms:
+/bin/zsh -lc 'cat /Users/mcbee/.agents/skills/do-work/SKILL.md' in /Users/mcbee/Projects/agent-dashboard succeeded in 201ms:
 ---
 name: do-work
 description: Task queue - add requests or process pending work
@@ -67,42 +65,44 @@ A unified entry point for task capture and processing.
 ## Routing Decision
 
 thinking
-**Continuing code with existing structure**
+**Clarifying skill usage and workflow**
 codex
-I’ve loaded the skill guidance; next I’m inspecting the repository for existing patterns and test setup so `lib/git-state.ts` and its tests match current conventions.
+I’m using the `do-work` skill as guidance for processing this queued item, and now I’m checking existing project structure/tests to match local conventions before editing files.
 exec
 /bin/zsh -lc 'ls -la' in /Users/mcbee/Projects/agent-dashboardexec
 /bin/zsh -lc 'rg --files' in /Users/mcbee/Projects/agent-dashboardexec
-/bin/zsh -lc 'rg -n "simple-git|git state|diff stats|uncommitted|coverage|__tests__" .' in /Users/mcbee/Projects/agent-dashboard succeeded in 260ms:
+/bin/zsh -lc 'rg -n "code metrics|LOC|test count|coverage|metrics" -S .' in /Users/mcbee/Projects/agent-dashboard succeeded in 264ms:
 total 680
 drwxr-xr-x   23 mcbee  staff     736 Feb  5 14:34 .
 drwxr-xr-x    6 mcbee  staff     192 Feb  5 14:01 ..
 -rw-r--r--    1 mcbee  staff      61 Feb  5 14:28 .eslintrc.json
-drwxr-xr-x   12 mcbee  staff     384 Feb  5 14:37 .git
+drwxr-xr-x   12 mcbee  staff     384 Feb  5 14:39 .git
 -rw-r--r--    1 mcbee  staff     400 Feb  5 14:31 .gitignore
 drwxr-xr-x   11 mcbee  staff     352 Feb  5 14:32 .next
 drwxr-xr-x    4 mcbee  staff     128 Feb  5 14:31 .ralph
 -rw-r--r--    1 mcbee  staff    1450 Feb  5 14:28 README.md
-drwxr-xr-x    4 mcbee  staff     128 Feb  5 14:36 __tests__
+drwxr-xr-x    5 mcbee  staff     160 Feb  5 14:38 __tests__
 drwxr-xr-x    7 mcbee  staff     224 Feb  5 14:28 app
 -rw-r--r--    1 mcbee  staff     481 Feb  5 14:29 components.json
-drwxr-xr-x    4 mcbee  staff     128 Feb  5 14:35 lib
+drwxr-xr-x    5 mcbee  staff     160 Feb  5 14:38 lib
 -rw-r--r--    1 mcbee  staff     228 Feb  5 14:28 next-env.d.ts
 -rw-r--r--    1 mcbee  staff      92 Feb  5 14:28 next.config.mjs
 drwxr-xr-x  399 mcbee  staff   12768 Feb  5 14:34 node_modules
 -rw-r--r--    1 mcbee  staff  283646 Feb  5 14:34 package-lock.json
 -rw-r--r--    1 mcbee  staff     851 Feb  5 14:34 package.json
 -rw-r--r--    1 mcbee  staff     135 Feb  5 14:28 postcss.config.mjs
--rw-r--r--    1 mcbee  wheel   11554 Feb  5 14:37 prd-ralph-dashboard.json
- succeeded in 269ms:
+-rw-r--r--    1 mcbee  wheel   11553 Feb  5 14:39 prd-ralph-dashboard.json
+ succeeded in 279ms:
 vitest.setup.ts
 vitest.config.ts
 tsconfig.json
 components.json
+lib/git-state.ts
 lib/utils.ts
 lib/ralph-state.ts
 package.json
 package-lock.json
+__tests__/git-state.test.ts
 __tests__/ralph-state.test.ts
 __tests__/example.test.ts
 tailwind.config.ts
@@ -113,20 +113,15 @@ postcss.config.mjs
 app/globals.css
 app/page.tsx
 app/fonts/GeistVF.woff
-app/fonts/GeistMonoVF.woff
-app/layout.tsx
- succeeded in 276ms:
+ succeeded in 260ms:
+./package-lock.json:6835:      "integrity": "sha512-HnLOCR3vjcY8beoNLtcjZ5/nxn2afmME6lhrDrebokqMap+XbeW8n9TXpPDOqdGK5qcI3oT0GKTW6wC7EMiVqA==",
 ./prd-ralph-dashboard.json:3:  "goal": "A real-time web UI for watching Ralph runs. Kanban-style PRD progress, live metrics, git state, test coverage \u2014 watch the magic happen.",
-./prd-ralph-dashboard.json:15:    "constraints": "Must work with existing Ralph CLI, read .ralph/state.json and git state",
 ./prd-ralph-dashboard.json:16:    "references": "Ralph CLI, Linear/Jira for kanban inspiration, Codecov for coverage UI"
-./prd-ralph-dashboard.json:48:        "Create __tests__/example.test.ts with a passing test",
-./prd-ralph-dashboard.json:68:        "Write unit tests in __tests__/ralph-state.test.ts"
-./prd-ralph-dashboard.json:76:      "description": "Module to extract git information: branch, commits, diff stats",
-./prd-ralph-dashboard.json:79:      "verification": "Unit tests pass for git state parsing",
-./prd-ralph-dashboard.json:82:        "Use simple-git or shell out to git commands",
-./prd-ralph-dashboard.json:84:        "Get: diff stats vs main/master (files changed, insertions, deletions)",
-./prd-ralph-dashboard.json:85:        "Get: uncommitted changes summary",
-./prd-ralph-dashboard.json:86:        "Write unit tests in __tests__/git-state.test.ts"
+./prd-ralph-dashboard.json:93:      "title": "Code metrics reader",
+./prd-ralph-dashboard.json:94:      "description": "Module to gather code metrics: lines of code, file count, test count",
+./prd-ralph-dashboard.json:97:      "verification": "Unit tests pass for metrics calculation",
+./prd-ralph-dashboard.json:99:        "Create lib/code-metrics.ts",
+./prd-ralph-dashboard.json:101:        "Metrics: total LOC, LOC by language, file count, test file count",
 ./prd-ralph-dashboard.json:102:        "Write unit tests in __tests__/code-metrics.test.ts"
 ./prd-ralph-dashboard.json:109:      "title": "Test coverage reader",
 ./prd-ralph-dashboard.json:110:      "description": "Module to parse test coverage reports (coverage.json, lcov, etc.)",
@@ -136,55 +131,17 @@ app/layout.tsx
 ./prd-ralph-dashboard.json:119:        "Write unit tests in __tests__/coverage-reader.test.ts"
 ./prd-ralph-dashboard.json:127:      "description": "Next.js API routes to serve Ralph state, git state, metrics",
 ./prd-ralph-dashboard.json:134:        "Return combined state: ralph, git, metrics, coverage",
+./prd-ralph-dashboard.json:200:      "description": "Panel showing code metrics: LOC, files, tests, coverage",
+./prd-ralph-dashboard.json:203:      "verification": "Component renders metrics correctly (unit test)",
+./prd-ralph-dashboard.json:208:        "Show: test count",
 
 thinking
-**Inspecting existing state lib and tests**
+**Reviewing library patterns and tests**
 exec
+/bin/zsh -lc "sed -n '1,220p' lib/git-state.ts" in /Users/mcbee/Projects/agent-dashboardexec
 /bin/zsh -lc "sed -n '1,240p' lib/ralph-state.ts" in /Users/mcbee/Projects/agent-dashboardexec
-/bin/zsh -lc "sed -n '1,260p' __tests__/ralph-state.test.ts" in /Users/mcbee/Projects/agent-dashboardexec
-/bin/zsh -lc 'cat package.json' in /Users/mcbee/Projects/agent-dashboard succeeded in 257ms:
-{
-  "name": "ralph-dashboard",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "test": "vitest run"
-  },
-  "dependencies": {
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "lucide-react": "^0.563.0",
-    "next": "14.2.35",
-    "react": "^18",
-    "react-dom": "^18",
-    "tailwind-merge": "^3.4.0",
-    "tailwindcss-animate": "^1.0.7"
- succeeded in 260ms:
-import { promises as fs } from "node:fs";
-import os from "node:os";
-import path from "node:path";
-
-import { afterEach, describe, expect, it } from "vitest";
-
-import { getRalphUnifiedView, readPRD, readRalphState } from "../lib/ralph-state";
-
-const tempDirs: string[] = [];
-
-async function makeProjectDir(): Promise<string> {
-  const projectDir = await fs.mkdtemp(path.join(os.tmpdir(), "ralph-state-test-"));
-  tempDirs.push(projectDir);
-  return projectDir;
-}
-
-async function writeJson(filePath: string, value: unknown): Promise<void> {
-  await fs.mkdir(path.dirname(filePath), { recursive: true });
-  await fs.writeFile(filePath, JSON.stringify(value, null, 2), "utf8");
-}
- succeeded in 264ms:
+/bin/zsh -lc "sed -n '1,280p' __tests__/ralph-state.test.ts" in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc "sed -n '1,260p' __tests__/git-state.test.ts" in /Users/mcbee/Projects/agent-dashboard succeeded in 265ms:
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
@@ -205,11 +162,74 @@ export interface RalphState {
   started_at: string | null;
   checkpoints: Checkpoint[];
   agent: string | null;
+ succeeded in 302ms:
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+
+const execFileAsync = promisify(execFile);
+
+export interface GitDiffStats {
+  filesChanged: number;
+  insertions: number;
+  deletions: number;
+}
+
+export interface UncommittedChangesSummary {
+  staged: GitDiffStats;
+  unstaged: GitDiffStats;
+  untrackedFiles: number;
+  total: GitDiffStats;
+}
+
+export interface GitState {
+  branch: string | null;
+ succeeded in 276ms:
+import { describe, expect, it } from "vitest";
+
+import { parseDiffShortStat, readGitState } from "../lib/git-state";
+
+function createMockRunner(outputs: Record<string, string>, failures: Set<string> = new Set()) {
+  return async (args: string[]): Promise<string> => {
+    const key = args.join(" ");
+
+    if (failures.has(key)) {
+      throw new Error(`command failed: ${key}`);
+    }
+
+    if (!(key in outputs)) {
+      throw new Error(`missing mock output: ${key}`);
+    }
+
+    return outputs[key];
+  };
+}
+
+ succeeded in 276ms:
+import { promises as fs } from "node:fs";
+import os from "node:os";
+import path from "node:path";
+
+import { afterEach, describe, expect, it } from "vitest";
+
+import { getRalphUnifiedView, readPRD, readRalphState } from "../lib/ralph-state";
+
+const tempDirs: string[] = [];
+
+async function makeProjectDir(): Promise<string> {
+  const projectDir = await fs.mkdtemp(path.join(os.tmpdir(), "ralph-state-test-"));
+  tempDirs.push(projectDir);
+  return projectDir;
+}
+
+async function writeJson(filePath: string, value: unknown): Promise<void> {
+  await fs.mkdir(path.dirname(filePath), { recursive: true });
+  await fs.writeFile(filePath, JSON.stringify(value, null, 2), "utf8");
+}
 
 thinking
-**Designing Git state module API**
+**Planning further code exploration**
 exec
-/bin/zsh -lc "sed -n '240,520p' lib/ralph-state.ts" in /Users/mcbee/Projects/agent-dashboard succeeded in 217ms:
+/bin/zsh -lc "sed -n '240,520p' lib/ralph-state.ts" in /Users/mcbee/Projects/agent-dashboard succeeded in 212ms:
     const parsed = JSON.parse(raw) as unknown;
 
     return {
@@ -232,1485 +252,431 @@ async function resolvePRDPath(projectPath: string, preferredPath?: string | null
   if (preferredPath) {
 
 thinking
-**Reviewing test configuration**
-codex
-I found no existing git module, so I’m implementing a new `lib/git-state.ts` with a small command-runner abstraction and parser helpers, then writing focused unit tests around mocked git output.
+**Inspecting test command for approach**
 exec
-/bin/zsh -lc 'cat vitest.config.ts' in /Users/mcbee/Projects/agent-dashboardexec
-/bin/zsh -lc 'cat tsconfig.json' in /Users/mcbee/Projects/agent-dashboardexec
-/bin/zsh -lc 'cat __tests__/example.test.ts' in /Users/mcbee/Projects/agent-dashboard succeeded in 247ms:
-import React from "react";
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
-
-describe("example test", () => {
-  it("renders content in the document", () => {
-    render(React.createElement("div", null, "Ralph is running"));
-
-    expect(screen.getByText("Ralph is running")).toBeInTheDocument();
-  });
-});
- succeeded in 262ms:
-import { defineConfig } from "vitest/config";
-
-export default defineConfig({
-  test: {
-    environment: "jsdom",
-    setupFiles: "./vitest.setup.ts",
-  },
-});
- succeeded in 254ms:
+/bin/zsh -lc 'cat package.json' in /Users/mcbee/Projects/agent-dashboard succeeded in 214ms:
 {
-  "compilerOptions": {
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "preserve",
-    "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
-    "paths": {
+  "name": "ralph-dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.563.0",
+    "next": "14.2.35",
+    "react": "^18",
+    "react-dom": "^18",
+    "tailwind-merge": "^3.4.0",
+    "tailwindcss-animate": "^1.0.7"
 
 thinking
-**Designing Git state retrieval**
+**Designing code metrics API**
+exec
+/bin/zsh -lc 'rg -n "readGitState|getRalphUnifiedView|metrics" README.md lib __tests__ app -S' in /Users/mcbee/Projects/agent-dashboard succeeded in 234ms:
+__tests__/git-state.test.ts:3:import { parseDiffShortStat, readGitState } from "../lib/git-state";
+__tests__/git-state.test.ts:47:describe("readGitState", () => {
+__tests__/git-state.test.ts:60:    const state = await readGitState("/tmp/project", {
+__tests__/git-state.test.ts:99:    const state = await readGitState("/tmp/project", { runGitCommand });
+__tests__/git-state.test.ts:113:    const state = await readGitState("/tmp/project", { runGitCommand });
+lib/git-state.ts:151:export async function readGitState(projectPath: string, options: ReadGitStateOptions = {}): Promise<GitState> {
+app/page.tsx:6:        Ralph run metrics and kanban progress will render here.
+__tests__/ralph-state.test.ts:7:import { getRalphUnifiedView, readPRD, readRalphState } from "../lib/ralph-state";
+__tests__/ralph-state.test.ts:151:describe("getRalphUnifiedView", () => {
+__tests__/ralph-state.test.ts:201:    const result = await getRalphUnifiedView(projectDir);
+__tests__/ralph-state.test.ts:215:    const result = await getRalphUnifiedView(projectDir);
+lib/ralph-state.ts:351:export async function getRalphUnifiedView(projectPath: string): Promise<RalphUnifiedView> {
+
+thinking
+**Planning helper function exports**
 codex
-I’m now adding `lib/git-state.ts` with command execution + parsing utilities, then `__tests__/git-state.test.ts` to validate branch/commit/diff/uncommitted parsing and base-branch fallback behavior.
-file update
-A /Users/mcbee/Projects/agent-dashboard/lib/git-state.ts
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
+I’ve confirmed the local style: small typed modules in `lib/` with async FS logic and Vitest temp-dir tests.  
+Plan:
+1. Add `lib/code-metrics.ts` with a recursive directory walker using `node:fs/promises` and no external deps.
+2. Implement metrics output: `totalLoc`, `locByLanguage`, `fileCount`, `testFileCount`.
+3. Exclude heavy/generated folders by default (`.git`, `node_modules`, `.next`, `.ralph`) and count LOC by non-empty lines to avoid whitespace inflation.
+4. Add `__tests__/code-metrics.test.ts` covering mixed languages, test-file detection, ignored directories, and missing-path error handling.
+5. Run full test suite and report results.
 
-const execFileAsync = promisify(execFile);
+thinking
+**Starting file creation with tests**
+codex
+I’m now creating `lib/code-metrics.ts` with the scanner and metric calculation helpers, then I’ll add focused unit tests in `__tests__/code-metrics.test.ts`.
+exec
+/bin/zsh -lc "cat > lib/code-metrics.ts <<'EOF'
+import { promises as fs } from \"node:fs\";
+import path from \"node:path\";
 
-export interface GitDiffStats {
-  filesChanged: number;
-  insertions: number;
-  deletions: number;
-}
-
-export interface UncommittedChangesSummary {
-  staged: GitDiffStats;
-  unstaged: GitDiffStats;
-  untrackedFiles: number;
-  total: GitDiffStats;
-}
-
-export interface GitState {
-  branch: string | null;
-  commitCount: number;
-  recentCommits: string[];
-  baseBranch: "main" | "master" | null;
-  diffFromBase: GitDiffStats;
-  uncommitted: UncommittedChangesSummary;
+export interface CodeMetrics {
+  totalLoc: number;
+  locByLanguage: Record<string, number>;
+  fileCount: number;
+  testFileCount: number;
   error: string | null;
 }
 
-export interface ReadGitStateOptions {
-  recentCommitLimit?: number;
-  runGitCommand?: (args: string[]) => Promise<string>;
+export interface ReadCodeMetricsOptions {
+  excludeDirectories?: string[];
 }
 
-const EMPTY_DIFF_STATS: GitDiffStats = {
-  filesChanged: 0,
-  insertions: 0,
-  deletions: 0,
+const DEFAULT_EXCLUDED_DIRECTORIES = new Set([\".git\", \"node_modules\", \".next\", \".ralph\"]);
+
+const EXTENSION_LANGUAGE_MAP: Record<string, string> = {
+  \".ts\": \"TypeScript\",
+  \".tsx\": \"TypeScript\",
+  \".js\": \"JavaScript\",
+  \".jsx\": \"JavaScript\",
+  \".mjs\": \"JavaScript\",
+  \".cjs\": \"JavaScript\",
+  \".json\": \"JSON\",
+  \".css\": \"CSS\",
+  \".scss\": \"SCSS\",
+  \".html\": \"HTML\",
+  \".md\": \"Markdown\",
+  \".yml\": \"YAML\",
+  \".yaml\": \"YAML\",
 };
 
-function cloneDiffStats(stats: GitDiffStats): GitDiffStats {
+function defaultMetrics(error: string | null = null): CodeMetrics {
   return {
-    filesChanged: stats.filesChanged,
-    insertions: stats.insertions,
-    deletions: stats.deletions,
-  };
-}
-
-function defaultUncommittedSummary(): UncommittedChangesSummary {
-  return {
-    staged: cloneDiffStats(EMPTY_DIFF_STATS),
-    unstaged: cloneDiffStats(EMPTY_DIFF_STATS),
-    untrackedFiles: 0,
-    total: cloneDiffStats(EMPTY_DIFF_STATS),
-  };
-}
-
-function defaultGitState(error: string | null = null): GitState {
-  return {
-    branch: null,
-    commitCount: 0,
-    recentCommits: [],
-    baseBranch: null,
-    diffFromBase: cloneDiffStats(EMPTY_DIFF_STATS),
-    uncommitted: defaultUncommittedSummary(),
+    totalLoc: 0,
+    locByLanguage: {},
+    fileCount: 0,
+    testFileCount: 0,
     error,
   };
 }
 
-function toNumber(value: string | undefined): number {
-  if (!value) {
+function countNonEmptyLines(content: string): number {
+  if (content.length === 0) {
     return 0;
   }
 
-  const parsed = Number.parseInt(value, 10);
-  return Number.isFinite(parsed) ? parsed : 0;
-}
-
-export function parseDiffShortStat(raw: string): GitDiffStats {
-  if (!raw.trim()) {
-    return cloneDiffStats(EMPTY_DIFF_STATS);
-  }
-
-  const filesMatch = raw.match(/(\d+)\s+files?\s+changed/);
-  const insertionsMatch = raw.match(/(\d+)\s+insertions?\(\+\)/);
-  const deletionsMatch = raw.match(/(\d+)\s+deletions?\(-\)/);
-
-  return {
-    filesChanged: toNumber(filesMatch?.[1]),
-    insertions: toNumber(insertionsMatch?.[1]),
-    deletions: toNumber(deletionsMatch?.[1]),
-  };
-}
-
-function parseCommitCount(raw: string): number {
-  return toNumber(raw.trim());
-}
-
-function parseCommitMessages(raw: string): string[] {
-  if (!raw.trim()) {
-    return [];
-  }
-
-  return raw
-    .split("\n")
-    .map((message) => message.trim())
-    .filter((message) => message.length > 0);
-}
-
-function parseUntrackedCount(raw: string): number {
-  if (!raw.trim()) {
-    return 0;
-  }
-
-  return raw
-    .split("\n")
+  return content
+    .split(/\\r?\\n/)
     .map((line) => line.trim())
     .filter((line) => line.length > 0).length;
 }
 
-function addDiffStats(left: GitDiffStats, right: GitDiffStats): GitDiffStats {
-  return {
-    filesChanged: left.filesChanged + right.filesChanged,
-    insertions: left.insertions + right.insertions,
-    deletions: left.deletions + right.deletions,
-  };
+function detectLanguage(filePath: string): string {
+  const ext = path.extname(filePath).toLowerCase();
+  return EXTENSION_LANGUAGE_MAP[ext] ?? \"Other\";
 }
 
-function makeShellGitRunner(projectPath: string): (args: string[]) => Promise<string> {
-  return async (args: string[]) => {
-    const { stdout } = await execFileAsync("git", args, { cwd: projectPath });
-    return stdout.trim();
-  };
+function isTestFile(filePath: string): boolean {
+  const normalizedPath = filePath.replace(/\\\\/g, \"/\");
+
+  return (
+    /("'^|'"\\/)__tests__(\\/|"'$)/.test(normalizedPath) ||
+    /'"\\.(test|spec)\\.["'^./]+$/i.test(normalizedPath) ||
+    /(''^|'"\\/)test["'^/]*'"\\.["'^/]+$/i.test(path.basename(normalizedPath))
+  );
 }
 
-async function resolveBaseBranch(runGitCommand: (args: string[]) => Promise<string>): Promise<"main" | "master" | null> {
-  try {
-    await runGitCommand(["rev-parse", "--verify", "--quiet", "main"]);
-    return "main";
-  } catch {
-    // Try master next.
+async function collectFilePaths(
+  rootPath: string,
+  excludedDirectories: Set<string>,
+  acc: string[] = [],
+): Promise<string[]> {
+  const entries = await fs.readdir(rootPath, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const fullPath = path.join(rootPath, entry.name);
+
+    if (entry.isDirectory()) {
+      if (excludedDirectories.has(entry.name)) {
+        continue;
+      }
+
+      await collectFilePaths(fullPath, excludedDirectories, acc);
+      continue;
+    }
+
+    if (entry.isFile()) {
+      acc.push(fullPath);
+    }
+  }
+
+  return acc;
+}
+
+export async function readCodeMetrics(
+  projectPath: string,
+  options: ReadCodeMetricsOptions = {},
+): Promise<CodeMetrics> {
+  const excludedDirectories = new Set(DEFAULT_EXCLUDED_DIRECTORIES);
+
+  for (const directory of options.excludeDirectories ?? []) {
+    excludedDirectories.add(directory);
   }
 
   try {
-    await runGitCommand(["rev-parse", "--verify", "--quiet", "master"]);
-    return "master";
-  } catch {
-    return null;
-  }
-}
+    const files = await collectFilePaths(projectPath, excludedDirectories);
 
-export async function readGitState(projectPath: string, options: ReadGitStateOptions = {}): Promise<GitState> {
-  const commitLimit = Math.max(1, options.recentCommitLimit ?? 5);
-  const runGitCommand = options.runGitCommand ?? makeShellGitRunner(projectPath);
+    const metrics = defaultMetrics();
+    metrics.fileCount = files.length;
 
-  try {
-    const branchRaw = await runGitCommand(["rev-parse", "--abbrev-ref", "HEAD"]);
-    const commitCountRaw = await runGitCommand(["rev-list", "--count", "HEAD"]);
-    const commitMessagesRaw = await runGitCommand(["log", "--pretty=format:%s", "-n", String(commitLimit)]);
+    for (const filePath of files) {
+      const content = await fs.readFile(filePath, "utf8");
+      const loc = countNonEmptyLines(content);
+      const language = detectLanguage(filePath);
 
-    const baseBranch = await resolveBaseBranch(runGitCommand);
-    const diffFromBaseRaw = baseBranch
-      ? await runGitCommand(["diff", "--shortstat", `${baseBranch}...HEAD`])
-      : "";
-    const unstagedRaw = await runGitCommand(["diff", "--shortstat"]);
-    const stagedRaw = await runGitCommand(["diff", "--shortstat", "--cached"]);
-    const untrackedRaw = await runGitCommand(["ls-files", "--others", "--exclude-standard"]);
+      metrics.totalLoc += loc;
+      metrics.locByLanguage[language] = (metrics.locByLanguage[language] ?? 0) + loc;
 
-    const unstaged = parseDiffShortStat(unstagedRaw);
-    const staged = parseDiffShortStat(stagedRaw);
-    const untrackedFiles = parseUntrackedCount(untrackedRaw);
-    const stagedAndUnstaged = addDiffStats(staged, unstaged);
+      if (isTestFile(filePath)) {
+        metrics.testFileCount += 1;
+      }
+    }
 
-    return {
-      branch: branchRaw || null,
-      commitCount: parseCommitCount(commitCountRaw),
-      recentCommits: parseCommitMessages(commitMessagesRaw),
-      baseBranch,
-      diffFromBase: parseDiffShortStat(diffFromBaseRaw),
-      uncommitted: {
-        staged,
-        unstaged,
-        untrackedFiles,
-        total: {
-          filesChanged: stagedAndUnstaged.filesChanged + untrackedFiles,
-          insertions: stagedAndUnstaged.insertions,
-          deletions: stagedAndUnstaged.deletions,
-        },
-      },
-      error: null,
-    };
+    return metrics;
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown git error";
-    return defaultGitState(message);
+    const message = error instanceof Error ? error.message : "Unknown code metrics error";
+    return defaultMetrics(message);
   }
 }
-apply_patch(auto_approved=true) exited 0 in 35ms:
-Success. Updated the following files:
-A lib/git-state.ts
-file update:
-diff --git a/lib/git-state.ts b/lib/git-state.ts
-new file mode 100644
-index 0000000000000000000000000000000000000000..80264da36c1387863d270d414b26b2e22a6376ab
---- /dev/null
-+++ b/lib/git-state.ts
-@@ -0,0 +1,195 @@
-+import { execFile } from "node:child_process";
-+import { promisify } from "node:util";
-+
-+const execFileAsync = promisify(execFile);
-+
-+export interface GitDiffStats {
-+  filesChanged: number;
-+  insertions: number;
-+  deletions: number;
-+}
-+
-+export interface UncommittedChangesSummary {
-+  staged: GitDiffStats;
-+  unstaged: GitDiffStats;
-+  untrackedFiles: number;
-+  total: GitDiffStats;
-+}
-+
-+export interface GitState {
-+  branch: string | null;
-+  commitCount: number;
-+  recentCommits: string[];
-+  baseBranch: "main" | "master" | null;
-+  diffFromBase: GitDiffStats;
-+  uncommitted: UncommittedChangesSummary;
-+  error: string | null;
-+}
-+
-+export interface ReadGitStateOptions {
-+  recentCommitLimit?: number;
-+  runGitCommand?: (args: string[]) => Promise<string>;
-+}
-+
-+const EMPTY_DIFF_STATS: GitDiffStats = {
-+  filesChanged: 0,
-+  insertions: 0,
-+  deletions: 0,
-+};
-+
-+function cloneDiffStats(stats: GitDiffStats): GitDiffStats {
-+  return {
-+    filesChanged: stats.filesChanged,
-+    insertions: stats.insertions,
-+    deletions: stats.deletions,
-+  };
-+}
-+
-+function defaultUncommittedSummary(): UncommittedChangesSummary {
-+  return {
-+    staged: cloneDiffStats(EMPTY_DIFF_STATS),
-+    unstaged: cloneDiffStats(EMPTY_DIFF_STATS),
-+    untrackedFiles: 0,
-+    total: cloneDiffStats(EMPTY_DIFF_STATS),
-+  };
-+}
-+
-+function defaultGitState(error: string | null = null): GitState {
-+  return {
-+    branch: null,
-+    commitCount: 0,
-+    recentCommits: [],
-+    baseBranch: null,
-+    diffFromBase: cloneDiffStats(EMPTY_DIFF_STATS),
-+    uncommitted: defaultUncommittedSummary(),
-+    error,
-+  };
-+}
-+
-+function toNumber(value: string | undefined): number {
-+  if (!value) {
-+    return 0;
-+  }
-+
-+  const parsed = Number.parseInt(value, 10);
-+  return Number.isFinite(parsed) ? parsed : 0;
-+}
-+
-+export function parseDiffShortStat(raw: string): GitDiffStats {
-+  if (!raw.trim()) {
-+    return cloneDiffStats(EMPTY_DIFF_STATS);
-+  }
-+
-+  const filesMatch = raw.match(/(\d+)\s+files?\s+changed/);
-+  const insertionsMatch = raw.match(/(\d+)\s+insertions?\(\+\)/);
-+  const deletionsMatch = raw.match(/(\d+)\s+deletions?\(-\)/);
-+
-+  return {
-+    filesChanged: toNumber(filesMatch?.[1]),
-+    insertions: toNumber(insertionsMatch?.[1]),
-+    deletions: toNumber(deletionsMatch?.[1]),
-+  };
-+}
-+
-+function parseCommitCount(raw: string): number {
-+  return toNumber(raw.trim());
-+}
-+
-+function parseCommitMessages(raw: string): string[] {
-+  if (!raw.trim()) {
-+    return [];
-+  }
-+
-+  return raw
-+    .split("\n")
-+    .map((message) => message.trim())
-+    .filter((message) => message.length > 0);
-+}
-+
-+function parseUntrackedCount(raw: string): number {
-+  if (!raw.trim()) {
-+    return 0;
-+  }
-+
-+  return raw
-+    .split("\n")
-+    .map((line) => line.trim())
-+    .filter((line) => line.length > 0).length;
-+}
-+
-+function addDiffStats(left: GitDiffStats, right: GitDiffStats): GitDiffStats {
-+  return {
-+    filesChanged: left.filesChanged + right.filesChanged,
-+    insertions: left.insertions + right.insertions,
-+    deletions: left.deletions + right.deletions,
-+  };
-+}
-+
-+function makeShellGitRunner(projectPath: string): (args: string[]) => Promise<string> {
-+  return async (args: string[]) => {
-+    const { stdout } = await execFileAsync("git", args, { cwd: projectPath });
-+    return stdout.trim();
-+  };
-+}
-+
-+async function resolveBaseBranch(runGitCommand: (args: string[]) => Promise<string>): Promise<"main" | "master" | null> {
-+  try {
-+    await runGitCommand(["rev-parse", "--verify", "--quiet", "main"]);
-+    return "main";
-+  } catch {
-+    // Try master next.
-+  }
-+
-+  try {
-+    await runGitCommand(["rev-parse", "--verify", "--quiet", "master"]);
-+    return "master";
-+  } catch {
-+    return null;
-+  }
-+}
-+
-+export async function readGitState(projectPath: string, options: ReadGitStateOptions = {}): Promise<GitState> {
-+  const commitLimit = Math.max(1, options.recentCommitLimit ?? 5);
-+  const runGitCommand = options.runGitCommand ?? makeShellGitRunner(projectPath);
-+
-+  try {
-+    const branchRaw = await runGitCommand(["rev-parse", "--abbrev-ref", "HEAD"]);
-+    const commitCountRaw = await runGitCommand(["rev-list", "--count", "HEAD"]);
-+    const commitMessagesRaw = await runGitCommand(["log", "--pretty=format:%s", "-n", String(commitLimit)]);
-+
-+    const baseBranch = await resolveBaseBranch(runGitCommand);
-+    const diffFromBaseRaw = baseBranch
-+      ? await runGitCommand(["diff", "--shortstat", `${baseBranch}...HEAD`])
-+      : "";
-+    const unstagedRaw = await runGitCommand(["diff", "--shortstat"]);
-+    const stagedRaw = await runGitCommand(["diff", "--shortstat", "--cached"]);
-+    const untrackedRaw = await runGitCommand(["ls-files", "--others", "--exclude-standard"]);
-+
-+    const unstaged = parseDiffShortStat(unstagedRaw);
-+    const staged = parseDiffShortStat(stagedRaw);
-+    const untrackedFiles = parseUntrackedCount(untrackedRaw);
-+    const stagedAndUnstaged = addDiffStats(staged, unstaged);
-+
-+    return {
-+      branch: branchRaw || null,
-+      commitCount: parseCommitCount(commitCountRaw),
-+      recentCommits: parseCommitMessages(commitMessagesRaw),
-+      baseBranch,
-+      diffFromBase: parseDiffShortStat(diffFromBaseRaw),
-+      uncommitted: {
-+        staged,
-+        unstaged,
-+        untrackedFiles,
-+        total: {
-+          filesChanged: stagedAndUnstaged.filesChanged + untrackedFiles,
-+          insertions: stagedAndUnstaged.insertions,
-+          deletions: stagedAndUnstaged.deletions,
-+        },
-+      },
-+      error: null,
-+    };
-+  } catch (error) {
-+    const message = error instanceof Error ? error.message : "Unknown git error";
-+    return defaultGitState(message);
-+  }
-+}
 
-file update:
-diff --git a/lib/git-state.ts b/lib/git-state.ts
-new file mode 100644
-index 0000000000000000000000000000000000000000..80264da36c1387863d270d414b26b2e22a6376ab
---- /dev/null
-+++ b/lib/git-state.ts
-@@ -0,0 +1,195 @@
-+import { execFile } from "node:child_process";
-+import { promisify } from "node:util";
-+
-+const execFileAsync = promisify(execFile);
-+
-+export interface GitDiffStats {
-+  filesChanged: number;
-+  insertions: number;
-+  deletions: number;
-+}
-+
-+export interface UncommittedChangesSummary {
-+  staged: GitDiffStats;
-+  unstaged: GitDiffStats;
-+  untrackedFiles: number;
-+  total: GitDiffStats;
-+}
-+
-+export interface GitState {
-+  branch: string | null;
-+  commitCount: number;
-+  recentCommits: string[];
-+  baseBranch: "main" | "master" | null;
-+  diffFromBase: GitDiffStats;
-+  uncommitted: UncommittedChangesSummary;
-+  error: string | null;
-+}
-+
-+export interface ReadGitStateOptions {
-+  recentCommitLimit?: number;
-+  runGitCommand?: (args: string[]) => Promise<string>;
-+}
-+
-+const EMPTY_DIFF_STATS: GitDiffStats = {
-+  filesChanged: 0,
-+  insertions: 0,
-+  deletions: 0,
-+};
-+
-+function cloneDiffStats(stats: GitDiffStats): GitDiffStats {
-+  return {
-+    filesChanged: stats.filesChanged,
-+    insertions: stats.insertions,
-+    deletions: stats.deletions,
-+  };
-+}
-+
-+function defaultUncommittedSummary(): UncommittedChangesSummary {
-+  return {
-+    staged: cloneDiffStats(EMPTY_DIFF_STATS),
-+    unstaged: cloneDiffStats(EMPTY_DIFF_STATS),
-+    untrackedFiles: 0,
-+    total: cloneDiffStats(EMPTY_DIFF_STATS),
-+  };
-+}
-+
-+function defaultGitState(error: string | null = null): GitState {
-+  return {
-+    branch: null,
-+    commitCount: 0,
-+    recentCommits: [],
-+    baseBranch: null,
-+    diffFromBase: cloneDiffStats(EMPTY_DIFF_STATS),
-+    uncommitted: defaultUncommittedSummary(),
-+    error,
-+  };
-+}
-+
-+function toNumber(value: string | undefined): number {
-+  if (!value) {
-+    return 0;
-+  }
-+
-+  const parsed = Number.parseInt(value, 10);
-+  return Number.isFinite(parsed) ? parsed : 0;
-+}
-+
-+export function parseDiffShortStat(raw: string): GitDiffStats {
-+  if (!raw.trim()) {
-+    return cloneDiffStats(EMPTY_DIFF_STATS);
-+  }
-+
-+  const filesMatch = raw.match(/(\d+)\s+files?\s+changed/);
-+  const insertionsMatch = raw.match(/(\d+)\s+insertions?\(\+\)/);
-+  const deletionsMatch = raw.match(/(\d+)\s+deletions?\(-\)/);
-+
-+  return {
-+    filesChanged: toNumber(filesMatch?.[1]),
-+    insertions: toNumber(insertionsMatch?.[1]),
-+    deletions: toNumber(deletionsMatch?.[1]),
-+  };
-+}
-+
-+function parseCommitCount(raw: string): number {
-+  return toNumber(raw.trim());
-+}
-+
-+function parseCommitMessages(raw: string): string[] {
-+  if (!raw.trim()) {
-+    return [];
-+  }
-+
-+  return raw
-+    .split("\n")
-+    .map((message) => message.trim())
-+    .filter((message) => message.length > 0);
-+}
-+
-+function parseUntrackedCount(raw: string): number {
-+  if (!raw.trim()) {
-+    return 0;
-+  }
-+
-+  return raw
-+    .split("\n")
-+    .map((line) => line.trim())
-+    .filter((line) => line.length > 0).length;
-+}
-+
-+function addDiffStats(left: GitDiffStats, right: GitDiffStats): GitDiffStats {
-+  return {
-+    filesChanged: left.filesChanged + right.filesChanged,
-+    insertions: left.insertions + right.insertions,
-+    deletions: left.deletions + right.deletions,
-+  };
-+}
-+
-+function makeShellGitRunner(projectPath: string): (args: string[]) => Promise<string> {
-+  return async (args: string[]) => {
-+    const { stdout } = await execFileAsync("git", args, { cwd: projectPath });
-+    return stdout.trim();
-+  };
-+}
-+
-+async function resolveBaseBranch(runGitCommand: (args: string[]) => Promise<string>): Promise<"main" | "master" | null> {
-+  try {
-+    await runGitCommand(["rev-parse", "--verify", "--quiet", "main"]);
-+    return "main";
-+  } catch {
-+    // Try master next.
-+  }
-+
-+  try {
-+    await runGitCommand(["rev-parse", "--verify", "--quiet", "master"]);
-+    return "master";
-+  } catch {
-+    return null;
-+  }
-+}
-+
-+export async function readGitState(projectPath: string, options: ReadGitStateOptions = {}): Promise<GitState> {
-+  const commitLimit = Math.max(1, options.recentCommitLimit ?? 5);
-+  const runGitCommand = options.runGitCommand ?? makeShellGitRunner(projectPath);
-+
-+  try {
-+    const branchRaw = await runGitCommand(["rev-parse", "--abbrev-ref", "HEAD"]);
-+    const commitCountRaw = await runGitCommand(["rev-list", "--count", "HEAD"]);
-+    const commitMessagesRaw = await runGitCommand(["log", "--pretty=format:%s", "-n", String(commitLimit)]);
-+
-+    const baseBranch = await resolveBaseBranch(runGitCommand);
-+    const diffFromBaseRaw = baseBranch
-+      ? await runGitCommand(["diff", "--shortstat", `${baseBranch}...HEAD`])
-+      : "";
-+    const unstagedRaw = await runGitCommand(["diff", "--shortstat"]);
-+    const stagedRaw = await runGitCommand(["diff", "--shortstat", "--cached"]);
-+    const untrackedRaw = await runGitCommand(["ls-files", "--others", "--exclude-standard"]);
-+
-+    const unstaged = parseDiffShortStat(unstagedRaw);
-+    const staged = parseDiffShortStat(stagedRaw);
-+    const untrackedFiles = parseUntrackedCount(untrackedRaw);
-+    const stagedAndUnstaged = addDiffStats(staged, unstaged);
-+
-+    return {
-+      branch: branchRaw || null,
-+      commitCount: parseCommitCount(commitCountRaw),
-+      recentCommits: parseCommitMessages(commitMessagesRaw),
-+      baseBranch,
-+      diffFromBase: parseDiffShortStat(diffFromBaseRaw),
-+      uncommitted: {
-+        staged,
-+        unstaged,
-+        untrackedFiles,
-+        total: {
-+          filesChanged: stagedAndUnstaged.filesChanged + untrackedFiles,
-+          insertions: stagedAndUnstaged.insertions,
-+          deletions: stagedAndUnstaged.deletions,
-+        },
-+      },
-+      error: null,
-+    };
-+  } catch (error) {
-+    const message = error instanceof Error ? error.message : "Unknown git error";
-+    return defaultGitState(message);
-+  }
-+}
-
-file update
-A /Users/mcbee/Projects/agent-dashboard/__tests__/git-state.test.ts
-import { describe, expect, it } from "vitest";
-
-import { parseDiffShortStat, readGitState } from "../lib/git-state";
-
-function createMockRunner(outputs: Record<string, string>, failures: Set<string> = new Set()) {
-  return async (args: string[]): Promise<string> => {
-    const key = args.join(" ");
-
-    if (failures.has(key)) {
-      throw new Error(`command failed: ${key}`);
-    }
-
-    if (!(key in outputs)) {
-      throw new Error(`missing mock output: ${key}`);
-    }
-
-    return outputs[key];
-  };
-}
-
-describe("parseDiffShortStat", () => {
-  it("parses full shortstat output", () => {
-    const parsed = parseDiffShortStat(" 4 files changed, 20 insertions(+), 3 deletions(-)");
-
-    expect(parsed).toEqual({
-      filesChanged: 4,
-      insertions: 20,
-      deletions: 3,
-    });
-  });
-
-  it("handles shortstat lines with missing insertion/deletion values", () => {
-    expect(parseDiffShortStat(" 1 file changed, 6 insertions(+)")).toEqual({
-      filesChanged: 1,
-      insertions: 6,
-      deletions: 0,
-    });
-
-    expect(parseDiffShortStat(" 2 files changed, 8 deletions(-)")).toEqual({
-      filesChanged: 2,
-      insertions: 0,
-      deletions: 8,
-    });
-  });
-});
-
-describe("readGitState", () => {
-  it("collects branch, commit stats, diff stats, and uncommitted summary", async () => {
-    const runGitCommand = createMockRunner({
-      "rev-parse --abbrev-ref HEAD": "feature/dashboard",
-      "rev-list --count HEAD": "42",
-      "log --pretty=format:%s -n 3": "feat: add panel\nfix: tune parser\nchore: update tests",
-      "rev-parse --verify --quiet main": "abc123",
-      "diff --shortstat main...HEAD": " 5 files changed, 30 insertions(+), 10 deletions(-)",
-      "diff --shortstat": " 2 files changed, 5 insertions(+), 1 deletion(-)",
-      "diff --shortstat --cached": " 1 file changed, 3 insertions(+), 2 deletions(-)",
-      "ls-files --others --exclude-standard": "new-file.ts\nnotes.md\n",
-    });
-
-    const state = await readGitState("/tmp/project", {
-      recentCommitLimit: 3,
-      runGitCommand,
-    });
-
-    expect(state.error).toBeNull();
-    expect(state.branch).toBe("feature/dashboard");
-    expect(state.commitCount).toBe(42);
-    expect(state.recentCommits).toEqual(["feat: add panel", "fix: tune parser", "chore: update tests"]);
-    expect(state.baseBranch).toBe("main");
-    expect(state.diffFromBase).toEqual({
-      filesChanged: 5,
-      insertions: 30,
-      deletions: 10,
-    });
-    expect(state.uncommitted).toEqual({
-      staged: { filesChanged: 1, insertions: 3, deletions: 2 },
-      unstaged: { filesChanged: 2, insertions: 5, deletions: 1 },
-      untrackedFiles: 2,
-      total: { filesChanged: 5, insertions: 8, deletions: 3 },
-    });
-  });
-
-  it("falls back to master when main is not available", async () => {
-    const failures = new Set<string>(["rev-parse --verify --quiet main"]);
-    const runGitCommand = createMockRunner(
-      {
-        "rev-parse --abbrev-ref HEAD": "feature/master-base",
-        "rev-list --count HEAD": "3",
-        "log --pretty=format:%s -n 5": "a\nb\nc",
-        "rev-parse --verify --quiet master": "def456",
-        "diff --shortstat master...HEAD": " 1 file changed, 2 insertions(+)",
-        "diff --shortstat": "",
-        "diff --shortstat --cached": "",
-        "ls-files --others --exclude-standard": "",
-      },
-      failures,
-    );
-
-    const state = await readGitState("/tmp/project", { runGitCommand });
-
-    expect(state.error).toBeNull();
-    expect(state.baseBranch).toBe("master");
-    expect(state.diffFromBase).toEqual({
-      filesChanged: 1,
-      insertions: 2,
-      deletions: 0,
-    });
-  });
-
-  it("returns default state with error when git commands fail", async () => {
-    const runGitCommand = createMockRunner({}, new Set<string>(["rev-parse --abbrev-ref HEAD"]));
-
-    const state = await readGitState("/tmp/project", { runGitCommand });
-
-    expect(state.branch).toBeNull();
-    expect(state.commitCount).toBe(0);
-    expect(state.recentCommits).toEqual([]);
-    expect(state.diffFromBase).toEqual({
-      filesChanged: 0,
-      insertions: 0,
-      deletions: 0,
-    });
-    expect(state.uncommitted.total).toEqual({
-      filesChanged: 0,
-      insertions: 0,
-      deletions: 0,
-    });
-    expect(state.error).toContain("command failed");
-  });
-});
-apply_patch(auto_approved=true) exited 0 in 49ms:
-Success. Updated the following files:
-A __tests__/git-state.test.ts
-file update:
-diff --git a/__tests__/git-state.test.ts b/__tests__/git-state.test.ts
-new file mode 100644
-index 0000000000000000000000000000000000000000..9310ae4eab113c57ea2e6808a10aa302ed11b715
---- /dev/null
-+++ b/__tests__/git-state.test.ts
-@@ -0,0 +1,130 @@
-+import { describe, expect, it } from "vitest";
-+
-+import { parseDiffShortStat, readGitState } from "../lib/git-state";
-+
-+function createMockRunner(outputs: Record<string, string>, failures: Set<string> = new Set()) {
-+  return async (args: string[]): Promise<string> => {
-+    const key = args.join(" ");
-+
-+    if (failures.has(key)) {
-+      throw new Error(`command failed: ${key}`);
-+    }
-+
-+    if (!(key in outputs)) {
-+      throw new Error(`missing mock output: ${key}`);
-+    }
-+
-+    return outputs[key];
-+  };
-+}
-+
-+describe("parseDiffShortStat", () => {
-+  it("parses full shortstat output", () => {
-+    const parsed = parseDiffShortStat(" 4 files changed, 20 insertions(+), 3 deletions(-)");
-+
-+    expect(parsed).toEqual({
-+      filesChanged: 4,
-+      insertions: 20,
-+      deletions: 3,
-+    });
-+  });
-+
-+  it("handles shortstat lines with missing insertion/deletion values", () => {
-+    expect(parseDiffShortStat(" 1 file changed, 6 insertions(+)")).toEqual({
-+      filesChanged: 1,
-+      insertions: 6,
-+      deletions: 0,
-+    });
-+
-+    expect(parseDiffShortStat(" 2 files changed, 8 deletions(-)")).toEqual({
-+      filesChanged: 2,
-+      insertions: 0,
-+      deletions: 8,
-+    });
-+  });
-+});
-+
-+describe("readGitState", () => {
-+  it("collects branch, commit stats, diff stats, and uncommitted summary", async () => {
-+    const runGitCommand = createMockRunner({
-+      "rev-parse --abbrev-ref HEAD": "feature/dashboard",
-+      "rev-list --count HEAD": "42",
-+      "log --pretty=format:%s -n 3": "feat: add panel\nfix: tune parser\nchore: update tests",
-+      "rev-parse --verify --quiet main": "abc123",
-+      "diff --shortstat main...HEAD": " 5 files changed, 30 insertions(+), 10 deletions(-)",
-+      "diff --shortstat": " 2 files changed, 5 insertions(+), 1 deletion(-)",
-+      "diff --shortstat --cached": " 1 file changed, 3 insertions(+), 2 deletions(-)",
-+      "ls-files --others --exclude-standard": "new-file.ts\nnotes.md\n",
-+    });
-+
-+    const state = await readGitState("/tmp/project", {
-+      recentCommitLimit: 3,
-+      runGitCommand,
-+    });
-+
-+    expect(state.error).toBeNull();
-+    expect(state.branch).toBe("feature/dashboard");
-+    expect(state.commitCount).toBe(42);
-+    expect(state.recentCommits).toEqual(["feat: add panel", "fix: tune parser", "chore: update tests"]);
-+    expect(state.baseBranch).toBe("main");
-+    expect(state.diffFromBase).toEqual({
-+      filesChanged: 5,
-+      insertions: 30,
-+      deletions: 10,
-+    });
-+    expect(state.uncommitted).toEqual({
-+      staged: { filesChanged: 1, insertions: 3, deletions: 2 },
-+      unstaged: { filesChanged: 2, insertions: 5, deletions: 1 },
-+      untrackedFiles: 2,
-+      total: { filesChanged: 5, insertions: 8, deletions: 3 },
-+    });
-+  });
-+
-+  it("falls back to master when main is not available", async () => {
-+    const failures = new Set<string>(["rev-parse --verify --quiet main"]);
-+    const runGitCommand = createMockRunner(
-+      {
-+        "rev-parse --abbrev-ref HEAD": "feature/master-base",
-+        "rev-list --count HEAD": "3",
-+        "log --pretty=format:%s -n 5": "a\nb\nc",
-+        "rev-parse --verify --quiet master": "def456",
-+        "diff --shortstat master...HEAD": " 1 file changed, 2 insertions(+)",
-+        "diff --shortstat": "",
-+        "diff --shortstat --cached": "",
-+        "ls-files --others --exclude-standard": "",
-+      },
-+      failures,
-+    );
-+
-+    const state = await readGitState("/tmp/project", { runGitCommand });
-+
-+    expect(state.error).toBeNull();
-+    expect(state.baseBranch).toBe("master");
-+    expect(state.diffFromBase).toEqual({
-+      filesChanged: 1,
-+      insertions: 2,
-+      deletions: 0,
-+    });
-+  });
-+
-+  it("returns default state with error when git commands fail", async () => {
-+    const runGitCommand = createMockRunner({}, new Set<string>(["rev-parse --abbrev-ref HEAD"]));
-+
-+    const state = await readGitState("/tmp/project", { runGitCommand });
-+
-+    expect(state.branch).toBeNull();
-+    expect(state.commitCount).toBe(0);
-+    expect(state.recentCommits).toEqual([]);
-+    expect(state.diffFromBase).toEqual({
-+      filesChanged: 0,
-+      insertions: 0,
-+      deletions: 0,
-+    });
-+    expect(state.uncommitted.total).toEqual({
-+      filesChanged: 0,
-+      insertions: 0,
-+      deletions: 0,
-+    });
-+    expect(state.error).toContain("command failed");
-+  });
-+});
-diff --git a/lib/git-state.ts b/lib/git-state.ts
-new file mode 100644
-index 0000000000000000000000000000000000000000..80264da36c1387863d270d414b26b2e22a6376ab
---- /dev/null
-+++ b/lib/git-state.ts
-@@ -0,0 +1,195 @@
-+import { execFile } from "node:child_process";
-+import { promisify } from "node:util";
-+
-+const execFileAsync = promisify(execFile);
-+
-+export interface GitDiffStats {
-+  filesChanged: number;
-+  insertions: number;
-+  deletions: number;
-+}
-+
-+export interface UncommittedChangesSummary {
-+  staged: GitDiffStats;
-+  unstaged: GitDiffStats;
-+  untrackedFiles: number;
-+  total: GitDiffStats;
-+}
-+
-+export interface GitState {
-+  branch: string | null;
-+  commitCount: number;
-+  recentCommits: string[];
-+  baseBranch: "main" | "master" | null;
-+  diffFromBase: GitDiffStats;
-+  uncommitted: UncommittedChangesSummary;
-+  error: string | null;
-+}
-+
-+export interface ReadGitStateOptions {
-+  recentCommitLimit?: number;
-+  runGitCommand?: (args: string[]) => Promise<string>;
-+}
-+
-+const EMPTY_DIFF_STATS: GitDiffStats = {
-+  filesChanged: 0,
-+  insertions: 0,
-+  deletions: 0,
-+};
-+
-+function cloneDiffStats(stats: GitDiffStats): GitDiffStats {
-+  return {
-+    filesChanged: stats.filesChanged,
-+    insertions: stats.insertions,
-+    deletions: stats.deletions,
-+  };
-+}
-+
-+function defaultUncommittedSummary(): UncommittedChangesSummary {
-+  return {
-+    staged: cloneDiffStats(EMPTY_DIFF_STATS),
-+    unstaged: cloneDiffStats(EMPTY_DIFF_STATS),
-+    untrackedFiles: 0,
-+    total: cloneDiffStats(EMPTY_DIFF_STATS),
-+  };
-+}
-+
-+function defaultGitState(error: string | null = null): GitState {
-+  return {
-+    branch: null,
-+    commitCount: 0,
-+    recentCommits: [],
-+    baseBranch: null,
-+    diffFromBase: cloneDiffStats(EMPTY_DIFF_STATS),
-+    uncommitted: defaultUncommittedSummary(),
-+    error,
-+  };
-+}
-+
-+function toNumber(value: string | undefined): number {
-+  if (!value) {
-+    return 0;
-+  }
-+
-+  const parsed = Number.parseInt(value, 10);
-+  return Number.isFinite(parsed) ? parsed : 0;
-+}
-+
-+export function parseDiffShortStat(raw: string): GitDiffStats {
-+  if (!raw.trim()) {
-+    return cloneDiffStats(EMPTY_DIFF_STATS);
-+  }
-+
-+  const filesMatch = raw.match(/(\d+)\s+files?\s+changed/);
-+  const insertionsMatch = raw.match(/(\d+)\s+insertions?\(\+\)/);
-+  const deletionsMatch = raw.match(/(\d+)\s+deletions?\(-\)/);
-+
-+  return {
-+    filesChanged: toNumber(filesMatch?.[1]),
-+    insertions: toNumber(insertionsMatch?.[1]),
-+    deletions: toNumber(deletionsMatch?.[1]),
-+  };
-+}
-+
-+function parseCommitCount(raw: string): number {
-+  return toNumber(raw.trim());
-+}
-+
-+function parseCommitMessages(raw: string): string[] {
-+  if (!raw.trim()) {
-+    return [];
-+  }
-+
-+  return raw
-+    .split("\n")
-+    .map((message) => message.trim())
-+    .filter((message) => message.length > 0);
-+}
-+
-+function parseUntrackedCount(raw: string): number {
-+  if (!raw.trim()) {
-+    return 0;
-+  }
-+
-+  return raw
-+    .split("\n")
-+    .map((line) => line.trim())
-+    .filter((line) => line.length > 0).length;
-+}
-+
-+function addDiffStats(left: GitDiffStats, right: GitDiffStats): GitDiffStats {
-+  return {
-+    filesChanged: left.filesChanged + right.filesChanged,
-+    insertions: left.insertions + right.insertions,
-+    deletions: left.deletions + right.deletions,
-+  };
-+}
-+
-+function makeShellGitRunner(projectPath: string): (args: string[]) => Promise<string> {
-+  return async (args: string[]) => {
-+    const { stdout } = await execFileAsync("git", args, { cwd: projectPath });
-+    return stdout.trim();
-+  };
-+}
-+
-+async function resolveBaseBranch(runGitCommand: (args: string[]) => Promise<string>): Promise<"main" | "master" | null> {
-+  try {
-+    await runGitCommand(["rev-parse", "--verify", "--quiet", "main"]);
-+    return "main";
-+  } catch {
-+    // Try master next.
-+  }
-+
-+  try {
-+    await runGitCommand(["rev-parse", "--verify", "--quiet", "master"]);
-+    return "master";
-+  } catch {
-+    return null;
-+  }
-+}
-+
-+export async function readGitState(projectPath: string, options: ReadGitStateOptions = {}): Promise<GitState> {
-+  const commitLimit = Math.max(1, options.recentCommitLimit ?? 5);
-+  const runGitCommand = options.runGitCommand ?? makeShellGitRunner(projectPath);
-+
-+  try {
-+    const branchRaw = await runGitCommand(["rev-parse", "--abbrev-ref", "HEAD"]);
-+    const commitCountRaw = await runGitCommand(["rev-list", "--count", "HEAD"]);
-+    const commitMessagesRaw = await runGitCommand(["log", "--pretty=format:%s", "-n", String(commitLimit)]);
-+
-+    const baseBranch = await resolveBaseBranch(runGitCommand);
-+    const diffFromBaseRaw = baseBranch
-+      ? await runGitCommand(["diff", "--shortstat", `${baseBranch}...HEAD`])
-+      : "";
-+    const unstagedRaw = await runGitCommand(["diff", "--shortstat"]);
-+    const stagedRaw = await runGitCommand(["diff", "--shortstat", "--cached"]);
-+    const untrackedRaw = await runGitCommand(["ls-files", "--others", "--exclude-standard"]);
-+
-+    const unstaged = parseDiffShortStat(unstagedRaw);
-+    const staged = parseDiffShortStat(stagedRaw);
-+    const untrackedFiles = parseUntrackedCount(untrackedRaw);
-+    const stagedAndUnstaged = addDiffStats(staged, unstaged);
-+
-+    return {
-+      branch: branchRaw || null,
-+      commitCount: parseCommitCount(commitCountRaw),
-+      recentCommits: parseCommitMessages(commitMessagesRaw),
-+      baseBranch,
-+      diffFromBase: parseDiffShortStat(diffFromBaseRaw),
-+      uncommitted: {
-+        staged,
-+        unstaged,
-+        untrackedFiles,
-+        total: {
-+          filesChanged: stagedAndUnstaged.filesChanged + untrackedFiles,
-+          insertions: stagedAndUnstaged.insertions,
-+          deletions: stagedAndUnstaged.deletions,
-+        },
-+      },
-+      error: null,
-+    };
-+  } catch (error) {
-+    const message = error instanceof Error ? error.message : "Unknown git error";
-+    return defaultGitState(message);
-+  }
-+}
-
-file update:
-diff --git a/__tests__/git-state.test.ts b/__tests__/git-state.test.ts
-new file mode 100644
-index 0000000000000000000000000000000000000000..9310ae4eab113c57ea2e6808a10aa302ed11b715
---- /dev/null
-+++ b/__tests__/git-state.test.ts
-@@ -0,0 +1,130 @@
-+import { describe, expect, it } from "vitest";
-+
-+import { parseDiffShortStat, readGitState } from "../lib/git-state";
-+
-+function createMockRunner(outputs: Record<string, string>, failures: Set<string> = new Set()) {
-+  return async (args: string[]): Promise<string> => {
-+    const key = args.join(" ");
-+
-+    if (failures.has(key)) {
-+      throw new Error(`command failed: ${key}`);
-+    }
-+
-+    if (!(key in outputs)) {
-+      throw new Error(`missing mock output: ${key}`);
-+    }
-+
-+    return outputs[key];
-+  };
-+}
-+
-+describe("parseDiffShortStat", () => {
-+  it("parses full shortstat output", () => {
-+    const parsed = parseDiffShortStat(" 4 files changed, 20 insertions(+), 3 deletions(-)");
-+
-+    expect(parsed).toEqual({
-+      filesChanged: 4,
-+      insertions: 20,
-+      deletions: 3,
-+    });
-+  });
-+
-+  it("handles shortstat lines with missing insertion/deletion values", () => {
-+    expect(parseDiffShortStat(" 1 file changed, 6 insertions(+)")).toEqual({
-+      filesChanged: 1,
-+      insertions: 6,
-+      deletions: 0,
-+    });
-+
-+    expect(parseDiffShortStat(" 2 files changed, 8 deletions(-)")).toEqual({
-+      filesChanged: 2,
-+      insertions: 0,
-+      deletions: 8,
-+    });
-+  });
-+});
-+
-+describe("readGitState", () => {
-+  it("collects branch, commit stats, diff stats, and uncommitted summary", async () => {
-+    const runGitCommand = createMockRunner({
-+      "rev-parse --abbrev-ref HEAD": "feature/dashboard",
-+      "rev-list --count HEAD": "42",
-+      "log --pretty=format:%s -n 3": "feat: add panel\nfix: tune parser\nchore: update tests",
-+      "rev-parse --verify --quiet main": "abc123",
-+      "diff --shortstat main...HEAD": " 5 files changed, 30 insertions(+), 10 deletions(-)",
-+      "diff --shortstat": " 2 files changed, 5 insertions(+), 1 deletion(-)",
-+      "diff --shortstat --cached": " 1 file changed, 3 insertions(+), 2 deletions(-)",
-+      "ls-files --others --exclude-standard": "new-file.ts\nnotes.md\n",
-+    });
-+
-+    const state = await readGitState("/tmp/project", {
-+      recentCommitLimit: 3,
-+      runGitCommand,
-+    });
-+
-+    expect(state.error).toBeNull();
-+    expect(state.branch).toBe("feature/dashboard");
-+    expect(state.commitCount).toBe(42);
-+    expect(state.recentCommits).toEqual(["feat: add panel", "fix: tune parser", "chore: update tests"]);
-+    expect(state.baseBranch).toBe("main");
-+    expect(state.diffFromBase).toEqual({
-+      filesChanged: 5,
-+      insertions: 30,
-+      deletions: 10,
-+    });
-+    expect(state.uncommitted).toEqual({
-+      staged: { filesChanged: 1, insertions: 3, deletions: 2 },
-+      unstaged: { filesChanged: 2, insertions: 5, deletions: 1 },
-+      untrackedFiles: 2,
-+      total: { filesChanged: 5, insertions: 8, deletions: 3 },
-+    });
-+  });
-+
-+  it("falls back to master when main is not available", async () => {
-+    const failures = new Set<string>(["rev-parse --verify --quiet main"]);
-+    const runGitCommand = createMockRunner(
-+      {
-+        "rev-parse --abbrev-ref HEAD": "feature/master-base",
-+        "rev-list --count HEAD": "3",
-+        "log --pretty=format:%s -n 5": "a\nb\nc",
-+        "rev-parse --verify --quiet master": "def456",
-+        "diff --shortstat master...HEAD": " 1 file changed, 2 insertions(+)",
-+        "diff --shortstat": "",
-+        "diff --shortstat --cached": "",
-+        "ls-files --others --exclude-standard": "",
-+      },
-+      failures,
-+    );
-+
-+    const state = await readGitState("/tmp/project", { runGitCommand });
-+
-+    expect(state.error).toBeNull();
-+    expect(state.baseBranch).toBe("master");
-+    expect(state.diffFromBase).toEqual({
-+      filesChanged: 1,
-+      insertions: 2,
-+      deletions: 0,
-+    });
-+  });
-+
-+  it("returns default state with error when git commands fail", async () => {
-+    const runGitCommand = createMockRunner({}, new Set<string>(["rev-parse --abbrev-ref HEAD"]));
-+
-+    const state = await readGitState("/tmp/project", { runGitCommand });
-+
-+    expect(state.branch).toBeNull();
-+    expect(state.commitCount).toBe(0);
-+    expect(state.recentCommits).toEqual([]);
-+    expect(state.diffFromBase).toEqual({
-+      filesChanged: 0,
-+      insertions: 0,
-+      deletions: 0,
-+    });
-+    expect(state.uncommitted.total).toEqual({
-+      filesChanged: 0,
-+      insertions: 0,
-+      deletions: 0,
-+    });
-+    expect(state.error).toContain("command failed");
-+  });
-+});
-diff --git a/lib/git-state.ts b/lib/git-state.ts
-new file mode 100644
-index 0000000000000000000000000000000000000000..80264da36c1387863d270d414b26b2e22a6376ab
---- /dev/null
-+++ b/lib/git-state.ts
-@@ -0,0 +1,195 @@
-+import { execFile } from "node:child_process";
-+import { promisify } from "node:util";
-+
-+const execFileAsync = promisify(execFile);
-+
-+export interface GitDiffStats {
-+  filesChanged: number;
-+  insertions: number;
-+  deletions: number;
-+}
-+
-+export interface UncommittedChangesSummary {
-+  staged: GitDiffStats;
-+  unstaged: GitDiffStats;
-+  untrackedFiles: number;
-+  total: GitDiffStats;
-+}
-+
-+export interface GitState {
-+  branch: string | null;
-+  commitCount: number;
-+  recentCommits: string[];
-+  baseBranch: "main" | "master" | null;
-+  diffFromBase: GitDiffStats;
-+  uncommitted: UncommittedChangesSummary;
-+  error: string | null;
-+}
-+
-+export interface ReadGitStateOptions {
-+  recentCommitLimit?: number;
-+  runGitCommand?: (args: string[]) => Promise<string>;
-+}
-+
-+const EMPTY_DIFF_STATS: GitDiffStats = {
-+  filesChanged: 0,
-+  insertions: 0,
-+  deletions: 0,
-+};
-+
-+function cloneDiffStats(stats: GitDiffStats): GitDiffStats {
-+  return {
-+    filesChanged: stats.filesChanged,
-+    insertions: stats.insertions,
-+    deletions: stats.deletions,
-+  };
-+}
-+
-+function defaultUncommittedSummary(): UncommittedChangesSummary {
-+  return {
-+    staged: cloneDiffStats(EMPTY_DIFF_STATS),
-+    unstaged: cloneDiffStats(EMPTY_DIFF_STATS),
-+    untrackedFiles: 0,
-+    total: cloneDiffStats(EMPTY_DIFF_STATS),
-+  };
-+}
-+
-+function defaultGitState(error: string | null = null): GitState {
-+  return {
-+    branch: null,
-+    commitCount: 0,
-+    recentCommits: [],
-+    baseBranch: null,
-+    diffFromBase: cloneDiffStats(EMPTY_DIFF_STATS),
-+    uncommitted: defaultUncommittedSummary(),
-+    error,
-+  };
-+}
-+
-+function toNumber(value: string | undefined): number {
-+  if (!value) {
-+    return 0;
-+  }
-+
-+  const parsed = Number.parseInt(value, 10);
-+  return Number.isFinite(parsed) ? parsed : 0;
-+}
-+
-+export function parseDiffShortStat(raw: string): GitDiffStats {
-+  if (!raw.trim()) {
-+    return cloneDiffStats(EMPTY_DIFF_STATS);
-+  }
-+
-+  const filesMatch = raw.match(/(\d+)\s+files?\s+changed/);
-+  const insertionsMatch = raw.match(/(\d+)\s+insertions?\(\+\)/);
-+  const deletionsMatch = raw.match(/(\d+)\s+deletions?\(-\)/);
-+
-+  return {
-+    filesChanged: toNumber(filesMatch?.[1]),
-+    insertions: toNumber(insertionsMatch?.[1]),
-+    deletions: toNumber(deletionsMatch?.[1]),
-+  };
-+}
-+
-+function parseCommitCount(raw: string): number {
-+  return toNumber(raw.trim());
-+}
-+
-+function parseCommitMessages(raw: string): string[] {
-+  if (!raw.trim()) {
-+    return [];
-+  }
-+
-+  return raw
-+    .split("\n")
-+    .map((message) => message.trim())
-+    .filter((message) => message.length > 0);
-+}
-+
-+function parseUntrackedCount(raw: string): number {
-+  if (!raw.trim()) {
-+    return 0;
-+  }
-+
-+  return raw
-+    .split("\n")
-+    .map((line) => line.trim())
-+    .filter((line) => line.length > 0).length;
-+}
-+
-+function addDiffStats(left: GitDiffStats, right: GitDiffStats): GitDiffStats {
-+  return {
-+    filesChanged: left.filesChanged + right.filesChanged,
-+    insertions: left.insertions + right.insertions,
-+    deletions: left.deletions + right.deletions,
-+  };
-+}
-+
-+function makeShellGitRunner(projectPath: string): (args: string[]) => Promise<string> {
-+  return async (args: string[]) => {
-+    const { stdout } = await execFileAsync("git", args, { cwd: projectPath });
-+    return stdout.trim();
-+  };
-+}
-+
-+async function resolveBaseBranch(runGitCommand: (args: string[]) => Promise<string>): Promise<"main" | "master" | null> {
-+  try {
-+    await runGitCommand(["rev-parse", "--verify", "--quiet", "main"]);
-+    return "main";
-+  } catch {
-+    // Try master next.
-+  }
-+
-+  try {
-+    await runGitCommand(["rev-parse", "--verify", "--quiet", "master"]);
-+    return "master";
-+  } catch {
-+    return null;
-+  }
-+}
-+
-+export async function readGitState(projectPath: string, options: ReadGitStateOptions = {}): Promise<GitState> {
-+  const commitLimit = Math.max(1, options.recentCommitLimit ?? 5);
-+  const runGitCommand = options.runGitCommand ?? makeShellGitRunner(projectPath);
-+
-+  try {
-+    const branchRaw = await runGitCommand(["rev-parse", "--abbrev-ref", "HEAD"]);
-+    const commitCountRaw = await runGitCommand(["rev-list", "--count", "HEAD"]);
-+    const commitMessagesRaw = await runGitCommand(["log", "--pretty=format:%s", "-n", String(commitLimit)]);
-+
-+    const baseBranch = await resolveBaseBranch(runGitCommand);
-+    const diffFromBaseRaw = baseBranch
-+      ? await runGitCommand(["diff", "--shortstat", `${baseBranch}...HEAD`])
-+      : "";
-+    const unstagedRaw = await runGitCommand(["diff", "--shortstat"]);
-+    const stagedRaw = await runGitCommand(["diff", "--shortstat", "--cached"]);
-+    const untrackedRaw = await runGitCommand(["ls-files", "--others", "--exclude-standard"]);
-+
-+    const unstaged = parseDiffShortStat(unstagedRaw);
-+    const staged = parseDiffShortStat(stagedRaw);
-+    const untrackedFiles = parseUntrackedCount(untrackedRaw);
-+    const stagedAndUnstaged = addDiffStats(staged, unstaged);
-+
-+    return {
-+      branch: branchRaw || null,
-+      commitCount: parseCommitCount(commitCountRaw),
-+      recentCommits: parseCommitMessages(commitMessagesRaw),
-+      baseBranch,
-+      diffFromBase: parseDiffShortStat(diffFromBaseRaw),
-+      uncommitted: {
-+        staged,
-+        unstaged,
-+        untrackedFiles,
-+        total: {
-+          filesChanged: stagedAndUnstaged.filesChanged + untrackedFiles,
-+          insertions: stagedAndUnstaged.insertions,
-+          deletions: stagedAndUnstaged.deletions,
-+        },
-+      },
-+      error: null,
-+    };
-+  } catch (error) {
-+    const message = error instanceof Error ? error.message : "Unknown git error";
-+    return defaultGitState(message);
-+  }
-+}
+export const INTERNALS = {
+  countNonEmptyLines,
+  detectLanguage,
+  isTestFile,
+};
+EOF' in /Users/mcbee/Projects/agent-dashboard succeeded in 213ms:
 
 
 thinking
-**Running tests for update**
-codex
-Implementation and tests are in place. I’m running the test suite now to verify this item passes and that nothing else regressed.
+**Deciding export strategy for internals**
 exec
-/bin/zsh -lc 'npm test' in /Users/mcbee/Projects/agent-dashboard succeeded in 883ms:
+/bin/zsh -lc "cat > __tests__/code-metrics.test.ts <<'EOF'
+import { promises as fs } from \"node:fs\";
+import os from \"node:os\";
+import path from \"node:path\";
+
+import { afterEach, describe, expect, it } from \"vitest\";
+
+import { readCodeMetrics } from \"../lib/code-metrics\";
+
+const tempDirs: string[] = [];
+
+async function makeProjectDir(): Promise<string> {
+  const projectDir = await fs.mkdtemp(path.join(os.tmpdir(), \"code-metrics-test-\"));
+  tempDirs.push(projectDir);
+  return projectDir;
+}
+
+async function writeFile(relativePath: string, content: string, projectDir: string): Promise<void> {
+  const fullPath = path.join(projectDir, relativePath);
+  await fs.mkdir(path.dirname(fullPath), { recursive: true });
+  await fs.writeFile(fullPath, content, \"utf8\");
+}
+
+afterEach(async () => {
+  await Promise.all(
+    tempDirs.splice(0, tempDirs.length).map((dir) => fs.rm(dir, { recursive: true, force: true })),
+  );
+});
+
+describe(\"readCodeMetrics\", () => {
+  it(\"calculates LOC, language breakdown, file count, and test file count\", async () => {
+    const projectDir = await makeProjectDir();
+
+    await writeFile(
+      \"src/index.ts\",
+      [
+        \"import { sum } from './sum';\",
+        \"\",
+        \"export function run() {\",
+        \"  return sum(1, 2);\",
+        \"}\",
+        \"\",
+      ].join(\"\\n\"),
+      projectDir,
+    );
+
+    await writeFile(
+      \"src/sum.js\",
+      [\"export const sum = (a, b) => {\", \"  return a + b;\", \"};\", \"\"].join(\"\\n\"),
+      projectDir,
+    );
+
+    await writeFile(\"README.md\", [\"# Ralph Dashboard\", \"\", \"watch the magic happen\", \"\"].join(\"\\n\"), projectDir);
+
+    await writeFile(\"src/sum.test.ts\", [\"import { sum } from './sum';\", \"\", \"test('sum', () => {\", \"});\"].join(\"\\n\"), projectDir);
+
+    await writeFile(
+      \"__tests__/integration.spec.ts\",
+      [\"describe('integration', () => {\", \"  it('runs', () => {\", \"  });\", \"});\"].join(\"\\n\"),
+      projectDir,
+    );
+
+    const metrics = await readCodeMetrics(projectDir);
+
+    expect(metrics.error).toBeNull();
+    expect(metrics.fileCount).toBe(5);
+    expect(metrics.testFileCount).toBe(2);
+    expect(metrics.totalLoc).toBe(18);
+    expect(metrics.locByLanguage).toEqual({
+      TypeScript: 9,
+      JavaScript: 3,
+      Markdown: 2,
+      Other: 4,
+    });
+  });
+
+  it(\"ignores default excluded directories\", async () => {
+    const projectDir = await makeProjectDir();
+
+    await writeFile(\"src/app.ts\", \"export const app = true;\", projectDir);
+    await writeFile(\"node_modules/pkg/index.js\", \"line1\\nline2\", projectDir);
+    await writeFile(\".next/cache.js\", \"line1\\nline2\", projectDir);
+    await writeFile(\".git/HEAD\", \"ref: refs/heads/main\", projectDir);
+
+    const metrics = await readCodeMetrics(projectDir);
+
+    expect(metrics.error).toBeNull();
+    expect(metrics.fileCount).toBe(1);
+    expect(metrics.totalLoc).toBe(1);
+    expect(metrics.locByLanguage).toEqual({
+      TypeScript: 1,
+    });
+  });
+
+  it(\"returns default metrics with error when path does not exist\", async () => {
+    const missingPath = path.join(os.tmpdir(), \"missing-code-metrics-path\", String(Date.now()));
+
+    const metrics = await readCodeMetrics(missingPath);
+
+    expect(metrics.totalLoc).toBe(0);
+    expect(metrics.fileCount).toBe(0);
+    expect(metrics.testFileCount).toBe(0);
+    expect(metrics.locByLanguage).toEqual({});
+    expect(metrics.error).toBeTruthy();
+  });
+});
+EOF" in /Users/mcbee/Projects/agent-dashboard succeeded in 213ms:
+
+
+thinking
+**Revising test expectations and file counts**
+codex
+I’ve added the module and tests; next I’m running the test suite to validate behavior and then I’ll fix any expectation mismatches immediately.
+exec
+/bin/zsh -lc 'npm test -- --runInBand' in /Users/mcbee/Projects/agent-dashboard exited 1 in 421ms:
+
+> ralph-dashboard@0.1.0 test
+> vitest run --runInBand
+
+file:///Users/mcbee/Projects/agent-dashboard/node_modules/vitest/dist/chunks/cac.DVeoLl0M.js:404
+          throw new CACError(`Unknown option \`${name.length > 1 ? `--${name}` : `-${name}`}\``);
+                ^
+
+CACError: Unknown option `--runInBand`
+    at Command.checkUnknownOptions (file:///Users/mcbee/Projects/agent-dashboard/node_modules/vitest/dist/chunks/cac.DVeoLl0M.js:404:17)
+    at CAC.runMatchedCommand (file:///Users/mcbee/Projects/agent-dashboard/node_modules/vitest/dist/chunks/cac.DVeoLl0M.js:604:13)
+    at CAC.parse (file:///Users/mcbee/Projects/agent-dashboard/node_modules/vitest/dist/chunks/cac.DVeoLl0M.js:545:12)
+    at file:///Users/mcbee/Projects/agent-dashboard/node_modules/vitest/dist/cli.js:28:13
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:655:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v25.5.0
+
+thinking
+**Running npm tests**
+exec
+/bin/zsh -lc 'npm test' in /Users/mcbee/Projects/agent-dashboard exited 1 in 893ms:
+
+> ralph-dashboard@0.1.0 test
+> vitest run
+
+
+ RUN  v4.0.18 /Users/mcbee/Projects/agent-dashboard
+
+ ✓ __tests__/git-state.test.ts (5 tests) 2ms
+ ✓ __tests__/ralph-state.test.ts (9 tests) 10ms
+ ❯ __tests__/code-metrics.test.ts (3 tests | 1 failed) 11ms
+     × calculates LOC, language breakdown, file count, and test file count 8ms
+     ✓ ignores default excluded directories 2ms
+     ✓ returns default metrics with error when path does not exist 0ms
+ ✓ __tests__/example.test.ts (1 test) 8ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  __tests__/code-metrics.test.ts > readCodeMetrics > calculates LOC, language breakdown, file count, and test file count
+AssertionError: expected 16 to be 18 // Object.is equality
+
+
+thinking
+**Assessing language stats and patch needs**
+codex
+One test failed due incorrect expected LOC totals in my assertion; I’m updating the expected values to the actual non-empty-line counting behavior and rerunning all tests.
+file update
+M /Users/mcbee/Projects/agent-dashboard/__tests__/code-metrics.test.ts
+@@ -66,8 +66,7 @@
+     expect(metrics.testFileCount).toBe(2);
+-    expect(metrics.totalLoc).toBe(18);
++    expect(metrics.totalLoc).toBe(16);
+     expect(metrics.locByLanguage).toEqual({
+-      TypeScript: 9,
++      TypeScript: 11,
+       JavaScript: 3,
+       Markdown: 2,
+-      Other: 4,
+     });
+apply_patch(auto_approved=true) exited 0 in 25ms:
+Success. Updated the following files:
+M __tests__/code-metrics.test.ts
+file update:
+diff --git a/__tests__/code-metrics.test.ts b/__tests__/code-metrics.test.ts
+index 230bf2fa503e82e7ebc486be8b505a8089701eae..f51e2f8d1a1ff73c5299857db15b4ed352565c16
+--- a/__tests__/code-metrics.test.ts
++++ b/__tests__/code-metrics.test.ts
+@@ -64,12 +64,11 @@
+     expect(metrics.error).toBeNull();
+     expect(metrics.fileCount).toBe(5);
+     expect(metrics.testFileCount).toBe(2);
+-    expect(metrics.totalLoc).toBe(18);
++    expect(metrics.totalLoc).toBe(16);
+     expect(metrics.locByLanguage).toEqual({
+-      TypeScript: 9,
++      TypeScript: 11,
+       JavaScript: 3,
+       Markdown: 2,
+-      Other: 4,
+     });
+   });
+ 
+
+file update:
+diff --git a/__tests__/code-metrics.test.ts b/__tests__/code-metrics.test.ts
+index 230bf2fa503e82e7ebc486be8b505a8089701eae..f51e2f8d1a1ff73c5299857db15b4ed352565c16
+--- a/__tests__/code-metrics.test.ts
++++ b/__tests__/code-metrics.test.ts
+@@ -64,12 +64,11 @@
+     expect(metrics.error).toBeNull();
+     expect(metrics.fileCount).toBe(5);
+     expect(metrics.testFileCount).toBe(2);
+-    expect(metrics.totalLoc).toBe(18);
++    expect(metrics.totalLoc).toBe(16);
+     expect(metrics.locByLanguage).toEqual({
+-      TypeScript: 9,
++      TypeScript: 11,
+       JavaScript: 3,
+       Markdown: 2,
+-      Other: 4,
+     });
+   });
+ 
+
+exec
+/bin/zsh -lc 'npm test' in /Users/mcbee/Projects/agent-dashboard succeeded in 907ms:
 
 > ralph-dashboard@0.1.0 test
 > vitest run
@@ -1719,1104 +685,376 @@ exec
  RUN  v4.0.18 /Users/mcbee/Projects/agent-dashboard
 
  ✓ __tests__/git-state.test.ts (5 tests) 3ms
- ✓ __tests__/ralph-state.test.ts (9 tests) 9ms
- ✓ __tests__/example.test.ts (1 test) 7ms
+ ✓ __tests__/code-metrics.test.ts (3 tests) 9ms
+ ✓ __tests__/ralph-state.test.ts (9 tests) 11ms
+ ✓ __tests__/example.test.ts (1 test) 8ms
 
- Test Files  3 passed (3)
-      Tests  15 passed (15)
-   Start at  14:38:57
-   Duration  407ms (transform 69ms, setup 99ms, import 80ms, tests 18ms, environment 599ms)
+ Test Files  4 passed (4)
+      Tests  18 passed (18)
+   Start at  14:40:26
+   Duration  428ms (transform 97ms, setup 162ms, import 106ms, tests 30ms, environment 830ms)
 
 file update:
-diff --git a/__tests__/git-state.test.ts b/__tests__/git-state.test.ts
-new file mode 100644
-index 0000000000000000000000000000000000000000..9310ae4eab113c57ea2e6808a10aa302ed11b715
---- /dev/null
-+++ b/__tests__/git-state.test.ts
-@@ -0,0 +1,130 @@
-+import { describe, expect, it } from "vitest";
-+
-+import { parseDiffShortStat, readGitState } from "../lib/git-state";
-+
-+function createMockRunner(outputs: Record<string, string>, failures: Set<string> = new Set()) {
-+  return async (args: string[]): Promise<string> => {
-+    const key = args.join(" ");
-+
-+    if (failures.has(key)) {
-+      throw new Error(`command failed: ${key}`);
-+    }
-+
-+    if (!(key in outputs)) {
-+      throw new Error(`missing mock output: ${key}`);
-+    }
-+
-+    return outputs[key];
-+  };
-+}
-+
-+describe("parseDiffShortStat", () => {
-+  it("parses full shortstat output", () => {
-+    const parsed = parseDiffShortStat(" 4 files changed, 20 insertions(+), 3 deletions(-)");
-+
-+    expect(parsed).toEqual({
-+      filesChanged: 4,
-+      insertions: 20,
-+      deletions: 3,
-+    });
-+  });
-+
-+  it("handles shortstat lines with missing insertion/deletion values", () => {
-+    expect(parseDiffShortStat(" 1 file changed, 6 insertions(+)")).toEqual({
-+      filesChanged: 1,
-+      insertions: 6,
-+      deletions: 0,
-+    });
-+
-+    expect(parseDiffShortStat(" 2 files changed, 8 deletions(-)")).toEqual({
-+      filesChanged: 2,
-+      insertions: 0,
-+      deletions: 8,
-+    });
-+  });
-+});
-+
-+describe("readGitState", () => {
-+  it("collects branch, commit stats, diff stats, and uncommitted summary", async () => {
-+    const runGitCommand = createMockRunner({
-+      "rev-parse --abbrev-ref HEAD": "feature/dashboard",
-+      "rev-list --count HEAD": "42",
-+      "log --pretty=format:%s -n 3": "feat: add panel\nfix: tune parser\nchore: update tests",
-+      "rev-parse --verify --quiet main": "abc123",
-+      "diff --shortstat main...HEAD": " 5 files changed, 30 insertions(+), 10 deletions(-)",
-+      "diff --shortstat": " 2 files changed, 5 insertions(+), 1 deletion(-)",
-+      "diff --shortstat --cached": " 1 file changed, 3 insertions(+), 2 deletions(-)",
-+      "ls-files --others --exclude-standard": "new-file.ts\nnotes.md\n",
-+    });
-+
-+    const state = await readGitState("/tmp/project", {
-+      recentCommitLimit: 3,
-+      runGitCommand,
-+    });
-+
-+    expect(state.error).toBeNull();
-+    expect(state.branch).toBe("feature/dashboard");
-+    expect(state.commitCount).toBe(42);
-+    expect(state.recentCommits).toEqual(["feat: add panel", "fix: tune parser", "chore: update tests"]);
-+    expect(state.baseBranch).toBe("main");
-+    expect(state.diffFromBase).toEqual({
-+      filesChanged: 5,
-+      insertions: 30,
-+      deletions: 10,
-+    });
-+    expect(state.uncommitted).toEqual({
-+      staged: { filesChanged: 1, insertions: 3, deletions: 2 },
-+      unstaged: { filesChanged: 2, insertions: 5, deletions: 1 },
-+      untrackedFiles: 2,
-+      total: { filesChanged: 5, insertions: 8, deletions: 3 },
-+    });
-+  });
-+
-+  it("falls back to master when main is not available", async () => {
-+    const failures = new Set<string>(["rev-parse --verify --quiet main"]);
-+    const runGitCommand = createMockRunner(
-+      {
-+        "rev-parse --abbrev-ref HEAD": "feature/master-base",
-+        "rev-list --count HEAD": "3",
-+        "log --pretty=format:%s -n 5": "a\nb\nc",
-+        "rev-parse --verify --quiet master": "def456",
-+        "diff --shortstat master...HEAD": " 1 file changed, 2 insertions(+)",
-+        "diff --shortstat": "",
-+        "diff --shortstat --cached": "",
-+        "ls-files --others --exclude-standard": "",
-+      },
-+      failures,
-+    );
-+
-+    const state = await readGitState("/tmp/project", { runGitCommand });
-+
-+    expect(state.error).toBeNull();
-+    expect(state.baseBranch).toBe("master");
-+    expect(state.diffFromBase).toEqual({
-+      filesChanged: 1,
-+      insertions: 2,
-+      deletions: 0,
-+    });
-+  });
-+
-+  it("returns default state with error when git commands fail", async () => {
-+    const runGitCommand = createMockRunner({}, new Set<string>(["rev-parse --abbrev-ref HEAD"]));
-+
-+    const state = await readGitState("/tmp/project", { runGitCommand });
-+
-+    expect(state.branch).toBeNull();
-+    expect(state.commitCount).toBe(0);
-+    expect(state.recentCommits).toEqual([]);
-+    expect(state.diffFromBase).toEqual({
-+      filesChanged: 0,
-+      insertions: 0,
-+      deletions: 0,
-+    });
-+    expect(state.uncommitted.total).toEqual({
-+      filesChanged: 0,
-+      insertions: 0,
-+      deletions: 0,
-+    });
-+    expect(state.error).toContain("command failed");
-+  });
-+});
-diff --git a/lib/git-state.ts b/lib/git-state.ts
-new file mode 100644
-index 0000000000000000000000000000000000000000..80264da36c1387863d270d414b26b2e22a6376ab
---- /dev/null
-+++ b/lib/git-state.ts
-@@ -0,0 +1,195 @@
-+import { execFile } from "node:child_process";
-+import { promisify } from "node:util";
-+
-+const execFileAsync = promisify(execFile);
-+
-+export interface GitDiffStats {
-+  filesChanged: number;
-+  insertions: number;
-+  deletions: number;
-+}
-+
-+export interface UncommittedChangesSummary {
-+  staged: GitDiffStats;
-+  unstaged: GitDiffStats;
-+  untrackedFiles: number;
-+  total: GitDiffStats;
-+}
-+
-+export interface GitState {
-+  branch: string | null;
-+  commitCount: number;
-+  recentCommits: string[];
-+  baseBranch: "main" | "master" | null;
-+  diffFromBase: GitDiffStats;
-+  uncommitted: UncommittedChangesSummary;
-+  error: string | null;
-+}
-+
-+export interface ReadGitStateOptions {
-+  recentCommitLimit?: number;
-+  runGitCommand?: (args: string[]) => Promise<string>;
-+}
-+
-+const EMPTY_DIFF_STATS: GitDiffStats = {
-+  filesChanged: 0,
-+  insertions: 0,
-+  deletions: 0,
-+};
-+
-+function cloneDiffStats(stats: GitDiffStats): GitDiffStats {
-+  return {
-+    filesChanged: stats.filesChanged,
-+    insertions: stats.insertions,
-+    deletions: stats.deletions,
-+  };
-+}
-+
-+function defaultUncommittedSummary(): UncommittedChangesSummary {
-+  return {
-+    staged: cloneDiffStats(EMPTY_DIFF_STATS),
-+    unstaged: cloneDiffStats(EMPTY_DIFF_STATS),
-+    untrackedFiles: 0,
-+    total: cloneDiffStats(EMPTY_DIFF_STATS),
-+  };
-+}
-+
-+function defaultGitState(error: string | null = null): GitState {
-+  return {
-+    branch: null,
-+    commitCount: 0,
-+    recentCommits: [],
-+    baseBranch: null,
-+    diffFromBase: cloneDiffStats(EMPTY_DIFF_STATS),
-+    uncommitted: defaultUncommittedSummary(),
-+    error,
-+  };
-+}
-+
-+function toNumber(value: string | undefined): number {
-+  if (!value) {
-+    return 0;
-+  }
-+
-+  const parsed = Number.parseInt(value, 10);
-+  return Number.isFinite(parsed) ? parsed : 0;
-+}
-+
-+export function parseDiffShortStat(raw: string): GitDiffStats {
-+  if (!raw.trim()) {
-+    return cloneDiffStats(EMPTY_DIFF_STATS);
-+  }
-+
-+  const filesMatch = raw.match(/(\d+)\s+files?\s+changed/);
-+  const insertionsMatch = raw.match(/(\d+)\s+insertions?\(\+\)/);
-+  const deletionsMatch = raw.match(/(\d+)\s+deletions?\(-\)/);
-+
-+  return {
-+    filesChanged: toNumber(filesMatch?.[1]),
-+    insertions: toNumber(insertionsMatch?.[1]),
-+    deletions: toNumber(deletionsMatch?.[1]),
-+  };
-+}
-+
-+function parseCommitCount(raw: string): number {
-+  return toNumber(raw.trim());
-+}
-+
-+function parseCommitMessages(raw: string): string[] {
-+  if (!raw.trim()) {
-+    return [];
-+  }
-+
-+  return raw
-+    .split("\n")
-+    .map((message) => message.trim())
-+    .filter((message) => message.length > 0);
-+}
-+
-+function parseUntrackedCount(raw: string): number {
-+  if (!raw.trim()) {
-+    return 0;
-+  }
-+
-+  return raw
-+    .split("\n")
-+    .map((line) => line.trim())
-+    .filter((line) => line.length > 0).length;
-+}
-+
-+function addDiffStats(left: GitDiffStats, right: GitDiffStats): GitDiffStats {
-+  return {
-+    filesChanged: left.filesChanged + right.filesChanged,
-+    insertions: left.insertions + right.insertions,
-+    deletions: left.deletions + right.deletions,
-+  };
-+}
-+
-+function makeShellGitRunner(projectPath: string): (args: string[]) => Promise<string> {
-+  return async (args: string[]) => {
-+    const { stdout } = await execFileAsync("git", args, { cwd: projectPath });
-+    return stdout.trim();
-+  };
-+}
-+
-+async function resolveBaseBranch(runGitCommand: (args: string[]) => Promise<string>): Promise<"main" | "master" | null> {
-+  try {
-+    await runGitCommand(["rev-parse", "--verify", "--quiet", "main"]);
-+    return "main";
-+  } catch {
-+    // Try master next.
-+  }
-+
-+  try {
-+    await runGitCommand(["rev-parse", "--verify", "--quiet", "master"]);
-+    return "master";
-+  } catch {
-+    return null;
-+  }
-+}
-+
-+export async function readGitState(projectPath: string, options: ReadGitStateOptions = {}): Promise<GitState> {
-+  const commitLimit = Math.max(1, options.recentCommitLimit ?? 5);
-+  const runGitCommand = options.runGitCommand ?? makeShellGitRunner(projectPath);
-+
-+  try {
-+    const branchRaw = await runGitCommand(["rev-parse", "--abbrev-ref", "HEAD"]);
-+    const commitCountRaw = await runGitCommand(["rev-list", "--count", "HEAD"]);
-+    const commitMessagesRaw = await runGitCommand(["log", "--pretty=format:%s", "-n", String(commitLimit)]);
-+
-+    const baseBranch = await resolveBaseBranch(runGitCommand);
-+    const diffFromBaseRaw = baseBranch
-+      ? await runGitCommand(["diff", "--shortstat", `${baseBranch}...HEAD`])
-+      : "";
-+    const unstagedRaw = await runGitCommand(["diff", "--shortstat"]);
-+    const stagedRaw = await runGitCommand(["diff", "--shortstat", "--cached"]);
-+    const untrackedRaw = await runGitCommand(["ls-files", "--others", "--exclude-standard"]);
-+
-+    const unstaged = parseDiffShortStat(unstagedRaw);
-+    const staged = parseDiffShortStat(stagedRaw);
-+    const untrackedFiles = parseUntrackedCount(untrackedRaw);
-+    const stagedAndUnstaged = addDiffStats(staged, unstaged);
-+
-+    return {
-+      branch: branchRaw || null,
-+      commitCount: parseCommitCount(commitCountRaw),
-+      recentCommits: parseCommitMessages(commitMessagesRaw),
-+      baseBranch,
-+      diffFromBase: parseDiffShortStat(diffFromBaseRaw),
-+      uncommitted: {
-+        staged,
-+        unstaged,
-+        untrackedFiles,
-+        total: {
-+          filesChanged: stagedAndUnstaged.filesChanged + untrackedFiles,
-+          insertions: stagedAndUnstaged.insertions,
-+          deletions: stagedAndUnstaged.deletions,
-+        },
-+      },
-+      error: null,
-+    };
-+  } catch (error) {
-+    const message = error instanceof Error ? error.message : "Unknown git error";
-+    return defaultGitState(message);
-+  }
-+}
+diff --git a/__tests__/code-metrics.test.ts b/__tests__/code-metrics.test.ts
+index 230bf2fa503e82e7ebc486be8b505a8089701eae..f51e2f8d1a1ff73c5299857db15b4ed352565c16
+--- a/__tests__/code-metrics.test.ts
++++ b/__tests__/code-metrics.test.ts
+@@ -64,12 +64,11 @@
+     expect(metrics.error).toBeNull();
+     expect(metrics.fileCount).toBe(5);
+     expect(metrics.testFileCount).toBe(2);
+-    expect(metrics.totalLoc).toBe(18);
++    expect(metrics.totalLoc).toBe(16);
+     expect(metrics.locByLanguage).toEqual({
+-      TypeScript: 9,
++      TypeScript: 11,
+       JavaScript: 3,
+       Markdown: 2,
+-      Other: 4,
+     });
+   });
+ 
 
 
 thinking
-**Verifying parsing and diff relevance**
+**Verifying test pass and clean diff**
 codex
-All tests passed (including new `git-state` tests). I’ll do a quick diff check to confirm changes are scoped only to this item.
+All tests now pass. I’m doing a quick diff check to confirm changes are limited to this item (`lib/code-metrics.ts` and its unit tests) before I summarize.
 exec
-/bin/zsh -lc 'git status --short' in /Users/mcbee/Projects/agent-dashboard succeeded in 217ms:
+/bin/zsh -lc 'git status --short' in /Users/mcbee/Projects/agent-dashboard succeeded in 218ms:
  M .ralph/current.log
  M .ralph/state.json
  M prd-ralph-dashboard.json
-?? __tests__/git-state.test.ts
-?? lib/git-state.ts
+?? __tests__/code-metrics.test.ts
+?? lib/code-metrics.ts
 file update:
-diff --git a/__tests__/git-state.test.ts b/__tests__/git-state.test.ts
-new file mode 100644
-index 0000000000000000000000000000000000000000..9310ae4eab113c57ea2e6808a10aa302ed11b715
---- /dev/null
-+++ b/__tests__/git-state.test.ts
-@@ -0,0 +1,130 @@
-+import { describe, expect, it } from "vitest";
-+
-+import { parseDiffShortStat, readGitState } from "../lib/git-state";
-+
-+function createMockRunner(outputs: Record<string, string>, failures: Set<string> = new Set()) {
-+  return async (args: string[]): Promise<string> => {
-+    const key = args.join(" ");
-+
-+    if (failures.has(key)) {
-+      throw new Error(`command failed: ${key}`);
-+    }
-+
-+    if (!(key in outputs)) {
-+      throw new Error(`missing mock output: ${key}`);
-+    }
-+
-+    return outputs[key];
-+  };
-+}
-+
-+describe("parseDiffShortStat", () => {
-+  it("parses full shortstat output", () => {
-+    const parsed = parseDiffShortStat(" 4 files changed, 20 insertions(+), 3 deletions(-)");
-+
-+    expect(parsed).toEqual({
-+      filesChanged: 4,
-+      insertions: 20,
-+      deletions: 3,
-+    });
-+  });
-+
-+  it("handles shortstat lines with missing insertion/deletion values", () => {
-+    expect(parseDiffShortStat(" 1 file changed, 6 insertions(+)")).toEqual({
-+      filesChanged: 1,
-+      insertions: 6,
-+      deletions: 0,
-+    });
-+
-+    expect(parseDiffShortStat(" 2 files changed, 8 deletions(-)")).toEqual({
-+      filesChanged: 2,
-+      insertions: 0,
-+      deletions: 8,
-+    });
-+  });
-+});
-+
-+describe("readGitState", () => {
-+  it("collects branch, commit stats, diff stats, and uncommitted summary", async () => {
-+    const runGitCommand = createMockRunner({
-+      "rev-parse --abbrev-ref HEAD": "feature/dashboard",
-+      "rev-list --count HEAD": "42",
-+      "log --pretty=format:%s -n 3": "feat: add panel\nfix: tune parser\nchore: update tests",
-+      "rev-parse --verify --quiet main": "abc123",
-+      "diff --shortstat main...HEAD": " 5 files changed, 30 insertions(+), 10 deletions(-)",
-+      "diff --shortstat": " 2 files changed, 5 insertions(+), 1 deletion(-)",
-+      "diff --shortstat --cached": " 1 file changed, 3 insertions(+), 2 deletions(-)",
-+      "ls-files --others --exclude-standard": "new-file.ts\nnotes.md\n",
-+    });
-+
-+    const state = await readGitState("/tmp/project", {
-+      recentCommitLimit: 3,
-+      runGitCommand,
-+    });
-+
-+    expect(state.error).toBeNull();
-+    expect(state.branch).toBe("feature/dashboard");
-+    expect(state.commitCount).toBe(42);
-+    expect(state.recentCommits).toEqual(["feat: add panel", "fix: tune parser", "chore: update tests"]);
-+    expect(state.baseBranch).toBe("main");
-+    expect(state.diffFromBase).toEqual({
-+      filesChanged: 5,
-+      insertions: 30,
-+      deletions: 10,
-+    });
-+    expect(state.uncommitted).toEqual({
-+      staged: { filesChanged: 1, insertions: 3, deletions: 2 },
-+      unstaged: { filesChanged: 2, insertions: 5, deletions: 1 },
-+      untrackedFiles: 2,
-+      total: { filesChanged: 5, insertions: 8, deletions: 3 },
-+    });
-+  });
-+
-+  it("falls back to master when main is not available", async () => {
-+    const failures = new Set<string>(["rev-parse --verify --quiet main"]);
-+    const runGitCommand = createMockRunner(
-+      {
-+        "rev-parse --abbrev-ref HEAD": "feature/master-base",
-+        "rev-list --count HEAD": "3",
-+        "log --pretty=format:%s -n 5": "a\nb\nc",
-+        "rev-parse --verify --quiet master": "def456",
-+        "diff --shortstat master...HEAD": " 1 file changed, 2 insertions(+)",
-+        "diff --shortstat": "",
-+        "diff --shortstat --cached": "",
-+        "ls-files --others --exclude-standard": "",
-+      },
-+      failures,
-+    );
-+
-+    const state = await readGitState("/tmp/project", { runGitCommand });
-+
-+    expect(state.error).toBeNull();
-+    expect(state.baseBranch).toBe("master");
-+    expect(state.diffFromBase).toEqual({
-+      filesChanged: 1,
-+      insertions: 2,
-+      deletions: 0,
-+    });
-+  });
-+
-+  it("returns default state with error when git commands fail", async () => {
-+    const runGitCommand = createMockRunner({}, new Set<string>(["rev-parse --abbrev-ref HEAD"]));
-+
-+    const state = await readGitState("/tmp/project", { runGitCommand });
-+
-+    expect(state.branch).toBeNull();
-+    expect(state.commitCount).toBe(0);
-+    expect(state.recentCommits).toEqual([]);
-+    expect(state.diffFromBase).toEqual({
-+      filesChanged: 0,
-+      insertions: 0,
-+      deletions: 0,
-+    });
-+    expect(state.uncommitted.total).toEqual({
-+      filesChanged: 0,
-+      insertions: 0,
-+      deletions: 0,
-+    });
-+    expect(state.error).toContain("command failed");
-+  });
-+});
-diff --git a/lib/git-state.ts b/lib/git-state.ts
-new file mode 100644
-index 0000000000000000000000000000000000000000..80264da36c1387863d270d414b26b2e22a6376ab
---- /dev/null
-+++ b/lib/git-state.ts
-@@ -0,0 +1,195 @@
-+import { execFile } from "node:child_process";
-+import { promisify } from "node:util";
-+
-+const execFileAsync = promisify(execFile);
-+
-+export interface GitDiffStats {
-+  filesChanged: number;
-+  insertions: number;
-+  deletions: number;
-+}
-+
-+export interface UncommittedChangesSummary {
-+  staged: GitDiffStats;
-+  unstaged: GitDiffStats;
-+  untrackedFiles: number;
-+  total: GitDiffStats;
-+}
-+
-+export interface GitState {
-+  branch: string | null;
-+  commitCount: number;
-+  recentCommits: string[];
-+  baseBranch: "main" | "master" | null;
-+  diffFromBase: GitDiffStats;
-+  uncommitted: UncommittedChangesSummary;
-+  error: string | null;
-+}
-+
-+export interface ReadGitStateOptions {
-+  recentCommitLimit?: number;
-+  runGitCommand?: (args: string[]) => Promise<string>;
-+}
-+
-+const EMPTY_DIFF_STATS: GitDiffStats = {
-+  filesChanged: 0,
-+  insertions: 0,
-+  deletions: 0,
-+};
-+
-+function cloneDiffStats(stats: GitDiffStats): GitDiffStats {
-+  return {
-+    filesChanged: stats.filesChanged,
-+    insertions: stats.insertions,
-+    deletions: stats.deletions,
-+  };
-+}
-+
-+function defaultUncommittedSummary(): UncommittedChangesSummary {
-+  return {
-+    staged: cloneDiffStats(EMPTY_DIFF_STATS),
-+    unstaged: cloneDiffStats(EMPTY_DIFF_STATS),
-+    untrackedFiles: 0,
-+    total: cloneDiffStats(EMPTY_DIFF_STATS),
-+  };
-+}
-+
-+function defaultGitState(error: string | null = null): GitState {
-+  return {
-+    branch: null,
-+    commitCount: 0,
-+    recentCommits: [],
-+    baseBranch: null,
-+    diffFromBase: cloneDiffStats(EMPTY_DIFF_STATS),
-+    uncommitted: defaultUncommittedSummary(),
-+    error,
-+  };
-+}
-+
-+function toNumber(value: string | undefined): number {
-+  if (!value) {
-+    return 0;
-+  }
-+
-+  const parsed = Number.parseInt(value, 10);
-+  return Number.isFinite(parsed) ? parsed : 0;
-+}
-+
-+export function parseDiffShortStat(raw: string): GitDiffStats {
-+  if (!raw.trim()) {
-+    return cloneDiffStats(EMPTY_DIFF_STATS);
-+  }
-+
-+  const filesMatch = raw.match(/(\d+)\s+files?\s+changed/);
-+  const insertionsMatch = raw.match(/(\d+)\s+insertions?\(\+\)/);
-+  const deletionsMatch = raw.match(/(\d+)\s+deletions?\(-\)/);
-+
-+  return {
-+    filesChanged: toNumber(filesMatch?.[1]),
-+    insertions: toNumber(insertionsMatch?.[1]),
-+    deletions: toNumber(deletionsMatch?.[1]),
-+  };
-+}
-+
-+function parseCommitCount(raw: string): number {
-+  return toNumber(raw.trim());
-+}
-+
-+function parseCommitMessages(raw: string): string[] {
-+  if (!raw.trim()) {
-+    return [];
-+  }
-+
-+  return raw
-+    .split("\n")
-+    .map((message) => message.trim())
-+    .filter((message) => message.length > 0);
-+}
-+
-+function parseUntrackedCount(raw: string): number {
-+  if (!raw.trim()) {
-+    return 0;
-+  }
-+
-+  return raw
-+    .split("\n")
-+    .map((line) => line.trim())
-+    .filter((line) => line.length > 0).length;
-+}
-+
-+function addDiffStats(left: GitDiffStats, right: GitDiffStats): GitDiffStats {
-+  return {
-+    filesChanged: left.filesChanged + right.filesChanged,
-+    insertions: left.insertions + right.insertions,
-+    deletions: left.deletions + right.deletions,
-+  };
-+}
-+
-+function makeShellGitRunner(projectPath: string): (args: string[]) => Promise<string> {
-+  return async (args: string[]) => {
-+    const { stdout } = await execFileAsync("git", args, { cwd: projectPath });
-+    return stdout.trim();
-+  };
-+}
-+
-+async function resolveBaseBranch(runGitCommand: (args: string[]) => Promise<string>): Promise<"main" | "master" | null> {
-+  try {
-+    await runGitCommand(["rev-parse", "--verify", "--quiet", "main"]);
-+    return "main";
-+  } catch {
-+    // Try master next.
-+  }
-+
-+  try {
-+    await runGitCommand(["rev-parse", "--verify", "--quiet", "master"]);
-+    return "master";
-+  } catch {
-+    return null;
-+  }
-+}
-+
-+export async function readGitState(projectPath: string, options: ReadGitStateOptions = {}): Promise<GitState> {
-+  const commitLimit = Math.max(1, options.recentCommitLimit ?? 5);
-+  const runGitCommand = options.runGitCommand ?? makeShellGitRunner(projectPath);
-+
-+  try {
-+    const branchRaw = await runGitCommand(["rev-parse", "--abbrev-ref", "HEAD"]);
-+    const commitCountRaw = await runGitCommand(["rev-list", "--count", "HEAD"]);
-+    const commitMessagesRaw = await runGitCommand(["log", "--pretty=format:%s", "-n", String(commitLimit)]);
-+
-+    const baseBranch = await resolveBaseBranch(runGitCommand);
-+    const diffFromBaseRaw = baseBranch
-+      ? await runGitCommand(["diff", "--shortstat", `${baseBranch}...HEAD`])
-+      : "";
-+    const unstagedRaw = await runGitCommand(["diff", "--shortstat"]);
-+    const stagedRaw = await runGitCommand(["diff", "--shortstat", "--cached"]);
-+    const untrackedRaw = await runGitCommand(["ls-files", "--others", "--exclude-standard"]);
-+
-+    const unstaged = parseDiffShortStat(unstagedRaw);
-+    const staged = parseDiffShortStat(stagedRaw);
-+    const untrackedFiles = parseUntrackedCount(untrackedRaw);
-+    const stagedAndUnstaged = addDiffStats(staged, unstaged);
-+
-+    return {
-+      branch: branchRaw || null,
-+      commitCount: parseCommitCount(commitCountRaw),
-+      recentCommits: parseCommitMessages(commitMessagesRaw),
-+      baseBranch,
-+      diffFromBase: parseDiffShortStat(diffFromBaseRaw),
-+      uncommitted: {
-+        staged,
-+        unstaged,
-+        untrackedFiles,
-+        total: {
-+          filesChanged: stagedAndUnstaged.filesChanged + untrackedFiles,
-+          insertions: stagedAndUnstaged.insertions,
-+          deletions: stagedAndUnstaged.deletions,
-+        },
-+      },
-+      error: null,
-+    };
-+  } catch (error) {
-+    const message = error instanceof Error ? error.message : "Unknown git error";
-+    return defaultGitState(message);
-+  }
-+}
+diff --git a/__tests__/code-metrics.test.ts b/__tests__/code-metrics.test.ts
+index 230bf2fa503e82e7ebc486be8b505a8089701eae..f51e2f8d1a1ff73c5299857db15b4ed352565c16
+--- a/__tests__/code-metrics.test.ts
++++ b/__tests__/code-metrics.test.ts
+@@ -64,12 +64,11 @@
+     expect(metrics.error).toBeNull();
+     expect(metrics.fileCount).toBe(5);
+     expect(metrics.testFileCount).toBe(2);
+-    expect(metrics.totalLoc).toBe(18);
++    expect(metrics.totalLoc).toBe(16);
+     expect(metrics.locByLanguage).toEqual({
+-      TypeScript: 9,
++      TypeScript: 11,
+       JavaScript: 3,
+       Markdown: 2,
+-      Other: 4,
+     });
+   });
+ 
 
 
 thinking
-**Clarifying modified files and verification**
+**Removing unnecessary internal exports**
 codex
-Implemented item 4/17 with focused changes:
+I found unrelated tracked changes already present (`.ralph/*` and `prd-ralph-dashboard.json`) and left them untouched; I’m making one small cleanup to keep the new module API minimal, then I’ll re-run tests.
+file update
+M /Users/mcbee/Projects/agent-dashboard/lib/code-metrics.ts
+@@ -131,7 +131 @@
+ }
+-
+-export const INTERNALS = {
+-  countNonEmptyLines,
+-  detectLanguage,
+-  isTestFile,
+-};
+apply_patch(auto_approved=true) exited 0 in 36ms:
+Success. Updated the following files:
+M lib/code-metrics.ts
+file update:
+diff --git a/__tests__/code-metrics.test.ts b/__tests__/code-metrics.test.ts
+index 230bf2fa503e82e7ebc486be8b505a8089701eae..f51e2f8d1a1ff73c5299857db15b4ed352565c16
+--- a/__tests__/code-metrics.test.ts
++++ b/__tests__/code-metrics.test.ts
+@@ -64,12 +64,11 @@
+     expect(metrics.error).toBeNull();
+     expect(metrics.fileCount).toBe(5);
+     expect(metrics.testFileCount).toBe(2);
+-    expect(metrics.totalLoc).toBe(18);
++    expect(metrics.totalLoc).toBe(16);
+     expect(metrics.locByLanguage).toEqual({
+-      TypeScript: 9,
++      TypeScript: 11,
+       JavaScript: 3,
+       Markdown: 2,
+-      Other: 4,
+     });
+   });
+ 
+diff --git a/lib/code-metrics.ts b/lib/code-metrics.ts
+index 2f41db1631f068dadc2004772438f0257ed21504..0666e5322b93e02d40aad38162e75d2990eeca7b
+--- a/lib/code-metrics.ts
++++ b/lib/code-metrics.ts
+@@ -129,9 +129,3 @@
+     return defaultMetrics(message);
+   }
+ }
+-
+-export const INTERNALS = {
+-  countNonEmptyLines,
+-  detectLanguage,
+-  isTestFile,
+-};
 
-- Added `lib/git-state.ts` with:
-  - `readGitState(projectPath, options?)`
-  - Git command execution via shell (`git ...`)
-  - Data extraction for:
-    - current branch
-    - commit count on `HEAD`
-    - last N commit messages
-    - diff stats vs `main` (fallback to `master`)
-    - uncommitted summary (staged, unstaged, untracked, total)
-  - `parseDiffShortStat()` for shortstat parsing
+file update:
+diff --git a/__tests__/code-metrics.test.ts b/__tests__/code-metrics.test.ts
+index 230bf2fa503e82e7ebc486be8b505a8089701eae..f51e2f8d1a1ff73c5299857db15b4ed352565c16
+--- a/__tests__/code-metrics.test.ts
++++ b/__tests__/code-metrics.test.ts
+@@ -64,12 +64,11 @@
+     expect(metrics.error).toBeNull();
+     expect(metrics.fileCount).toBe(5);
+     expect(metrics.testFileCount).toBe(2);
+-    expect(metrics.totalLoc).toBe(18);
++    expect(metrics.totalLoc).toBe(16);
+     expect(metrics.locByLanguage).toEqual({
+-      TypeScript: 9,
++      TypeScript: 11,
+       JavaScript: 3,
+       Markdown: 2,
+-      Other: 4,
+     });
+   });
+ 
+diff --git a/lib/code-metrics.ts b/lib/code-metrics.ts
+index 2f41db1631f068dadc2004772438f0257ed21504..0666e5322b93e02d40aad38162e75d2990eeca7b
+--- a/lib/code-metrics.ts
++++ b/lib/code-metrics.ts
+@@ -129,9 +129,3 @@
+     return defaultMetrics(message);
+   }
+ }
+-
+-export const INTERNALS = {
+-  countNonEmptyLines,
+-  detectLanguage,
+-  isTestFile,
+-};
 
-- Added unit tests in `__tests__/git-state.test.ts` covering:
-  - shortstat parsing
-  - full state aggregation
-  - `main` -> `master` fallback logic
-  - graceful default/error behavior on command failure
+exec
+/bin/zsh -lc 'npm test' in /Users/mcbee/Projects/agent-dashboard succeeded in 901ms:
 
-Verification results:
+> ralph-dashboard@0.1.0 test
+> vitest run
+
+
+ RUN  v4.0.18 /Users/mcbee/Projects/agent-dashboard
+
+ ✓ __tests__/git-state.test.ts (5 tests) 2ms
+ ✓ __tests__/code-metrics.test.ts (3 tests) 8ms
+ ✓ __tests__/ralph-state.test.ts (9 tests) 11ms
+ ✓ __tests__/example.test.ts (1 test) 8ms
+
+ Test Files  4 passed (4)
+      Tests  18 passed (18)
+   Start at  14:40:43
+   Duration  427ms (transform 95ms, setup 149ms, import 108ms, tests 29ms, environment 830ms)
+
+file update:
+diff --git a/__tests__/code-metrics.test.ts b/__tests__/code-metrics.test.ts
+index 230bf2fa503e82e7ebc486be8b505a8089701eae..f51e2f8d1a1ff73c5299857db15b4ed352565c16
+--- a/__tests__/code-metrics.test.ts
++++ b/__tests__/code-metrics.test.ts
+@@ -64,12 +64,11 @@
+     expect(metrics.error).toBeNull();
+     expect(metrics.fileCount).toBe(5);
+     expect(metrics.testFileCount).toBe(2);
+-    expect(metrics.totalLoc).toBe(18);
++    expect(metrics.totalLoc).toBe(16);
+     expect(metrics.locByLanguage).toEqual({
+-      TypeScript: 9,
++      TypeScript: 11,
+       JavaScript: 3,
+       Markdown: 2,
+-      Other: 4,
+     });
+   });
+ 
+diff --git a/lib/code-metrics.ts b/lib/code-metrics.ts
+index 2f41db1631f068dadc2004772438f0257ed21504..0666e5322b93e02d40aad38162e75d2990eeca7b
+--- a/lib/code-metrics.ts
++++ b/lib/code-metrics.ts
+@@ -129,9 +129,3 @@
+     return defaultMetrics(message);
+   }
+ }
+-
+-export const INTERNALS = {
+-  countNonEmptyLines,
+-  detectLanguage,
+-  isTestFile,
+-};
+
+exec
+/bin/zsh -lc "nl -ba lib/code-metrics.ts | sed -n '1,260p'" in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc "nl -ba __tests__/code-metrics.test.ts | sed -n '1,260p'" in /Users/mcbee/Projects/agent-dashboard succeeded in 242ms:
+     1	import { promises as fs } from "node:fs";
+     2	import path from "node:path";
+     3	
+     4	export interface CodeMetrics {
+     5	  totalLoc: number;
+     6	  locByLanguage: Record<string, number>;
+     7	  fileCount: number;
+     8	  testFileCount: number;
+     9	  error: string | null;
+    10	}
+    11	
+    12	export interface ReadCodeMetricsOptions {
+    13	  excludeDirectories?: string[];
+    14	}
+    15	
+    16	const DEFAULT_EXCLUDED_DIRECTORIES = new Set([".git", "node_modules", ".next", ".ralph"]);
+    17	
+    18	const EXTENSION_LANGUAGE_MAP: Record<string, string> = {
+    19	  ".ts": "TypeScript",
+    20	  ".tsx": "TypeScript",
+ succeeded in 238ms:
+     1	import { promises as fs } from "node:fs";
+     2	import os from "node:os";
+     3	import path from "node:path";
+     4	
+     5	import { afterEach, describe, expect, it } from "vitest";
+     6	
+     7	import { readCodeMetrics } from "../lib/code-metrics";
+     8	
+     9	const tempDirs: string[] = [];
+    10	
+    11	async function makeProjectDir(): Promise<string> {
+    12	  const projectDir = await fs.mkdtemp(path.join(os.tmpdir(), "code-metrics-test-"));
+    13	  tempDirs.push(projectDir);
+    14	  return projectDir;
+    15	}
+    16	
+    17	async function writeFile(relativePath: string, content: string, projectDir: string): Promise<void> {
+    18	  const fullPath = path.join(projectDir, relativePath);
+    19	  await fs.mkdir(path.dirname(fullPath), { recursive: true });
+    20	  await fs.writeFile(fullPath, content, "utf8");
+file update:
+diff --git a/__tests__/code-metrics.test.ts b/__tests__/code-metrics.test.ts
+index 230bf2fa503e82e7ebc486be8b505a8089701eae..f51e2f8d1a1ff73c5299857db15b4ed352565c16
+--- a/__tests__/code-metrics.test.ts
++++ b/__tests__/code-metrics.test.ts
+@@ -64,12 +64,11 @@
+     expect(metrics.error).toBeNull();
+     expect(metrics.fileCount).toBe(5);
+     expect(metrics.testFileCount).toBe(2);
+-    expect(metrics.totalLoc).toBe(18);
++    expect(metrics.totalLoc).toBe(16);
+     expect(metrics.locByLanguage).toEqual({
+-      TypeScript: 9,
++      TypeScript: 11,
+       JavaScript: 3,
+       Markdown: 2,
+-      Other: 4,
+     });
+   });
+ 
+diff --git a/lib/code-metrics.ts b/lib/code-metrics.ts
+index 2f41db1631f068dadc2004772438f0257ed21504..0666e5322b93e02d40aad38162e75d2990eeca7b
+--- a/lib/code-metrics.ts
++++ b/lib/code-metrics.ts
+@@ -129,9 +129,3 @@
+     return defaultMetrics(message);
+   }
+ }
+-
+-export const INTERNALS = {
+-  countNonEmptyLines,
+-  detectLanguage,
+-  isTestFile,
+-};
+
+
+thinking
+**Summarizing test results**
+codex
+Implemented item 5/17 with focused changes:
+
+- Added `readCodeMetrics` in `lib/code-metrics.ts:97`:
+  - Recursively counts files (no external deps)
+  - Computes `totalLoc`, `locByLanguage`, `fileCount`, `testFileCount`
+  - Uses non-empty line counting for LOC (`lib/code-metrics.ts:44`)
+  - Ignores default heavy dirs: `.git`, `node_modules`, `.next`, `.ralph` (`lib/code-metrics.ts:16`)
+  - Returns safe default metrics + `error` on failure (`lib/code-metrics.ts:34`, `lib/code-metrics.ts:127`)
+
+- Added unit tests in `__tests__/code-metrics.test.ts:29`:
+  - Validates aggregate metrics and language breakdown
+  - Validates excluded-directory behavior
+  - Validates missing-path error handling
+
+Verification:
 
 - Ran `npm test` successfully.
-- All tests pass: `15 passed` across `3` test files.
-- Verification criterion satisfied: git state parsing is unit-tested and passing.
+- Result: 4 test files passed, 18 tests passed.
+- Verification criterion met: metrics calculation tests pass.
 
-Changed files:
+Scope note:
 
-- `lib/git-state.ts`
-- `__tests__/git-state.test.ts`
+- Code changes for this item are only `lib/code-metrics.ts` and `__tests__/code-metrics.test.ts`.
+- Existing unrelated modified files (`.ralph/current.log`, `.ralph/state.json`, `prd-ralph-dashboard.json`) were left untouched.
 file update:
-diff --git a/__tests__/git-state.test.ts b/__tests__/git-state.test.ts
-new file mode 100644
-index 0000000000000000000000000000000000000000..9310ae4eab113c57ea2e6808a10aa302ed11b715
---- /dev/null
-+++ b/__tests__/git-state.test.ts
-@@ -0,0 +1,130 @@
-+import { describe, expect, it } from "vitest";
-+
-+import { parseDiffShortStat, readGitState } from "../lib/git-state";
-+
-+function createMockRunner(outputs: Record<string, string>, failures: Set<string> = new Set()) {
-+  return async (args: string[]): Promise<string> => {
-+    const key = args.join(" ");
-+
-+    if (failures.has(key)) {
-+      throw new Error(`command failed: ${key}`);
-+    }
-+
-+    if (!(key in outputs)) {
-+      throw new Error(`missing mock output: ${key}`);
-+    }
-+
-+    return outputs[key];
-+  };
-+}
-+
-+describe("parseDiffShortStat", () => {
-+  it("parses full shortstat output", () => {
-+    const parsed = parseDiffShortStat(" 4 files changed, 20 insertions(+), 3 deletions(-)");
-+
-+    expect(parsed).toEqual({
-+      filesChanged: 4,
-+      insertions: 20,
-+      deletions: 3,
-+    });
-+  });
-+
-+  it("handles shortstat lines with missing insertion/deletion values", () => {
-+    expect(parseDiffShortStat(" 1 file changed, 6 insertions(+)")).toEqual({
-+      filesChanged: 1,
-+      insertions: 6,
-+      deletions: 0,
-+    });
-+
-+    expect(parseDiffShortStat(" 2 files changed, 8 deletions(-)")).toEqual({
-+      filesChanged: 2,
-+      insertions: 0,
-+      deletions: 8,
-+    });
-+  });
-+});
-+
-+describe("readGitState", () => {
-+  it("collects branch, commit stats, diff stats, and uncommitted summary", async () => {
-+    const runGitCommand = createMockRunner({
-+      "rev-parse --abbrev-ref HEAD": "feature/dashboard",
-+      "rev-list --count HEAD": "42",
-+      "log --pretty=format:%s -n 3": "feat: add panel\nfix: tune parser\nchore: update tests",
-+      "rev-parse --verify --quiet main": "abc123",
-+      "diff --shortstat main...HEAD": " 5 files changed, 30 insertions(+), 10 deletions(-)",
-+      "diff --shortstat": " 2 files changed, 5 insertions(+), 1 deletion(-)",
-+      "diff --shortstat --cached": " 1 file changed, 3 insertions(+), 2 deletions(-)",
-+      "ls-files --others --exclude-standard": "new-file.ts\nnotes.md\n",
-+    });
-+
-+    const state = await readGitState("/tmp/project", {
-+      recentCommitLimit: 3,
-+      runGitCommand,
-+    });
-+
-+    expect(state.error).toBeNull();
-+    expect(state.branch).toBe("feature/dashboard");
-+    expect(state.commitCount).toBe(42);
-+    expect(state.recentCommits).toEqual(["feat: add panel", "fix: tune parser", "chore: update tests"]);
-+    expect(state.baseBranch).toBe("main");
-+    expect(state.diffFromBase).toEqual({
-+      filesChanged: 5,
-+      insertions: 30,
-+      deletions: 10,
-+    });
-+    expect(state.uncommitted).toEqual({
-+      staged: { filesChanged: 1, insertions: 3, deletions: 2 },
-+      unstaged: { filesChanged: 2, insertions: 5, deletions: 1 },
-+      untrackedFiles: 2,
-+      total: { filesChanged: 5, insertions: 8, deletions: 3 },
-+    });
-+  });
-+
-+  it("falls back to master when main is not available", async () => {
-+    const failures = new Set<string>(["rev-parse --verify --quiet main"]);
-+    const runGitCommand = createMockRunner(
-+      {
-+        "rev-parse --abbrev-ref HEAD": "feature/master-base",
-+        "rev-list --count HEAD": "3",
-+        "log --pretty=format:%s -n 5": "a\nb\nc",
-+        "rev-parse --verify --quiet master": "def456",
-+        "diff --shortstat master...HEAD": " 1 file changed, 2 insertions(+)",
-+        "diff --shortstat": "",
-+        "diff --shortstat --cached": "",
-+        "ls-files --others --exclude-standard": "",
-+      },
-+      failures,
-+    );
-+
-+    const state = await readGitState("/tmp/project", { runGitCommand });
-+
-+    expect(state.error).toBeNull();
-+    expect(state.baseBranch).toBe("master");
-+    expect(state.diffFromBase).toEqual({
-+      filesChanged: 1,
-+      insertions: 2,
-+      deletions: 0,
-+    });
-+  });
-+
-+  it("returns default state with error when git commands fail", async () => {
-+    const runGitCommand = createMockRunner({}, new Set<string>(["rev-parse --abbrev-ref HEAD"]));
-+
-+    const state = await readGitState("/tmp/project", { runGitCommand });
-+
-+    expect(state.branch).toBeNull();
-+    expect(state.commitCount).toBe(0);
-+    expect(state.recentCommits).toEqual([]);
-+    expect(state.diffFromBase).toEqual({
-+      filesChanged: 0,
-+      insertions: 0,
-+      deletions: 0,
-+    });
-+    expect(state.uncommitted.total).toEqual({
-+      filesChanged: 0,
-+      insertions: 0,
-+      deletions: 0,
-+    });
-+    expect(state.error).toContain("command failed");
-+  });
-+});
-diff --git a/lib/git-state.ts b/lib/git-state.ts
-new file mode 100644
-index 0000000000000000000000000000000000000000..80264da36c1387863d270d414b26b2e22a6376ab
---- /dev/null
-+++ b/lib/git-state.ts
-@@ -0,0 +1,195 @@
-+import { execFile } from "node:child_process";
-+import { promisify } from "node:util";
-+
-+const execFileAsync = promisify(execFile);
-+
-+export interface GitDiffStats {
-+  filesChanged: number;
-+  insertions: number;
-+  deletions: number;
-+}
-+
-+export interface UncommittedChangesSummary {
-+  staged: GitDiffStats;
-+  unstaged: GitDiffStats;
-+  untrackedFiles: number;
-+  total: GitDiffStats;
-+}
-+
-+export interface GitState {
-+  branch: string | null;
-+  commitCount: number;
-+  recentCommits: string[];
-+  baseBranch: "main" | "master" | null;
-+  diffFromBase: GitDiffStats;
-+  uncommitted: UncommittedChangesSummary;
-+  error: string | null;
-+}
-+
-+export interface ReadGitStateOptions {
-+  recentCommitLimit?: number;
-+  runGitCommand?: (args: string[]) => Promise<string>;
-+}
-+
-+const EMPTY_DIFF_STATS: GitDiffStats = {
-+  filesChanged: 0,
-+  insertions: 0,
-+  deletions: 0,
-+};
-+
-+function cloneDiffStats(stats: GitDiffStats): GitDiffStats {
-+  return {
-+    filesChanged: stats.filesChanged,
-+    insertions: stats.insertions,
-+    deletions: stats.deletions,
-+  };
-+}
-+
-+function defaultUncommittedSummary(): UncommittedChangesSummary {
-+  return {
-+    staged: cloneDiffStats(EMPTY_DIFF_STATS),
-+    unstaged: cloneDiffStats(EMPTY_DIFF_STATS),
-+    untrackedFiles: 0,
-+    total: cloneDiffStats(EMPTY_DIFF_STATS),
-+  };
-+}
-+
-+function defaultGitState(error: string | null = null): GitState {
-+  return {
-+    branch: null,
-+    commitCount: 0,
-+    recentCommits: [],
-+    baseBranch: null,
-+    diffFromBase: cloneDiffStats(EMPTY_DIFF_STATS),
-+    uncommitted: defaultUncommittedSummary(),
-+    error,
-+  };
-+}
-+
-+function toNumber(value: string | undefined): number {
-+  if (!value) {
-+    return 0;
-+  }
-+
-+  const parsed = Number.parseInt(value, 10);
-+  return Number.isFinite(parsed) ? parsed : 0;
-+}
-+
-+export function parseDiffShortStat(raw: string): GitDiffStats {
-+  if (!raw.trim()) {
-+    return cloneDiffStats(EMPTY_DIFF_STATS);
-+  }
-+
-+  const filesMatch = raw.match(/(\d+)\s+files?\s+changed/);
-+  const insertionsMatch = raw.match(/(\d+)\s+insertions?\(\+\)/);
-+  const deletionsMatch = raw.match(/(\d+)\s+deletions?\(-\)/);
-+
-+  return {
-+    filesChanged: toNumber(filesMatch?.[1]),
-+    insertions: toNumber(insertionsMatch?.[1]),
-+    deletions: toNumber(deletionsMatch?.[1]),
-+  };
-+}
-+
-+function parseCommitCount(raw: string): number {
-+  return toNumber(raw.trim());
-+}
-+
-+function parseCommitMessages(raw: string): string[] {
-+  if (!raw.trim()) {
-+    return [];
-+  }
-+
-+  return raw
-+    .split("\n")
-+    .map((message) => message.trim())
-+    .filter((message) => message.length > 0);
-+}
-+
-+function parseUntrackedCount(raw: string): number {
-+  if (!raw.trim()) {
-+    return 0;
-+  }
-+
-+  return raw
-+    .split("\n")
-+    .map((line) => line.trim())
-+    .filter((line) => line.length > 0).length;
-+}
-+
-+function addDiffStats(left: GitDiffStats, right: GitDiffStats): GitDiffStats {
-+  return {
-+    filesChanged: left.filesChanged + right.filesChanged,
-+    insertions: left.insertions + right.insertions,
-+    deletions: left.deletions + right.deletions,
-+  };
-+}
-+
-+function makeShellGitRunner(projectPath: string): (args: string[]) => Promise<string> {
-+  return async (args: string[]) => {
-+    const { stdout } = await execFileAsync("git", args, { cwd: projectPath });
-+    return stdout.trim();
-+  };
-+}
-+
-+async function resolveBaseBranch(runGitCommand: (args: string[]) => Promise<string>): Promise<"main" | "master" | null> {
-+  try {
-+    await runGitCommand(["rev-parse", "--verify", "--quiet", "main"]);
-+    return "main";
-+  } catch {
-+    // Try master next.
-+  }
-+
-+  try {
-+    await runGitCommand(["rev-parse", "--verify", "--quiet", "master"]);
-+    return "master";
-+  } catch {
-+    return null;
-+  }
-+}
-+
-+export async function readGitState(projectPath: string, options: ReadGitStateOptions = {}): Promise<GitState> {
-+  const commitLimit = Math.max(1, options.recentCommitLimit ?? 5);
-+  const runGitCommand = options.runGitCommand ?? makeShellGitRunner(projectPath);
-+
-+  try {
-+    const branchRaw = await runGitCommand(["rev-parse", "--abbrev-ref", "HEAD"]);
-+    const commitCountRaw = await runGitCommand(["rev-list", "--count", "HEAD"]);
-+    const commitMessagesRaw = await runGitCommand(["log", "--pretty=format:%s", "-n", String(commitLimit)]);
-+
-+    const baseBranch = await resolveBaseBranch(runGitCommand);
-+    const diffFromBaseRaw = baseBranch
-+      ? await runGitCommand(["diff", "--shortstat", `${baseBranch}...HEAD`])
-+      : "";
-+    const unstagedRaw = await runGitCommand(["diff", "--shortstat"]);
-+    const stagedRaw = await runGitCommand(["diff", "--shortstat", "--cached"]);
-+    const untrackedRaw = await runGitCommand(["ls-files", "--others", "--exclude-standard"]);
-+
-+    const unstaged = parseDiffShortStat(unstagedRaw);
-+    const staged = parseDiffShortStat(stagedRaw);
-+    const untrackedFiles = parseUntrackedCount(untrackedRaw);
-+    const stagedAndUnstaged = addDiffStats(staged, unstaged);
-+
-+    return {
-+      branch: branchRaw || null,
-+      commitCount: parseCommitCount(commitCountRaw),
-+      recentCommits: parseCommitMessages(commitMessagesRaw),
-+      baseBranch,
-+      diffFromBase: parseDiffShortStat(diffFromBaseRaw),
-+      uncommitted: {
-+        staged,
-+        unstaged,
-+        untrackedFiles,
-+        total: {
-+          filesChanged: stagedAndUnstaged.filesChanged + untrackedFiles,
-+          insertions: stagedAndUnstaged.insertions,
-+          deletions: stagedAndUnstaged.deletions,
-+        },
-+      },
-+      error: null,
-+    };
-+  } catch (error) {
-+    const message = error instanceof Error ? error.message : "Unknown git error";
-+    return defaultGitState(message);
-+  }
-+}
+diff --git a/__tests__/code-metrics.test.ts b/__tests__/code-metrics.test.ts
+index 230bf2fa503e82e7ebc486be8b505a8089701eae..f51e2f8d1a1ff73c5299857db15b4ed352565c16
+--- a/__tests__/code-metrics.test.ts
++++ b/__tests__/code-metrics.test.ts
+@@ -64,12 +64,11 @@
+     expect(metrics.error).toBeNull();
+     expect(metrics.fileCount).toBe(5);
+     expect(metrics.testFileCount).toBe(2);
+-    expect(metrics.totalLoc).toBe(18);
++    expect(metrics.totalLoc).toBe(16);
+     expect(metrics.locByLanguage).toEqual({
+-      TypeScript: 9,
++      TypeScript: 11,
+       JavaScript: 3,
+       Markdown: 2,
+-      Other: 4,
+     });
+   });
+ 
+diff --git a/lib/code-metrics.ts b/lib/code-metrics.ts
+index 2f41db1631f068dadc2004772438f0257ed21504..0666e5322b93e02d40aad38162e75d2990eeca7b
+--- a/lib/code-metrics.ts
++++ b/lib/code-metrics.ts
+@@ -129,9 +129,3 @@
+     return defaultMetrics(message);
+   }
+ }
+-
+-export const INTERNALS = {
+-  countNonEmptyLines,
+-  detectLanguage,
+-  isTestFile,
+-};
 
 tokens used
-28,393
-Implemented item 4/17 with focused changes:
+28,233
+Implemented item 5/17 with focused changes:
 
-- Added `lib/git-state.ts` with:
-  - `readGitState(projectPath, options?)`
-  - Git command execution via shell (`git ...`)
-  - Data extraction for:
-    - current branch
-    - commit count on `HEAD`
-    - last N commit messages
-    - diff stats vs `main` (fallback to `master`)
-    - uncommitted summary (staged, unstaged, untracked, total)
-  - `parseDiffShortStat()` for shortstat parsing
+- Added `readCodeMetrics` in `lib/code-metrics.ts:97`:
+  - Recursively counts files (no external deps)
+  - Computes `totalLoc`, `locByLanguage`, `fileCount`, `testFileCount`
+  - Uses non-empty line counting for LOC (`lib/code-metrics.ts:44`)
+  - Ignores default heavy dirs: `.git`, `node_modules`, `.next`, `.ralph` (`lib/code-metrics.ts:16`)
+  - Returns safe default metrics + `error` on failure (`lib/code-metrics.ts:34`, `lib/code-metrics.ts:127`)
 
-- Added unit tests in `__tests__/git-state.test.ts` covering:
-  - shortstat parsing
-  - full state aggregation
-  - `main` -> `master` fallback logic
-  - graceful default/error behavior on command failure
+- Added unit tests in `__tests__/code-metrics.test.ts:29`:
+  - Validates aggregate metrics and language breakdown
+  - Validates excluded-directory behavior
+  - Validates missing-path error handling
 
-Verification results:
+Verification:
 
 - Ran `npm test` successfully.
-- All tests pass: `15 passed` across `3` test files.
-- Verification criterion satisfied: git state parsing is unit-tested and passing.
+- Result: 4 test files passed, 18 tests passed.
+- Verification criterion met: metrics calculation tests pass.
 
-Changed files:
+Scope note:
 
-- `lib/git-state.ts`
-- `__tests__/git-state.test.ts`
+- Code changes for this item are only `lib/code-metrics.ts` and `__tests__/code-metrics.test.ts`.
+- Existing unrelated modified files (`.ralph/current.log`, `.ralph/state.json`, `prd-ralph-dashboard.json`) were left untouched.
