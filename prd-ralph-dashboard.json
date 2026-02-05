@@ -235,7 +235,7 @@
       "title": "Polling for live updates",
       "description": "Poll API for state changes, trigger UI updates",
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "verification": "UI updates within 2 seconds of state.json change",
       "steps": [
         "Use React Query with refetchInterval (2 seconds)",
