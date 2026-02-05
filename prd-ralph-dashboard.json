@@ -56,7 +56,7 @@
       "title": "Ralph state reader",
       "description": "Module to read and parse Ralph run state from .ralph/state.json and prd.json",
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "verification": "Unit tests pass for state parsing, handles missing/malformed files gracefully",
       "steps": [
         "Create lib/ralph-state.ts",
