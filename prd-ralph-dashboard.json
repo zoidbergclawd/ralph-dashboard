@@ -181,7 +181,7 @@
       "title": "Git state panel",
       "description": "Panel showing git information: branch, commits, diff summary",
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "verification": "Component renders git info correctly (unit test)",
       "steps": [
         "Create components/GitPanel.tsx",
