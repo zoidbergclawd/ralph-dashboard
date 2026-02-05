@@ -22,7 +22,7 @@
       "title": "Project scaffolding",
       "description": "Initialize Next.js 14 project with Tailwind, shadcn/ui, and basic layout",
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "verification": "npm run dev serves app at localhost:3000 with basic layout",
       "steps": [
         "npx create-next-app@latest with TypeScript, Tailwind, App Router",
