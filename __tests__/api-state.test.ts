@@ -92,6 +92,18 @@ describe("GET /api/state", () => {
     expect(body).toHaveProperty("coverage");
   });
 
+  it("returns combined state using path query parameter alias", async () => {
+    const projectDir = await makeProjectFixture();
+    const url = new URL("http://localhost/api/state");
+    url.searchParams.set("path", projectDir);
+
+    const response = await stateGET(new Request(url));
+    const body = (await response.json()) as Record<string, unknown>;
+
+    expect(response.status).toBe(200);
+    expect(body.projectPath).toBe(projectDir);
+  });
+
   it("uses RALPH_PROJECT_PATH when query param is not provided", async () => {
     const projectDir = await makeProjectFixture();
     process.env.RALPH_PROJECT_PATH = projectDir;

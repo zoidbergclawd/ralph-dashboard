@@ -21,7 +21,7 @@ export interface DashboardStateResponse {
 async function fetchDashboardState(projectPath?: string): Promise<DashboardStateResponse> {
   const params = new URLSearchParams();
   if (projectPath) {
-    params.set("projectPath", projectPath);
+    params.set("path", projectPath);
   }
 
   const query = params.toString();

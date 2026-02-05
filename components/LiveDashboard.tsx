@@ -1,6 +1,7 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
 import React, { useEffect, useMemo, useState } from "react";
 
 import ActivityLog from "@/components/ActivityLog";
@@ -11,6 +12,32 @@ import ProgressPanel from "@/components/ProgressPanel";
 import { useDashboardState } from "@/hooks/use-dashboard-state";
 
 const DEFAULT_ERROR_MESSAGE = "Unable to load dashboard state.";
+const PROJECT_PATH_STORAGE_KEY = "ralph-dashboard:last-project-path";
+
+function normalizeProjectPath(value: string | null | undefined): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function readStoredProjectPath(): string | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  return normalizeProjectPath(window.localStorage.getItem(PROJECT_PATH_STORAGE_KEY));
+}
+
+function persistProjectPath(projectPath: string): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.setItem(PROJECT_PATH_STORAGE_KEY, projectPath);
+}
 
 function formatLastUpdated(isoTimestamp: string | undefined): string {
   if (!isoTimestamp) {
@@ -26,8 +53,27 @@ function formatLastUpdated(isoTimestamp: string | undefined): string {
 }
 
 function DashboardBody() {
-  const { data, error, isPending, isFetching, dataUpdatedAt } = useDashboardState();
+  const searchParams = useSearchParams();
+  const urlProjectPath = normalizeProjectPath(searchParams.get("path"));
+  const [selectedProjectPath, setSelectedProjectPath] = useState<string | undefined>(urlProjectPath ?? undefined);
+  const { data, error, isPending, isFetching, dataUpdatedAt } = useDashboardState(selectedProjectPath);
   const [showUpdated, setShowUpdated] = useState(false);
+
+  useEffect(() => {
+    if (urlProjectPath) {
+      setSelectedProjectPath(urlProjectPath);
+      persistProjectPath(urlProjectPath);
+      return;
+    }
+
+    const storedPath = readStoredProjectPath();
+    if (storedPath) {
+      setSelectedProjectPath(storedPath);
+      return;
+    }
+
+    setSelectedProjectPath(undefined);
+  }, [urlProjectPath]);
 
   useEffect(() => {
     if (!dataUpdatedAt) {
@@ -39,12 +85,34 @@ function DashboardBody() {
     return () => window.clearTimeout(timeout);
   }, [dataUpdatedAt]);
 
+  useEffect(() => {
+    const resolvedProjectPath = normalizeProjectPath(data?.projectPath);
+    if (!resolvedProjectPath) {
+      return;
+    }
+
+    persistProjectPath(resolvedProjectPath);
+  }, [data?.projectPath]);
+
+  const currentProjectPath = data?.projectPath ?? selectedProjectPath ?? "Not configured";
+
+  const header = (
+    <header className="rounded-lg border border-border bg-card px-4 py-3 text-card-foreground md:px-5">
+      <h2 className="text-lg font-semibold tracking-tight">Run Overview</h2>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Project path: <code className="text-foreground">{currentProjectPath}</code>
+      </p>
+    </header>
+  );
+
   if (isPending && !data) {
     return (
-      <section className="rounded-lg border border-border bg-card p-6 text-card-foreground">
-        <h2 className="text-lg font-medium">Run Overview</h2>
-        <p className="mt-2 text-sm text-muted-foreground">Loading live run state...</p>
-      </section>
+      <div className="space-y-6">
+        {header}
+        <section className="rounded-lg border border-border bg-card p-6 text-card-foreground">
+          <p className="text-sm text-muted-foreground">Loading live run state...</p>
+        </section>
+      </div>
     );
   }
 
@@ -52,10 +120,12 @@ function DashboardBody() {
     const message = error instanceof Error ? error.message : DEFAULT_ERROR_MESSAGE;
 
     return (
-      <section className="rounded-lg border border-red-500/40 bg-red-500/10 p-6 text-card-foreground">
-        <h2 className="text-lg font-semibold">Run Overview</h2>
-        <p className="mt-2 text-sm text-red-200">{message}</p>
-      </section>
+      <div className="space-y-6">
+        {header}
+        <section className="rounded-lg border border-red-500/40 bg-red-500/10 p-6 text-card-foreground">
+          <p className="text-sm text-red-200">{message}</p>
+        </section>
+      </div>
     );
   }
 
@@ -64,6 +134,7 @@ function DashboardBody() {
 
   return (
     <div className="space-y-6">
+      {header}
       <section className="rounded-lg border border-border bg-card p-4 text-card-foreground md:p-5">
         <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
           <div className="flex items-center gap-2">

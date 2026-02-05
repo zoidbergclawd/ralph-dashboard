@@ -104,6 +104,19 @@ afterEach(() => {
 });
 
 describe("useDashboardState", () => {
+  it("uses the path query parameter when a project path is provided", async () => {
+    vi.useFakeTimers();
+
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(makeSuccessResponse(basePayload));
+    vi.stubGlobal("fetch", fetchMock);
+
+    renderHook(() => useDashboardState("/tmp/with-space project"), { wrapper: makeWrapper() });
+    await flushReactQuery();
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock.mock.calls[0]?.[0]).toBe("/api/state?path=%2Ftmp%2Fwith-space+project");
+  });
+
   it("polls for new state every 2 seconds", async () => {
     vi.useFakeTimers();
 

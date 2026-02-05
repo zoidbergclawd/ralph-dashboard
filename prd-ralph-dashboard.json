@@ -217,7 +217,7 @@
       "title": "Activity log panel",
       "description": "Scrolling log of Ralph activity: checkpoints, commits, test runs",
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "verification": "Component renders activity log correctly (unit test)",
       "steps": [
         "Create components/ActivityLog.tsx",
