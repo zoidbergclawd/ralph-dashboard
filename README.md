@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Ralph Dashboard
 
-## Getting Started
+Real-time dashboard for watching Ralph runs with live PRD progress, git state, code metrics, and coverage.
 
-First, run the development server:
+## Requirements
+
+- Node.js 18+
+- npm
+- A target project that contains Ralph outputs (at minimum `.ralph/state.json`)
+
+## Installation
+
+```bash
+npm install
+```
+
+## Usage
+
+### Development
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Production build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm run start
+```
 
-## Learn More
+## Configure Which Project To Monitor
 
-To learn more about Next.js, take a look at the following resources:
+You can set the monitored project path in two ways:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Environment variable:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+RALPH_PROJECT_PATH=/absolute/path/to/target-project npm run dev
+```
 
-## Deploy on Vercel
+2. URL query parameter:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```text
+http://localhost:3000/?path=/absolute/path/to/target-project
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Notes:
+- `?path=` overrides `RALPH_PROJECT_PATH` when both are present.
+- The dashboard persists the last successful project path in `localStorage`.
+- The path must be an existing directory.
+
+## Configuration Details
+
+The dashboard reads data from these sources inside the monitored project:
+
+- Ralph state: `.ralph/state.json`
+- PRD: `prd_path` from Ralph state (if present), otherwise `prd.json`, otherwise first `prd*.json`
+- Git: local repository state via `git` commands
+- Coverage summary: `coverage/coverage-summary.json` or `.coverage/coverage-summary.json`
+
+Live updates are polled every 2 seconds.
+
+## Integration With Ralph CLI
+
+1. Run Ralph in your target repository so it produces and updates `.ralph/state.json`.
+2. Make sure the state file references your PRD (`prd_path`) or that the repo has a discoverable PRD JSON file.
+3. Start Ralph Dashboard and point it at that repository using `RALPH_PROJECT_PATH` or `?path=`.
+4. Keep Ralph running; the dashboard will reflect checkpoints, current item progress, and related git/metrics updates automatically.
+
+## API Endpoints
+
+- `GET /api/health` - health check
+- `GET /api/state?path=/absolute/path` - combined Ralph, git, metrics, and coverage state
+
+## Testing
+
+```bash
+npm test
+```

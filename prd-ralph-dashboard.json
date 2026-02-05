@@ -284,7 +284,7 @@
       "title": "Animations and visual polish",
       "description": "Add animations for state changes and visual feedback",
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "verification": "Cards animate when moving columns",
       "steps": [
         "Use Framer Motion for animations",
