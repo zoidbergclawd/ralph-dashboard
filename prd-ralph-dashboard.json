@@ -144,7 +144,7 @@
       "title": "Kanban board component",
       "description": "Kanban-style board showing PRD items in columns: Todo, In Progress, Done",
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "verification": "Component renders with items in correct columns (unit test)",
       "steps": [
         "Create components/KanbanBoard.tsx",
