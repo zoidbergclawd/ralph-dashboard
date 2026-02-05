@@ -1,0 +1,18 @@
+{
+  "branch": "ralph/ralph-dashboard-20260205-1427",
+  "prd_path": "/Users/mcbee/Projects/agent-dashboard/prd-ralph-dashboard.json",
+  "current_item": 1,
+  "completed_items": [],
+  "started_at": "2026-02-05T14:27:30.511747",
+  "checkpoints": [],
+  "agent": "codex",
+  "model": "gpt-5.3-codex",
+  "auto_push": true,
+  "pr_url": null,
+  "base_branch": "main",
+  "current_action": "Generating code...",
+  "action_started_at": "2026-02-05T14:27:30.514454",
+  "watchdog_timeout": 600,
+  "last_output_at": "2026-02-05T14:27:30.512912",
+  "watchdog_triggered": false
+}
