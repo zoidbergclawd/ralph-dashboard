@@ -7,29 +7,29 @@ approval: never
 sandbox: danger-full-access
 reasoning effort: none
 reasoning summaries: auto
-session id: 019c2f5f-5146-7852-805a-6a7077c6f1e8
+session id: 019c2f60-74ae-7d31-b95d-aaba5a4697ab
 --------
 user
 You are working on the project: Ralph Dashboard
 
 Goal: A real-time web UI for watching Ralph runs. Kanban-style PRD progress, live metrics, git state, test coverage — watch the magic happen.
 
-Current Item (14/17): Main dashboard layout
-Category: ui
-Priority: 1
+Current Item (6/17): Test coverage reader
+Category: core
+Priority: 2
 
 Description:
-Compose all panels into a cohesive dashboard layout
+Module to parse test coverage reports (coverage.json, lcov, etc.)
 
 Steps:
-  1. Create app/page.tsx as main dashboard
-  2. Layout: Kanban board (main area), sidebar (progress, git, metrics)
-  3. Activity log at bottom
-  4. Responsive: stack on mobile, grid on desktop
-  5. Dark theme by default
+  1. Create lib/coverage-reader.ts
+  2. Support coverage.json (Vitest/Istanbul format)
+  3. Support lcov.info (common format)
+  4. Return: overall percentage, per-file percentages
+  5. Write unit tests in __tests__/coverage-reader.test.ts
 
 Verification:
-Dashboard shows all panels in responsive grid layout
+Unit tests pass for coverage parsing
 
 Please implement this item. After completion:
 1. Ensure all tests pass
@@ -39,12 +39,34 @@ Please implement this item. After completion:
 mcp startup: no servers
 
 thinking
-**Confirming skill usage**
+**Deciding to use skill**
 codex
-Implementing item 14/17 now by building `app/page.tsx` into a responsive, dark-themed dashboard shell that composes the existing panels. I’ll first load the relevant skill instructions and inspect current UI components so the change stays focused.
+I’m implementing item 6/17 now and will first inspect the existing test/setup patterns, then add `lib/coverage-reader.ts` plus focused unit tests for `coverage.json` and `lcov.info` parsing. I’ll use the `do-work` skill because this is a task-queue execution request.
 exec
 /bin/zsh -lc 'cat /Users/mcbee/.agents/skills/do-work/SKILL.md' in /Users/mcbee/Projects/agent-dashboardexec
-/bin/zsh -lc 'ls -la /Users/mcbee/Projects/agent-dashboard && rg --files /Users/mcbee/Projects/agent-dashboard | head -n 200' in /Users/mcbee/Projects/agent-dashboard succeeded in 238ms:
+/bin/zsh -lc 'rg --files' in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc 'ls -la' in /Users/mcbee/Projects/agent-dashboard succeeded in 250ms:
+total 680
+drwxr-xr-x   25 mcbee  staff     800 Feb  5 14:51 .
+drwxr-xr-x    6 mcbee  staff     192 Feb  5 14:01 ..
+-rw-r--r--    1 mcbee  staff      61 Feb  5 14:28 .eslintrc.json
+drwxr-xr-x   12 mcbee  staff     384 Feb  5 14:56 .git
+-rw-r--r--    1 mcbee  staff     400 Feb  5 14:31 .gitignore
+drwxr-xr-x   11 mcbee  staff     352 Feb  5 14:32 .next
+drwxr-xr-x    4 mcbee  staff     128 Feb  5 14:31 .ralph
+-rw-r--r--    1 mcbee  staff    1450 Feb  5 14:28 README.md
+drwxr-xr-x   12 mcbee  staff     384 Feb  5 14:51 __tests__
+drwxr-xr-x    8 mcbee  staff     256 Feb  5 14:41 app
+drwxr-xr-x    7 mcbee  staff     224 Feb  5 14:51 components
+-rw-r--r--    1 mcbee  staff     481 Feb  5 14:29 components.json
+drwxr-xr-x    3 mcbee  staff      96 Feb  5 14:51 hooks
+drwxr-xr-x    7 mcbee  staff     224 Feb  5 14:41 lib
+-rw-r--r--    1 mcbee  staff     228 Feb  5 14:28 next-env.d.ts
+-rw-r--r--    1 mcbee  staff      92 Feb  5 14:28 next.config.mjs
+drwxr-xr-x  400 mcbee  staff   12800 Feb  5 14:51 node_modules
+-rw-r--r--    1 mcbee  staff  284688 Feb  5 14:51 package-lock.json
+-rw-r--r--    1 mcbee  staff     892 Feb  5 14:51 package.json
+ succeeded in 255ms:
 ---
 name: do-work
 description: Task queue - add requests or process pending work
@@ -65,160 +87,171 @@ A unified entry point for task capture and processing.
 > **Core concept:** The do action always produces both a UR folder (preserving the original input) and REQ files (the queue items). Each REQ links back to its UR via `user_request` frontmatter. This pairing is mandatory for all requests — simple or complex.
 
 ## Routing Decision
- succeeded in 254ms:
-total 680
-drwxr-xr-x   25 mcbee  staff     800 Feb  5 14:51 .
-drwxr-xr-x    6 mcbee  staff     192 Feb  5 14:01 ..
--rw-r--r--    1 mcbee  staff      61 Feb  5 14:28 .eslintrc.json
-drwxr-xr-x   12 mcbee  staff     384 Feb  5 14:55 .git
--rw-r--r--    1 mcbee  staff     400 Feb  5 14:31 .gitignore
-drwxr-xr-x   11 mcbee  staff     352 Feb  5 14:32 .next
-drwxr-xr-x    4 mcbee  staff     128 Feb  5 14:31 .ralph
--rw-r--r--    1 mcbee  staff    1450 Feb  5 14:28 README.md
-drwxr-xr-x   12 mcbee  staff     384 Feb  5 14:51 __tests__
-drwxr-xr-x    8 mcbee  staff     256 Feb  5 14:41 app
-drwxr-xr-x    7 mcbee  staff     224 Feb  5 14:51 components
--rw-r--r--    1 mcbee  staff     481 Feb  5 14:29 components.json
-drwxr-xr-x    3 mcbee  staff      96 Feb  5 14:51 hooks
-drwxr-xr-x    7 mcbee  staff     224 Feb  5 14:41 lib
--rw-r--r--    1 mcbee  staff     228 Feb  5 14:28 next-env.d.ts
--rw-r--r--    1 mcbee  staff      92 Feb  5 14:28 next.config.mjs
-drwxr-xr-x  400 mcbee  staff   12800 Feb  5 14:51 node_modules
--rw-r--r--    1 mcbee  staff  284688 Feb  5 14:51 package-lock.json
--rw-r--r--    1 mcbee  staff     892 Feb  5 14:51 package.json
+ succeeded in 263ms:
+vitest.setup.ts
+vitest.config.ts
+tsconfig.json
+components.json
+lib/git-state.ts
+lib/code-metrics.ts
+lib/utils.ts
+lib/coverage-state.ts
+lib/ralph-state.ts
+hooks/use-dashboard-state.ts
+package.json
+package-lock.json
+__tests__/KanbanBoard.test.tsx
+__tests__/code-metrics.test.ts
+__tests__/GitPanel.test.tsx
+__tests__/api-state.test.ts
+__tests__/git-state.test.ts
+__tests__/MetricsPanel.test.tsx
+__tests__/ProgressPanel.test.tsx
+__tests__/use-dashboard-state.test.tsx
 
 thinking
-**Inspecting existing layout components**
+**Reviewing coverage-state updates**
 codex
-Using the `do-work` skill flow for this turn because you’re asking to process a queued implementation item. Next I’m checking existing dashboard components and `app/page.tsx` so I can wire the required layout without touching unrelated areas.
+I found existing `lib/coverage-state.ts` and test patterns; next I’m aligning the new parser API/style with current conventions before editing.
 exec
-/bin/zsh -lc "sed -n '1,260p' /Users/mcbee/Projects/agent-dashboard/components/LiveDashboard.tsx" in /Users/mcbee/Projects/agent-dashboardexec
-/bin/zsh -lc "sed -n '1,220p' /Users/mcbee/Projects/agent-dashboard/app/page.tsx" in /Users/mcbee/Projects/agent-dashboardexec
-/bin/zsh -lc "sed -n '1,260p' /Users/mcbee/Projects/agent-dashboard/components/KanbanBoard.tsx" in /Users/mcbee/Projects/agent-dashboardexec
-/bin/zsh -lc "sed -n '1,260p' /Users/mcbee/Projects/agent-dashboard/components/ProgressPanel.tsx" in /Users/mcbee/Projects/agent-dashboardexec
-/bin/zsh -lc "sed -n '1,260p' /Users/mcbee/Projects/agent-dashboard/components/MetricsPanel.tsx" in /Users/mcbee/Projects/agent-dashboardexec
-/bin/zsh -lc "sed -n '1,260p' /Users/mcbee/Projects/agent-dashboard/components/GitPanel.tsx" in /Users/mcbee/Projects/agent-dashboard succeeded in 391ms:
-import LiveDashboard from "@/components/LiveDashboard";
+/bin/zsh -lc "sed -n '1,220p' lib/coverage-state.ts" in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc "sed -n '1,220p' __tests__/git-state.test.ts" in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc "sed -n '1,260p' __tests__/code-metrics.test.ts" in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc 'cat package.json' in /Users/mcbee/Projects/agent-dashboard succeeded in 292ms:
+{
+  "name": "ralph-dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.90.20",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.563.0",
+    "next": "14.2.35",
+    "react": "^18",
+    "react-dom": "^18",
+    "tailwind-merge": "^3.4.0",
+ succeeded in 296ms:
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 
-export default function Home() {
-  return <LiveDashboard />;
-}
- succeeded in 379ms:
-"use client";
-
-import React, { useState } from "react";
-
-import type { GitState } from "@/lib/git-state";
-
-type GitPanelData = Pick<GitState, "branch" | "commitCount" | "recentCommits" | "baseBranch" | "diffFromBase" | "error">;
-
-interface GitPanelProps {
-  git: GitPanelData;
-}
-
-export default function GitPanel({ git }: GitPanelProps) {
-  const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "error">("idle");
-  const commitsToShow = git.recentCommits.slice(0, 5);
-  const canCopyBranch = Boolean(git.branch);
-  const diffLabel = git.baseBranch ? `Diff vs ${git.baseBranch}` : "Diff summary";
-
-  const handleCopyBranch = async () => {
-    if (!git.branch) {
- succeeded in 381ms:
-"use client";
-
-import React, { useMemo } from "react";
-
-import type { UnifiedPRDItem } from "@/lib/ralph-state";
-
-interface ProgressPanelProps {
-  items: UnifiedPRDItem[];
-  startedAt: string | null;
-  now?: Date;
+interface CoverageMetric {
+  total: number;
+  covered: number;
+  skipped: number;
+  pct: number;
 }
 
-function formatDuration(ms: number): string {
-  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
-  const days = Math.floor(totalSeconds / 86400);
-  const hours = Math.floor((totalSeconds % 86400) / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-
-  if (days > 0) {
- succeeded in 391ms:
-"use client";
-
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import React, { useEffect, useMemo, useState } from "react";
-
-import GitPanel from "@/components/GitPanel";
-import KanbanBoard from "@/components/KanbanBoard";
-import MetricsPanel from "@/components/MetricsPanel";
-import ProgressPanel from "@/components/ProgressPanel";
-import { useDashboardState } from "@/hooks/use-dashboard-state";
-
-const DEFAULT_ERROR_MESSAGE = "Unable to load dashboard state.";
-
-function formatLastUpdated(isoTimestamp: string | undefined): string {
-  if (!isoTimestamp) {
-    return "Never";
-  }
-
-  const timestamp = new Date(isoTimestamp);
-  if (Number.isNaN(timestamp.getTime())) {
- succeeded in 381ms:
-"use client";
-
-import React, { useMemo } from "react";
-
-interface MetricsPanelProps {
-  totalLoc: number;
-  startLoc?: number | null;
-  fileCount: number;
-  testCount: number;
-  coveragePct: number | null;
+interface CoverageSummaryTotal {
+  lines: CoverageMetric;
+  statements: CoverageMetric;
+  functions: CoverageMetric;
+  branches: CoverageMetric;
 }
 
-function formatInteger(value: number): string {
-  return new Intl.NumberFormat("en-US").format(value);
+export interface CoverageState {
+  available: boolean;
+  summaryPath: string | null;
+ succeeded in 294ms:
+import { promises as fs } from "node:fs";
+import os from "node:os";
+import path from "node:path";
+
+import { afterEach, describe, expect, it } from "vitest";
+
+import { readCodeMetrics } from "../lib/code-metrics";
+
+const tempDirs: string[] = [];
+
+async function makeProjectDir(): Promise<string> {
+  const projectDir = await fs.mkdtemp(path.join(os.tmpdir(), "code-metrics-test-"));
+  tempDirs.push(projectDir);
+  return projectDir;
 }
 
-function coverageTone(coveragePct: number | null): "red" | "yellow" | "green" | "none" {
-  if (coveragePct === null || !Number.isFinite(coveragePct)) {
-    return "none";
-  }
- succeeded in 383ms:
-"use client";
+async function writeFile(relativePath: string, content: string, projectDir: string): Promise<void> {
+  const fullPath = path.join(projectDir, relativePath);
+  await fs.mkdir(path.dirname(fullPath), { recursive: true });
+  await fs.writeFile(fullPath, content, "utf8");
+ succeeded in 294ms:
+import { describe, expect, it } from "vitest";
 
-import React from "react";
-import { useMemo, useState } from "react";
+import { parseDiffShortStat, readGitState } from "../lib/git-state";
 
-import type { UnifiedPRDItem } from "@/lib/ralph-state";
+function createMockRunner(outputs: Record<string, string>, failures: Set<string> = new Set()) {
+  return async (args: string[]): Promise<string> => {
+    const key = args.join(" ");
 
-interface KanbanBoardProps {
-  items: UnifiedPRDItem[];
+    if (failures.has(key)) {
+      throw new Error(`command failed: ${key}`);
+    }
+
+    if (!(key in outputs)) {
+      throw new Error(`missing mock output: ${key}`);
+    }
+
+    return outputs[key];
+  };
 }
 
-interface KanbanColumn {
-  key: "backlog" | "in_progress" | "done";
-  title: string;
-  items: UnifiedPRDItem[];
-}
-
-function getPriorityLabel(priority: number): string {
-  if (priority <= 1) {
-    return "High";
 
 thinking
-**Searching for activity log component**
+**Planning coverage report parsing**
 codex
-I found that `LiveDashboard` already composes progress/git/metrics/kanban, but it doesn’t place Kanban as the main area with a right sidebar or include an activity log panel at the bottom. I’m now checking for any existing activity-log component/tests before patching.
+I’ve confirmed the test style and module conventions. Next I’ll add a standalone parser module with a small, typed API and unit tests that cover valid/invalid JSON and LCOV inputs.
 exec
-/bin/zsh -lc 'rg -n "Activity|activity log|log" /Users/mcbee/Projects/agent-dashboard/components /Users/mcbee/Projects/agent-dashboard/__tests__ /Users/mcbee/Projects/agent-dashboard/app' in /Users/mcbee/Projects/agent-dashboardexec
-/bin/zsh -lc "sed -n '1,260p' /Users/mcbee/Projects/agent-dashboard/hooks/use-dashboard-state.ts" in /Users/mcbee/Projects/agent-dashboardexec
-/bin/zsh -lc "sed -n '1,260p' /Users/mcbee/Projects/agent-dashboard/lib/ralph-state.ts" in /Users/mcbee/Projects/agent-dashboardexec
-/bin/zsh -lc "sed -n '1,260p' /Users/mcbee/Projects/agent-dashboard/app/globals.css" in /Users/mcbee/Projects/agent-dashboardexec
-/bin/zsh -lc "sed -n '1,260p' /Users/mcbee/Projects/agent-dashboard/app/layout.tsx" in /Users/mcbee/Projects/agent-dashboard succeeded in 337ms:
+/bin/zsh -lc 'rg -n "coverage" lib __tests__ app components hooks' in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc "sed -n '1,260p' __tests__/api-state.test.ts" in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc "sed -n '1,260p' lib/ralph-state.ts" in /Users/mcbee/Projects/agent-dashboard succeeded in 264ms:
+hooks/use-dashboard-state.ts:6:import type { CoverageState } from "@/lib/coverage-state";
+hooks/use-dashboard-state.ts:18:  coverage: CoverageState;
+components/MetricsPanel.tsx:10:  coveragePct: number | null;
+components/MetricsPanel.tsx:17:function coverageTone(coveragePct: number | null): "red" | "yellow" | "green" | "none" {
+components/MetricsPanel.tsx:18:  if (coveragePct === null || !Number.isFinite(coveragePct)) {
+components/MetricsPanel.tsx:22:  if (coveragePct < 60) {
+components/MetricsPanel.tsx:26:  if (coveragePct < 80) {
+components/MetricsPanel.tsx:33:export default function MetricsPanel({ totalLoc, startLoc = null, fileCount, testCount, coveragePct }: MetricsPanelProps) {
+components/MetricsPanel.tsx:42:  const coverage = useMemo(() => {
+components/MetricsPanel.tsx:43:    const tone = coverageTone(coveragePct);
+components/MetricsPanel.tsx:44:    const rounded = coveragePct === null || !Number.isFinite(coveragePct) ? null : Math.round(coveragePct);
+components/MetricsPanel.tsx:71:  }, [coveragePct]);
+components/MetricsPanel.tsx:102:            className={`mt-1 inline-flex rounded border px-2 py-1 text-sm font-semibold ${coverage.badgeClass}`}
+components/MetricsPanel.tsx:104:            {coverage.value}
+components/LiveDashboard.tsx:75:  const coveragePct = data.coverage.total?.lines.pct ?? null;
+components/LiveDashboard.tsx:106:            coveragePct={coveragePct}
+lib/coverage-state.ts:26:  path.join("coverage", "coverage-summary.json"),
+lib/coverage-state.ts:27:  path.join(".coverage", "coverage-summary.json"),
+__tests__/MetricsPanel.test.tsx:12:  it("renders LOC, delta, file count, test count, and green coverage", () => {
+__tests__/MetricsPanel.test.tsx:13:    render(<MetricsPanel totalLoc={12345} startLoc={12000} fileCount={321} testCount={48} coveragePct={92.4} />);
+ succeeded in 217ms:
+import os from "node:os";
+import path from "node:path";
+import { promises as fs } from "node:fs";
+
+import { afterEach, describe, expect, it } from "vitest";
+
+import { GET as healthGET } from "../app/api/health/route";
+import { GET as stateGET } from "../app/api/state/route";
+
+const createdDirs: string[] = [];
+const createdFiles: string[] = [];
+
+async function makeProjectFixture(): Promise<string> {
+  const projectDir = await fs.mkdtemp(path.join(os.tmpdir(), "api-state-test-"));
+  createdDirs.push(projectDir);
+
+  await fs.mkdir(path.join(projectDir, ".ralph"), { recursive: true });
+  await fs.writeFile(
+    path.join(projectDir, ".ralph", "state.json"),
+    JSON.stringify(
+ succeeded in 205ms:
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
@@ -239,1119 +272,595 @@ export interface RalphState {
   started_at: string | null;
   checkpoints: Checkpoint[];
   agent: string | null;
- succeeded in 340ms:
-"use client";
-
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
-
-import type { CodeMetrics } from "@/lib/code-metrics";
-import type { CoverageState } from "@/lib/coverage-state";
-import type { GitState } from "@/lib/git-state";
-import type { RalphUnifiedView } from "@/lib/ralph-state";
-
-export const DASHBOARD_POLL_INTERVAL_MS = 2000;
-
-export interface DashboardStateResponse {
-  projectPath: string;
-  timestamp: string;
-  ralph: RalphUnifiedView;
-  git: GitState;
-  metrics: CodeMetrics;
-  coverage: CoverageState;
-}
-
- succeeded in 308ms:
-import type { Metadata } from "next";
-import localFont from "next/font/local";
-import "./globals.css";
-
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-});
-
-export const metadata: Metadata = {
-  title: "Ralph Dashboard",
-  description: "Real-time web UI for watching Ralph runs",
-};
-
- succeeded in 320ms:
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
-}
-
-
-
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
- succeeded in 369ms:
-/Users/mcbee/Projects/agent-dashboard/__tests__/KanbanBoard.test.tsx:12:    title: "Backlog Item",
-/Users/mcbee/Projects/agent-dashboard/__tests__/KanbanBoard.test.tsx:13:    description: "Backlog description",
-/Users/mcbee/Projects/agent-dashboard/__tests__/KanbanBoard.test.tsx:16:    verification: "Backlog verification",
-/Users/mcbee/Projects/agent-dashboard/__tests__/KanbanBoard.test.tsx:17:    steps: ["Backlog step"],
-/Users/mcbee/Projects/agent-dashboard/__tests__/KanbanBoard.test.tsx:19:    status: "backlog",
-/Users/mcbee/Projects/agent-dashboard/__tests__/KanbanBoard.test.tsx:55:  it("renders items in Backlog, In Progress, and Done columns", () => {
-/Users/mcbee/Projects/agent-dashboard/__tests__/KanbanBoard.test.tsx:58:    const backlogColumn = screen.getByTestId("column-backlog");
-/Users/mcbee/Projects/agent-dashboard/__tests__/KanbanBoard.test.tsx:62:    expect(within(backlogColumn).getByText("Backlog Item")).toBeInTheDocument();
-/Users/mcbee/Projects/agent-dashboard/components/KanbanBoard.tsx:13:  key: "backlog" | "in_progress" | "done";
-/Users/mcbee/Projects/agent-dashboard/components/KanbanBoard.tsx:34:    const backlog = items.filter((item) => !item.passes && !item.isCurrent);
-/Users/mcbee/Projects/agent-dashboard/components/KanbanBoard.tsx:37:      { key: "backlog", title: "Backlog", items: backlog },
-/Users/mcbee/Projects/agent-dashboard/__tests__/ProgressPanel.test.tsx:51:    title: "Backlog Item",
-/Users/mcbee/Projects/agent-dashboard/__tests__/ProgressPanel.test.tsx:52:    description: "Backlog",
-/Users/mcbee/Projects/agent-dashboard/__tests__/ProgressPanel.test.tsx:55:    verification: "Backlog verification",
-/Users/mcbee/Projects/agent-dashboard/__tests__/ProgressPanel.test.tsx:58:    status: "backlog",
-/Users/mcbee/Projects/agent-dashboard/__tests__/git-state.test.ts:52:      "log --pretty=format:%s -n 3": "feat: add panel\nfix: tune parser\nchore: update tests",
-/Users/mcbee/Projects/agent-dashboard/__tests__/git-state.test.ts:89:        "log --pretty=format:%s -n 5": "a\nb\nc",
-/Users/mcbee/Projects/agent-dashboard/__tests__/ralph-state.test.ts:208:      [4, "backlog"],
 
 thinking
-**Planning dashboard layout update**
-codex
-I have enough context and will implement the layout in the dashboard container while reusing existing panel components. Plan:
-1. Update `components/LiveDashboard.tsx` to use a desktop grid with Kanban as the main column, a right sidebar (`ProgressPanel`, `GitPanel`, `MetricsPanel`), and an activity log section at the bottom.
-2. Keep mobile behavior stacked by using responsive Tailwind classes (`grid-cols-1` on small screens, multi-column on large).
-3. Keep dark theme default as-is (already enforced in `app/layout.tsx` via `className="dark"`), and make sure new sections use existing dark-compatible tokens.
-4. Keep `app/page.tsx` as the main dashboard entry point pointing at this composed view.
-5. Run the test suite and verify the layout criteria against the implemented structure.
-
-thinking
-**Planning dashboard enhancements**
-codex
-I’m editing `components/LiveDashboard.tsx` now to enforce the required panel composition and add an activity log panel sourced from Ralph checkpoints.
-file update
-M /Users/mcbee/Projects/agent-dashboard/components/LiveDashboard.tsx
-@@ -12,2 +12,3 @@
- const DEFAULT_ERROR_MESSAGE = "Unable to load dashboard state.";
-+const MAX_ACTIVITY_ENTRIES = 8;
- 
-@@ -26,2 +27,15 @@
- 
-+function formatActivityTimestamp(isoTimestamp: string | null | undefined): string {
-+  if (!isoTimestamp) {
-+    return "Unknown time";
-+  }
-+
-+  const timestamp = new Date(isoTimestamp);
-+  if (Number.isNaN(timestamp.getTime())) {
-+    return "Unknown time";
-+  }
-+
-+  return timestamp.toLocaleString();
-+}
-+
- function DashboardBody() {
-@@ -62,2 +76,5 @@
-   const startedAt = data.ralph.state?.started_at ?? null;
-+  const activityItems = [...(data.ralph.state?.checkpoints ?? [])]
-+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-+    .slice(0, MAX_ACTIVITY_ENTRIES);
- 
-@@ -76,15 +93,50 @@
- 
--      <ProgressPanel items={data.ralph.items} startedAt={startedAt} />
-+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-12">
-+        <div className="xl:col-span-8">
-+          <KanbanBoard items={data.ralph.items} />
-+        </div>
-+
-+        <aside className="space-y-6 xl:col-span-4">
-+          <ProgressPanel items={data.ralph.items} startedAt={startedAt} />
-+          <GitPanel git={data.git} />
-+          <MetricsPanel
-+            totalLoc={data.metrics.totalLoc}
-+            fileCount={data.metrics.fileCount}
-+            testCount={data.metrics.testFileCount}
-+            coveragePct={coveragePct}
-+          />
-+        </aside>
-+      </section>
- 
--      <div className="grid gap-6 lg:grid-cols-2">
--        <MetricsPanel
--          totalLoc={data.metrics.totalLoc}
--          fileCount={data.metrics.fileCount}
--          testCount={data.metrics.testFileCount}
--          coveragePct={coveragePct}
--        />
--        <GitPanel git={data.git} />
--      </div>
-+      <section className="rounded-lg border border-border bg-card p-4 text-card-foreground md:p-6">
-+        <div className="flex items-center justify-between gap-3">
-+          <h2 className="text-lg font-semibold">Activity Log</h2>
-+          <p className="text-xs text-muted-foreground">{activityItems.length} recent events</p>
-+        </div>
- 
--      <KanbanBoard items={data.ralph.items} />
-+        {activityItems.length === 0 ? (
-+          <p className="mt-3 rounded-md border border-dashed border-border p-3 text-sm text-muted-foreground">
-+            No activity yet. Checkpoints will appear as Ralph progresses through items.
-+          </p>
-+        ) : (
-+          <ol className="mt-4 space-y-2">
-+            {activityItems.map((checkpoint) => (
-+              <li key={`${checkpoint.commit_sha}-${checkpoint.timestamp}`} className="rounded-md border border-border bg-background/50 p-3">
-+                <div className="flex flex-wrap items-center justify-between gap-2">
-+                  <p className="text-sm font-medium">Item #{checkpoint.item_id}</p>
-+                  <p className="text-xs text-muted-foreground">{formatActivityTimestamp(checkpoint.timestamp)}</p>
-+                </div>
-+                <p className="mt-1 text-xs text-muted-foreground">
-+                  Commit <span className="font-mono text-foreground">{checkpoint.commit_sha.slice(0, 8)}</span>
-+                  {" · "}
-+                  {checkpoint.tests_passed ? "tests passed" : "tests pending/failed"}
-+                  {" · "}
-+                  {checkpoint.files_changed.length} files changed
-+                </p>
-+                {checkpoint.route ? <p className="mt-1 text-xs text-muted-foreground">Route: {checkpoint.route}</p> : null}
-+              </li>
-+            ))}
-+          </ol>
-+        )}
-+      </section>
-     </div>
-apply_patch(auto_approved=true) exited 0 in 26ms:
-Success. Updated the following files:
-M /Users/mcbee/Projects/agent-dashboard/components/LiveDashboard.tsx
-file update:
-diff --git a/components/LiveDashboard.tsx b/components/LiveDashboard.tsx
-index 424544ddb61e95f0ce7be5a75cfb81d96934988d..3de474610dd786061183936c22043744fcbb4167
---- a/components/LiveDashboard.tsx
-+++ b/components/LiveDashboard.tsx
-@@ -10,6 +10,7 @@
- import { useDashboardState } from "@/hooks/use-dashboard-state";
- 
- const DEFAULT_ERROR_MESSAGE = "Unable to load dashboard state.";
-+const MAX_ACTIVITY_ENTRIES = 8;
- 
- function formatLastUpdated(isoTimestamp: string | undefined): string {
-   if (!isoTimestamp) {
-@@ -24,6 +25,19 @@
-   return timestamp.toLocaleTimeString();
- }
- 
-+function formatActivityTimestamp(isoTimestamp: string | null | undefined): string {
-+  if (!isoTimestamp) {
-+    return "Unknown time";
-+  }
-+
-+  const timestamp = new Date(isoTimestamp);
-+  if (Number.isNaN(timestamp.getTime())) {
-+    return "Unknown time";
-+  }
-+
-+  return timestamp.toLocaleString();
-+}
-+
- function DashboardBody() {
-   const { data, error, isPending, isFetching, dataUpdatedAt } = useDashboardState();
-   const [showUpdated, setShowUpdated] = useState(false);
-@@ -60,6 +74,9 @@
- 
-   const coveragePct = data.coverage.total?.lines.pct ?? null;
-   const startedAt = data.ralph.state?.started_at ?? null;
-+  const activityItems = [...(data.ralph.state?.checkpoints ?? [])]
-+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-+    .slice(0, MAX_ACTIVITY_ENTRIES);
- 
-   return (
-     <div className="space-y-6">
-@@ -74,19 +91,54 @@
-         </div>
-       </section>
- 
--      <ProgressPanel items={data.ralph.items} startedAt={startedAt} />
-+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-12">
-+        <div className="xl:col-span-8">
-+          <KanbanBoard items={data.ralph.items} />
-+        </div>
-+
-+        <aside className="space-y-6 xl:col-span-4">
-+          <ProgressPanel items={data.ralph.items} startedAt={startedAt} />
-+          <GitPanel git={data.git} />
-+          <MetricsPanel
-+            totalLoc={data.metrics.totalLoc}
-+            fileCount={data.metrics.fileCount}
-+            testCount={data.metrics.testFileCount}
-+            coveragePct={coveragePct}
-+          />
-+        </aside>
-+      </section>
- 
--      <div className="grid gap-6 lg:grid-cols-2">
--        <MetricsPanel
--          totalLoc={data.metrics.totalLoc}
--          fileCount={data.metrics.fileCount}
--          testCount={data.metrics.testFileCount}
--          coveragePct={coveragePct}
--        />
--        <GitPanel git={data.git} />
--      </div>
-+      <section className="rounded-lg border border-border bg-card p-4 text-card-foreground md:p-6">
-+        <div className="flex items-center justify-between gap-3">
-+          <h2 className="text-lg font-semibold">Activity Log</h2>
-+          <p className="text-xs text-muted-foreground">{activityItems.length} recent events</p>
-+        </div>
- 
--      <KanbanBoard items={data.ralph.items} />
-+        {activityItems.length === 0 ? (
-+          <p className="mt-3 rounded-md border border-dashed border-border p-3 text-sm text-muted-foreground">
-+            No activity yet. Checkpoints will appear as Ralph progresses through items.
-+          </p>
-+        ) : (
-+          <ol className="mt-4 space-y-2">
-+            {activityItems.map((checkpoint) => (
-+              <li key={`${checkpoint.commit_sha}-${checkpoint.timestamp}`} className="rounded-md border border-border bg-background/50 p-3">
-+                <div className="flex flex-wrap items-center justify-between gap-2">
-+                  <p className="text-sm font-medium">Item #{checkpoint.item_id}</p>
-+                  <p className="text-xs text-muted-foreground">{formatActivityTimestamp(checkpoint.timestamp)}</p>
-+                </div>
-+                <p className="mt-1 text-xs text-muted-foreground">
-+                  Commit <span className="font-mono text-foreground">{checkpoint.commit_sha.slice(0, 8)}</span>
-+                  {" · "}
-+                  {checkpoint.tests_passed ? "tests passed" : "tests pending/failed"}
-+                  {" · "}
-+                  {checkpoint.files_changed.length} files changed
-+                </p>
-+                {checkpoint.route ? <p className="mt-1 text-xs text-muted-foreground">Route: {checkpoint.route}</p> : null}
-+              </li>
-+            ))}
-+          </ol>
-+        )}
-+      </section>
-     </div>
-   );
- }
-
-file update:
-diff --git a/components/LiveDashboard.tsx b/components/LiveDashboard.tsx
-index 424544ddb61e95f0ce7be5a75cfb81d96934988d..3de474610dd786061183936c22043744fcbb4167
---- a/components/LiveDashboard.tsx
-+++ b/components/LiveDashboard.tsx
-@@ -10,6 +10,7 @@
- import { useDashboardState } from "@/hooks/use-dashboard-state";
- 
- const DEFAULT_ERROR_MESSAGE = "Unable to load dashboard state.";
-+const MAX_ACTIVITY_ENTRIES = 8;
- 
- function formatLastUpdated(isoTimestamp: string | undefined): string {
-   if (!isoTimestamp) {
-@@ -24,6 +25,19 @@
-   return timestamp.toLocaleTimeString();
- }
- 
-+function formatActivityTimestamp(isoTimestamp: string | null | undefined): string {
-+  if (!isoTimestamp) {
-+    return "Unknown time";
-+  }
-+
-+  const timestamp = new Date(isoTimestamp);
-+  if (Number.isNaN(timestamp.getTime())) {
-+    return "Unknown time";
-+  }
-+
-+  return timestamp.toLocaleString();
-+}
-+
- function DashboardBody() {
-   const { data, error, isPending, isFetching, dataUpdatedAt } = useDashboardState();
-   const [showUpdated, setShowUpdated] = useState(false);
-@@ -60,6 +74,9 @@
- 
-   const coveragePct = data.coverage.total?.lines.pct ?? null;
-   const startedAt = data.ralph.state?.started_at ?? null;
-+  const activityItems = [...(data.ralph.state?.checkpoints ?? [])]
-+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-+    .slice(0, MAX_ACTIVITY_ENTRIES);
- 
-   return (
-     <div className="space-y-6">
-@@ -74,19 +91,54 @@
-         </div>
-       </section>
- 
--      <ProgressPanel items={data.ralph.items} startedAt={startedAt} />
-+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-12">
-+        <div className="xl:col-span-8">
-+          <KanbanBoard items={data.ralph.items} />
-+        </div>
-+
-+        <aside className="space-y-6 xl:col-span-4">
-+          <ProgressPanel items={data.ralph.items} startedAt={startedAt} />
-+          <GitPanel git={data.git} />
-+          <MetricsPanel
-+            totalLoc={data.metrics.totalLoc}
-+            fileCount={data.metrics.fileCount}
-+            testCount={data.metrics.testFileCount}
-+            coveragePct={coveragePct}
-+          />
-+        </aside>
-+      </section>
- 
--      <div className="grid gap-6 lg:grid-cols-2">
--        <MetricsPanel
--          totalLoc={data.metrics.totalLoc}
--          fileCount={data.metrics.fileCount}
--          testCount={data.metrics.testFileCount}
--          coveragePct={coveragePct}
--        />
--        <GitPanel git={data.git} />
--      </div>
-+      <section className="rounded-lg border border-border bg-card p-4 text-card-foreground md:p-6">
-+        <div className="flex items-center justify-between gap-3">
-+          <h2 className="text-lg font-semibold">Activity Log</h2>
-+          <p className="text-xs text-muted-foreground">{activityItems.length} recent events</p>
-+        </div>
- 
--      <KanbanBoard items={data.ralph.items} />
-+        {activityItems.length === 0 ? (
-+          <p className="mt-3 rounded-md border border-dashed border-border p-3 text-sm text-muted-foreground">
-+            No activity yet. Checkpoints will appear as Ralph progresses through items.
-+          </p>
-+        ) : (
-+          <ol className="mt-4 space-y-2">
-+            {activityItems.map((checkpoint) => (
-+              <li key={`${checkpoint.commit_sha}-${checkpoint.timestamp}`} className="rounded-md border border-border bg-background/50 p-3">
-+                <div className="flex flex-wrap items-center justify-between gap-2">
-+                  <p className="text-sm font-medium">Item #{checkpoint.item_id}</p>
-+                  <p className="text-xs text-muted-foreground">{formatActivityTimestamp(checkpoint.timestamp)}</p>
-+                </div>
-+                <p className="mt-1 text-xs text-muted-foreground">
-+                  Commit <span className="font-mono text-foreground">{checkpoint.commit_sha.slice(0, 8)}</span>
-+                  {" · "}
-+                  {checkpoint.tests_passed ? "tests passed" : "tests pending/failed"}
-+                  {" · "}
-+                  {checkpoint.files_changed.length} files changed
-+                </p>
-+                {checkpoint.route ? <p className="mt-1 text-xs text-muted-foreground">Route: {checkpoint.route}</p> : null}
-+              </li>
-+            ))}
-+          </ol>
-+        )}
-+      </section>
-     </div>
-   );
- }
-
-
-thinking
-**Assessing main dashboard structure**
-codex
-The layout changes are in place with Kanban as the main area, sidebar panels, and a bottom activity log. I’m running the test suite now and then I’ll confirm the verification criteria against the final structure.
+**Planning coverage report parsing**
 exec
-/bin/zsh -lc 'npm test -- --run' in /Users/mcbee/Projects/agent-dashboard succeeded in 1.49s:
+/bin/zsh -lc "node -e \"const fs=require('fs');const p='prd-ralph-dashboard.json';const d=JSON.parse(fs.readFileSync(p,'utf8'));console.log(d.items.find(i=>i.id===6)||d.items[5]);\"" in /Users/mcbee/Projects/agent-dashboard succeeded in 265ms:
+{
+  id: 6,
+  category: 'core',
+  title: 'Test coverage reader',
+  description: 'Module to parse test coverage reports (coverage.json, lcov, etc.)',
+  priority: 2,
+  passes: false,
+  verification: 'Unit tests pass for coverage parsing',
+  steps: [
+    'Create lib/coverage-reader.ts',
+    'Support coverage.json (Vitest/Istanbul format)',
+    'Support lcov.info (common format)',
+    'Return: overall percentage, per-file percentages',
+    'Write unit tests in __tests__/coverage-reader.test.ts'
+  ],
+  notes: ''
+}
+
+thinking
+**Designing coverage parsing module**
+codex
+I’m moving to implementation now: adding `lib/coverage-reader.ts` with parsers plus a file-based reader, then writing `__tests__/coverage-reader.test.ts` to verify JSON/LCOV behavior and error handling.
+exec
+/bin/zsh -lc "cat > lib/coverage-reader.ts <<'EOF'
+import { readFile } from \"node:fs/promises\";
+import path from \"node:path\";
+
+export interface CoverageParseOutput {
+  overallPercentage: number;
+  perFilePercentages: Record<string, number>;
+}
+
+export interface CoverageReaderResult extends CoverageParseOutput {
+  available: boolean;
+  format: \"coverage.json\" | \"lcov.info\" | null;
+  sourcePath: string | null;
+  error: string | null;
+}
+
+const COVERAGE_REPORT_CANDIDATES: Array<{ relativePath: string; format: \"coverage.json\" | \"lcov.info\" }> = [
+  { relativePath: path.join(\"coverage\", \"coverage.json\"), format: \"coverage.json\" },
+  { relativePath: path.join(\"coverage\", \"coverage-final.json\"), format: \"coverage.json\" },
+  { relativePath: path.join(\"coverage\", \"lcov.info\"), format: \"lcov.info\" },
+  { relativePath: \"lcov.info\", format: \"lcov.info\" },
+];
+
+interface CoverageCount {
+  covered: number;
+  total: number;
+}
+
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === \"object\" && value "'!== null;
+}
+
+function toPercentage(covered: number, total: number): number {
+  if (total <= 0) {
+    return 0;
+  }
+
+  return Number(((covered / total) * 100).toFixed(2));
+}
+
+function parseCoverageSummaryEntry(entry: unknown): CoverageCount | null {
+  if (!isObject(entry) || !isObject(entry.lines)) {
+    return null;
+  }
+
+  const total = typeof entry.lines.total === "number" ? entry.lines.total : null;
+  const covered = typeof entry.lines.covered === "number" ? entry.lines.covered : null;
+
+  if (total === null || covered === null || total < 0 || covered < 0) {
+    return null;
+  }
+
+  return { covered, total };
+}
+
+function parseIstanbulFileEntry(entry: unknown): CoverageCount | null {
+  if (!isObject(entry) || !isObject(entry.s) || !isObject(entry.statementMap)) {
+    return null;
+  }
+
+  const coveredLines = new Set<number>();
+  const totalLines = new Set<number>();
+
+  for (const [statementId, countValue] of Object.entries(entry.s)) {
+    const statement = entry.statementMap[statementId];
+
+    if (!isObject(statement) || !isObject(statement.start)) {
+      continue;
+    }
+
+    const line = typeof statement.start.line === "number" ? statement.start.line : null;
+    const count = typeof countValue === "number" ? countValue : null;
+
+    if (line === null || count === null) {
+      continue;
+    }
+
+    totalLines.add(line);
+
+    if (count > 0) {
+      coveredLines.add(line);
+    }
+  }
+
+  return {
+    covered: coveredLines.size,
+    total: totalLines.size,
+  };
+}
+
+function parseCoverageJsonObject(value: unknown): CoverageParseOutput {
+  if (!isObject(value)) {
+    throw new Error("Coverage JSON must be an object");
+  }
+
+  const perFilePercentages: Record<string, number> = {};
+  let coveredTotal = 0;
+  let lineTotal = 0;
+
+  for (const [filePath, entry] of Object.entries(value)) {
+    if (filePath === "total") {
+      continue;
+    }
+
+    const coverage = parseCoverageSummaryEntry(entry) ?? parseIstanbulFileEntry(entry);
+
+    if (!coverage || coverage.total <= 0) {
+      continue;
+    }
+
+    perFilePercentages[filePath] = toPercentage(coverage.covered, coverage.total);
+    coveredTotal += coverage.covered;
+    lineTotal += coverage.total;
+  }
+
+  if (lineTotal === 0) {
+    const totalSummary = parseCoverageSummaryEntry(value.total);
+
+    if (totalSummary && totalSummary.total > 0) {
+      return {
+        overallPercentage: toPercentage(totalSummary.covered, totalSummary.total),
+        perFilePercentages,
+      };
+    }
+
+    throw new Error("Coverage JSON did not include any valid file coverage data");
+  }
+
+  return {
+    overallPercentage: toPercentage(coveredTotal, lineTotal),
+    perFilePercentages,
+  };
+}
+
+export function parseCoverageJson(raw: string): CoverageParseOutput {
+  const parsed = JSON.parse(raw) as unknown;
+  return parseCoverageJsonObject(parsed);
+}
+
+export function parseLcovInfo(raw: string): CoverageParseOutput {
+  const perFilePercentages: Record<string, number> = {};
+
+  let currentFile: string | null = null;
+  let hasLh = false;
+  let hasLf = false;
+  let lh = 0;
+  let lf = 0;
+  let daLineHits = new Map<number, number>();
+
+  let coveredTotal = 0;
+  let lineTotal = 0;
+
+  function finalizeCurrentFile(): void {
+    if (!currentFile) {
+      return;
+    }
+
+    let covered = 0;
+    let total = 0;
+
+    if (hasLf && hasLh) {
+      covered = lh;
+      total = lf;
+    } else {
+      total = daLineHits.size;
+
+      for (const hits of daLineHits.values()) {
+        if (hits > 0) {
+          covered += 1;
+        }
+      }
+    }
+
+    if (total > 0) {
+      perFilePercentages[currentFile] = toPercentage(covered, total);
+      coveredTotal += covered;
+      lineTotal += total;
+    }
+
+    currentFile = null;
+    hasLh = false;
+    hasLf = false;
+    lh = 0;
+    lf = 0;
+    daLineHits = new Map<number, number>();
+  }
+
+  const lines = raw.split(/'"\\r?\\n/);
+
+  for (const line of lines) {
+    if (line.startsWith(\"SF:\")) {
+      finalizeCurrentFile();
+      currentFile = line.slice(3).trim();
+      continue;
+    }
+
+    if ("'!currentFile) {
+      continue;
+    }
+
+    if (line.startsWith("DA:")) {
+      const payload = line.slice(3);
+      const [lineNumberRaw, hitsRaw] = payload.split(",", 2);
+      const lineNumber = Number.parseInt(lineNumberRaw ?? "", 10);
+      const hits = Number.parseInt(hitsRaw ?? "", 10);
+
+      if (!Number.isNaN(lineNumber) && !Number.isNaN(hits)) {
+        const previous = daLineHits.get(lineNumber) ?? 0;
+        daLineHits.set(lineNumber, Math.max(previous, hits));
+      }
+
+      continue;
+    }
+
+    if (line.startsWith("LH:")) {
+      const value = Number.parseInt(line.slice(3).trim(), 10);
+
+      if (!Number.isNaN(value)) {
+        hasLh = true;
+        lh = value;
+      }
+
+      continue;
+    }
+
+    if (line.startsWith("LF:")) {
+      const value = Number.parseInt(line.slice(3).trim(), 10);
+
+      if (!Number.isNaN(value)) {
+        hasLf = true;
+        lf = value;
+      }
+
+      continue;
+    }
+
+    if (line === "end_of_record") {
+      finalizeCurrentFile();
+    }
+  }
+
+  finalizeCurrentFile();
+
+  if (lineTotal === 0) {
+    throw new Error("LCOV report did not include any valid file coverage data");
+  }
+
+  return {
+    overallPercentage: toPercentage(coveredTotal, lineTotal),
+    perFilePercentages,
+  };
+}
+
+export async function readCoverageReport(projectPath: string): Promise<CoverageReaderResult> {
+  for (const candidate of COVERAGE_REPORT_CANDIDATES) {
+    const absolutePath = path.join(projectPath, candidate.relativePath);
+
+    try {
+      const raw = await readFile(absolutePath, "utf8");
+      const parsed = candidate.format === "coverage.json" ? parseCoverageJson(raw) : parseLcovInfo(raw);
+
+      return {
+        available: true,
+        format: candidate.format,
+        sourcePath: absolutePath,
+        overallPercentage: parsed.overallPercentage,
+        perFilePercentages: parsed.perFilePercentages,
+        error: null,
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+
+      if (message.includes("ENOENT")) {
+        continue;
+      }
+
+      return {
+        available: false,
+        format: candidate.format,
+        sourcePath: absolutePath,
+        overallPercentage: 0,
+        perFilePercentages: {},
+        error: message,
+      };
+    }
+  }
+
+  return {
+    available: false,
+    format: null,
+    sourcePath: null,
+    overallPercentage: 0,
+    perFilePercentages: {},
+    error: "Coverage report not found",
+  };
+}
+EOF' in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc "cat > __tests__/coverage-reader.test.ts <<'EOF'
+import { promises as fs } from \"node:fs\";
+import os from \"node:os\";
+import path from \"node:path\";
+
+import { afterEach, describe, expect, it } from \"vitest\";
+
+import { parseCoverageJson, parseLcovInfo, readCoverageReport } from \"../lib/coverage-reader\";
+
+const tempDirs: string[] = [];
+
+async function makeProjectDir(): Promise<string> {
+  const projectDir = await fs.mkdtemp(path.join(os.tmpdir(), \"coverage-reader-test-\"));
+  tempDirs.push(projectDir);
+  return projectDir;
+}
+
+async function writeFile(projectDir: string, relativePath: string, content: string): Promise<void> {
+  const filePath = path.join(projectDir, relativePath);
+  await fs.mkdir(path.dirname(filePath), { recursive: true });
+  await fs.writeFile(filePath, content, \"utf8\");
+}
+
+afterEach(async () => {
+  await Promise.all(tempDirs.splice(0).map((dir) => fs.rm(dir, { recursive: true, force: true })));
+});
+
+describe(\"parseCoverageJson\", () => {
+  it(\"parses Istanbul/Vitest coverage JSON and returns overall + per-file percentages\", () => {
+    const input = JSON.stringify(
+      {
+        \"src/a.ts\": {
+          path: \"src/a.ts\",
+          statementMap: {
+            \"0\": { start: { line: 1, column: 0 }, end: { line: 1, column: 12 } },
+            \"1\": { start: { line: 2, column: 0 }, end: { line: 2, column: 12 } },
+          },
+          s: { \"0\": 1, \"1\": 0 },
+        },
+        \"src/b.ts\": {
+          path: \"src/b.ts\",
+          statementMap: {
+            \"0\": { start: { line: 10, column: 0 }, end: { line: 10, column: 12 } },
+            \"1\": { start: { line: 11, column: 0 }, end: { line: 11, column: 12 } },
+            \"2\": { start: { line: 12, column: 0 }, end: { line: 12, column: 12 } },
+          },
+          s: { \"0\": 1, \"1\": 1, \"2\": 0 },
+        },
+      },
+      null,
+      2,
+    );
+
+    const result = parseCoverageJson(input);
+
+    expect(result.overallPercentage).toBe(60);
+    expect(result.perFilePercentages).toEqual({
+      \"src/a.ts\": 50,
+      \"src/b.ts\": 66.67,
+    });
+  });
+
+  it(\"throws when JSON report does not contain valid coverage data\", () => {
+    expect(() => parseCoverageJson(JSON.stringify({ foo: \"bar\" }))).toThrow(
+      \"Coverage JSON did not include any valid file coverage data\",
+    );
+  });
+});
+
+describe(\"parseLcovInfo\", () => {
+  it(\"parses LCOV data and returns overall + per-file percentages\", () => {
+    const input = [
+      \"TN:\",
+      \"SF:src/a.ts\",
+      \"DA:1,1\",
+      \"DA:2,0\",
+      \"LF:2\",
+      \"LH:1\",
+      \"end_of_record\",
+      \"SF:src/b.ts\",
+      \"DA:10,1\",
+      \"DA:11,1\",
+      \"end_of_record\",
+      \"\",
+    ].join(\"\\n\");
+
+    const result = parseLcovInfo(input);
+
+    expect(result.overallPercentage).toBe(75);
+    expect(result.perFilePercentages).toEqual({
+      \"src/a.ts\": 50,
+      \"src/b.ts\": 100,
+    });
+  });
+
+  it(\"throws when LCOV does not contain valid file data\", () => {
+    expect(() => parseLcovInfo(\"TN:\\n\")).toThrow(\"LCOV report did not include any valid file coverage data\");
+  });
+});
+
+describe(\"readCoverageReport\", () => {
+  it(\"prefers coverage.json when present\", async () => {
+    const projectDir = await makeProjectDir();
+
+    await writeFile(
+      projectDir,
+      \"coverage/coverage.json\",
+      JSON.stringify(
+        {
+          \"src/file.ts\": {
+            path: \"src/file.ts\",
+            statementMap: {
+              \"0\": { start: { line: 1, column: 0 }, end: { line: 1, column: 12 } },
+            },
+            s: { \"0\": 1 },
+          },
+        },
+        null,
+        2,
+      ),
+    );
+
+    const result = await readCoverageReport(projectDir);
+
+    expect(result.available).toBe(true);
+    expect(result.error).toBeNull();
+    expect(result.format).toBe(\"coverage.json\");
+    expect(result.overallPercentage).toBe(100);
+    expect(result.perFilePercentages).toEqual({ \"src/file.ts\": 100 });
+  });
+
+  it(\"reads lcov.info when JSON report is missing\", async () => {
+    const projectDir = await makeProjectDir();
+
+    await writeFile(projectDir, \"coverage/lcov.info\", [\"SF:src/a.ts\", \"DA:1,1\", \"DA:2,0\", \"end_of_record\", \"\"].join(\"\\n\"));
+
+    const result = await readCoverageReport(projectDir);
+
+    expect(result.available).toBe(true);
+    expect(result.error).toBeNull();
+    expect(result.format).toBe(\"lcov.info\");
+    expect(result.overallPercentage).toBe(50);
+    expect(result.perFilePercentages).toEqual({ \"src/a.ts\": 50 });
+  });
+
+  it(\"returns not-found result when no coverage files exist\", async () => {
+    const projectDir = await makeProjectDir();
+
+    const result = await readCoverageReport(projectDir);
+
+    expect(result.available).toBe(false);
+    expect(result.format).toBeNull();
+    expect(result.sourcePath).toBeNull();
+    expect(result.overallPercentage).toBe(0);
+    expect(result.perFilePercentages).toEqual({});
+    expect(result.error).toBe(\"Coverage report not found\");
+  });
+});
+EOF" in /Users/mcbee/Projects/agent-dashboard succeeded in 237ms:
+
+ succeeded in 221ms:
+
+
+thinking
+**Planning targeted and full tests**
+codex
+Implementation files are in place. I’m running the coverage-reader tests first, then the full suite to verify this change doesn’t break anything else.
+exec
+/bin/zsh -lc 'npm test -- __tests__/coverage-reader.test.ts' in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc 'npm test' in /Users/mcbee/Projects/agent-dashboard succeeded in 1.23s:
 
 > ralph-dashboard@0.1.0 test
-> vitest run --run
+> vitest run __tests__/coverage-reader.test.ts
 
 
  RUN  v4.0.18 /Users/mcbee/Projects/agent-dashboard
 
- ✓ __tests__/code-metrics.test.ts (3 tests) 56ms
- ✓ __tests__/ralph-state.test.ts (9 tests) 33ms
- ✓ __tests__/example.test.ts (1 test) 27ms
- ✓ __tests__/use-dashboard-state.test.tsx (2 tests) 22ms
- ✓ __tests__/MetricsPanel.test.tsx (3 tests) 45ms
- ✓ __tests__/api-state.test.ts (6 tests) 62ms
- ✓ __tests__/GitPanel.test.tsx (2 tests) 99ms
- ✓ __tests__/ProgressPanel.test.tsx (2 tests) 75ms
- ✓ __tests__/KanbanBoard.test.tsx (3 tests) 130ms
+ ✓ __tests__/coverage-reader.test.ts (7 tests) 14ms
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  14:57:44
+   Duration  686ms (transform 44ms, setup 65ms, import 29ms, tests 14ms, environment 438ms)
+
+ succeeded in 1.60s:
+
+> ralph-dashboard@0.1.0 test
+> vitest run
+
+
+ RUN  v4.0.18 /Users/mcbee/Projects/agent-dashboard
+
+ ✓ __tests__/ralph-state.test.ts (9 tests) 30ms
+ ✓ __tests__/coverage-reader.test.ts (7 tests) 20ms
+ ✓ __tests__/code-metrics.test.ts (3 tests) 19ms
+ ✓ __tests__/MetricsPanel.test.tsx (3 tests) 57ms
+ ✓ __tests__/use-dashboard-state.test.tsx (2 tests) 18ms
+ ✓ __tests__/api-state.test.ts (6 tests) 87ms
+ ✓ __tests__/ProgressPanel.test.tsx (2 tests) 79ms
+ ✓ __tests__/GitPanel.test.tsx (2 tests) 100ms
+ ✓ __tests__/KanbanBoard.test.tsx (3 tests) 131ms
  ✓ __tests__/git-state.test.ts (5 tests) 2ms
+ ✓ __tests__/example.test.ts (1 test) 8ms
 
- Test Files  10 passed (10)
-      Tests  36 passed (36)
-file update:
-diff --git a/components/LiveDashboard.tsx b/components/LiveDashboard.tsx
-index 424544ddb61e95f0ce7be5a75cfb81d96934988d..3de474610dd786061183936c22043744fcbb4167
---- a/components/LiveDashboard.tsx
-+++ b/components/LiveDashboard.tsx
-@@ -10,6 +10,7 @@
- import { useDashboardState } from "@/hooks/use-dashboard-state";
- 
- const DEFAULT_ERROR_MESSAGE = "Unable to load dashboard state.";
-+const MAX_ACTIVITY_ENTRIES = 8;
- 
- function formatLastUpdated(isoTimestamp: string | undefined): string {
-   if (!isoTimestamp) {
-@@ -24,6 +25,19 @@
-   return timestamp.toLocaleTimeString();
- }
- 
-+function formatActivityTimestamp(isoTimestamp: string | null | undefined): string {
-+  if (!isoTimestamp) {
-+    return "Unknown time";
-+  }
-+
-+  const timestamp = new Date(isoTimestamp);
-+  if (Number.isNaN(timestamp.getTime())) {
-+    return "Unknown time";
-+  }
-+
-+  return timestamp.toLocaleString();
-+}
-+
- function DashboardBody() {
-   const { data, error, isPending, isFetching, dataUpdatedAt } = useDashboardState();
-   const [showUpdated, setShowUpdated] = useState(false);
-@@ -60,6 +74,9 @@
- 
-   const coveragePct = data.coverage.total?.lines.pct ?? null;
-   const startedAt = data.ralph.state?.started_at ?? null;
-+  const activityItems = [...(data.ralph.state?.checkpoints ?? [])]
-+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-+    .slice(0, MAX_ACTIVITY_ENTRIES);
- 
-   return (
-     <div className="space-y-6">
-@@ -74,19 +91,54 @@
-         </div>
-       </section>
- 
--      <ProgressPanel items={data.ralph.items} startedAt={startedAt} />
-+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-12">
-+        <div className="xl:col-span-8">
-+          <KanbanBoard items={data.ralph.items} />
-+        </div>
-+
-+        <aside className="space-y-6 xl:col-span-4">
-+          <ProgressPanel items={data.ralph.items} startedAt={startedAt} />
-+          <GitPanel git={data.git} />
-+          <MetricsPanel
-+            totalLoc={data.metrics.totalLoc}
-+            fileCount={data.metrics.fileCount}
-+            testCount={data.metrics.testFileCount}
-+            coveragePct={coveragePct}
-+          />
-+        </aside>
-+      </section>
- 
--      <div className="grid gap-6 lg:grid-cols-2">
--        <MetricsPanel
--          totalLoc={data.metrics.totalLoc}
--          fileCount={data.metrics.fileCount}
--          testCount={data.metrics.testFileCount}
--          coveragePct={coveragePct}
--        />
--        <GitPanel git={data.git} />
--      </div>
-+      <section className="rounded-lg border border-border bg-card p-4 text-card-foreground md:p-6">
-+        <div className="flex items-center justify-between gap-3">
-+          <h2 className="text-lg font-semibold">Activity Log</h2>
-+          <p className="text-xs text-muted-foreground">{activityItems.length} recent events</p>
-+        </div>
- 
--      <KanbanBoard items={data.ralph.items} />
-+        {activityItems.length === 0 ? (
-+          <p className="mt-3 rounded-md border border-dashed border-border p-3 text-sm text-muted-foreground">
-+            No activity yet. Checkpoints will appear as Ralph progresses through items.
-+          </p>
-+        ) : (
-+          <ol className="mt-4 space-y-2">
-+            {activityItems.map((checkpoint) => (
-+              <li key={`${checkpoint.commit_sha}-${checkpoint.timestamp}`} className="rounded-md border border-border bg-background/50 p-3">
-+                <div className="flex flex-wrap items-center justify-between gap-2">
-+                  <p className="text-sm font-medium">Item #{checkpoint.item_id}</p>
-+                  <p className="text-xs text-muted-foreground">{formatActivityTimestamp(checkpoint.timestamp)}</p>
-+                </div>
-+                <p className="mt-1 text-xs text-muted-foreground">
-+                  Commit <span className="font-mono text-foreground">{checkpoint.commit_sha.slice(0, 8)}</span>
-+                  {" · "}
-+                  {checkpoint.tests_passed ? "tests passed" : "tests pending/failed"}
-+                  {" · "}
-+                  {checkpoint.files_changed.length} files changed
-+                </p>
-+                {checkpoint.route ? <p className="mt-1 text-xs text-muted-foreground">Route: {checkpoint.route}</p> : null}
-+              </li>
-+            ))}
-+          </ol>
-+        )}
-+      </section>
-     </div>
-   );
- }
-
-
-thinking
-**Planning output verification**
+ Test Files  11 passed (11)
 codex
-All tests passed. I’ll do a quick diff review to confirm the implementation is scoped to this item and then report the exact verification mapping.
+All tests are passing. I’m doing a quick diff check now to confirm changes are limited to the coverage reader item only.
 exec
-/bin/zsh -lc 'git -C /Users/mcbee/Projects/agent-dashboard status --short' in /Users/mcbee/Projects/agent-dashboardexec
-/bin/zsh -lc 'git -C /Users/mcbee/Projects/agent-dashboard diff -- /Users/mcbee/Projects/agent-dashboard/components/LiveDashboard.tsx /Users/mcbee/Projects/agent-dashboard/app/page.tsx' in /Users/mcbee/Projects/agent-dashboard succeeded in 243ms:
+/bin/zsh -lc "git status --short && echo '---' && git diff -- lib/coverage-reader.ts __tests__/coverage-reader.test.ts" in /Users/mcbee/Projects/agent-dashboard succeeded in 239ms:
  M .ralph/current.log
  M .ralph/state.json
- M components/LiveDashboard.tsx
  M prd-ralph-dashboard.json
- succeeded in 240ms:
-diff --git a/components/LiveDashboard.tsx b/components/LiveDashboard.tsx
-index 424544d..3de4746 100644
---- a/components/LiveDashboard.tsx
-+++ b/components/LiveDashboard.tsx
-@@ -10,6 +10,7 @@ import ProgressPanel from "@/components/ProgressPanel";
- import { useDashboardState } from "@/hooks/use-dashboard-state";
- 
- const DEFAULT_ERROR_MESSAGE = "Unable to load dashboard state.";
-+const MAX_ACTIVITY_ENTRIES = 8;
- 
- function formatLastUpdated(isoTimestamp: string | undefined): string {
-   if (!isoTimestamp) {
-@@ -24,6 +25,19 @@ function formatLastUpdated(isoTimestamp: string | undefined): string {
-   return timestamp.toLocaleTimeString();
- }
- 
-+function formatActivityTimestamp(isoTimestamp: string | null | undefined): string {
-+  if (!isoTimestamp) {
-+    return "Unknown time";
-+  }
-file update:
-diff --git a/components/LiveDashboard.tsx b/components/LiveDashboard.tsx
-index 424544ddb61e95f0ce7be5a75cfb81d96934988d..3de474610dd786061183936c22043744fcbb4167
---- a/components/LiveDashboard.tsx
-+++ b/components/LiveDashboard.tsx
-@@ -10,6 +10,7 @@
- import { useDashboardState } from "@/hooks/use-dashboard-state";
- 
- const DEFAULT_ERROR_MESSAGE = "Unable to load dashboard state.";
-+const MAX_ACTIVITY_ENTRIES = 8;
- 
- function formatLastUpdated(isoTimestamp: string | undefined): string {
-   if (!isoTimestamp) {
-@@ -24,6 +25,19 @@
-   return timestamp.toLocaleTimeString();
- }
- 
-+function formatActivityTimestamp(isoTimestamp: string | null | undefined): string {
-+  if (!isoTimestamp) {
-+    return "Unknown time";
-+  }
-+
-+  const timestamp = new Date(isoTimestamp);
-+  if (Number.isNaN(timestamp.getTime())) {
-+    return "Unknown time";
-+  }
-+
-+  return timestamp.toLocaleString();
-+}
-+
- function DashboardBody() {
-   const { data, error, isPending, isFetching, dataUpdatedAt } = useDashboardState();
-   const [showUpdated, setShowUpdated] = useState(false);
-@@ -60,6 +74,9 @@
- 
-   const coveragePct = data.coverage.total?.lines.pct ?? null;
-   const startedAt = data.ralph.state?.started_at ?? null;
-+  const activityItems = [...(data.ralph.state?.checkpoints ?? [])]
-+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-+    .slice(0, MAX_ACTIVITY_ENTRIES);
- 
-   return (
-     <div className="space-y-6">
-@@ -74,19 +91,54 @@
-         </div>
-       </section>
- 
--      <ProgressPanel items={data.ralph.items} startedAt={startedAt} />
-+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-12">
-+        <div className="xl:col-span-8">
-+          <KanbanBoard items={data.ralph.items} />
-+        </div>
-+
-+        <aside className="space-y-6 xl:col-span-4">
-+          <ProgressPanel items={data.ralph.items} startedAt={startedAt} />
-+          <GitPanel git={data.git} />
-+          <MetricsPanel
-+            totalLoc={data.metrics.totalLoc}
-+            fileCount={data.metrics.fileCount}
-+            testCount={data.metrics.testFileCount}
-+            coveragePct={coveragePct}
-+          />
-+        </aside>
-+      </section>
- 
--      <div className="grid gap-6 lg:grid-cols-2">
--        <MetricsPanel
--          totalLoc={data.metrics.totalLoc}
--          fileCount={data.metrics.fileCount}
--          testCount={data.metrics.testFileCount}
--          coveragePct={coveragePct}
--        />
--        <GitPanel git={data.git} />
--      </div>
-+      <section className="rounded-lg border border-border bg-card p-4 text-card-foreground md:p-6">
-+        <div className="flex items-center justify-between gap-3">
-+          <h2 className="text-lg font-semibold">Activity Log</h2>
-+          <p className="text-xs text-muted-foreground">{activityItems.length} recent events</p>
-+        </div>
- 
--      <KanbanBoard items={data.ralph.items} />
-+        {activityItems.length === 0 ? (
-+          <p className="mt-3 rounded-md border border-dashed border-border p-3 text-sm text-muted-foreground">
-+            No activity yet. Checkpoints will appear as Ralph progresses through items.
-+          </p>
-+        ) : (
-+          <ol className="mt-4 space-y-2">
-+            {activityItems.map((checkpoint) => (
-+              <li key={`${checkpoint.commit_sha}-${checkpoint.timestamp}`} className="rounded-md border border-border bg-background/50 p-3">
-+                <div className="flex flex-wrap items-center justify-between gap-2">
-+                  <p className="text-sm font-medium">Item #{checkpoint.item_id}</p>
-+                  <p className="text-xs text-muted-foreground">{formatActivityTimestamp(checkpoint.timestamp)}</p>
-+                </div>
-+                <p className="mt-1 text-xs text-muted-foreground">
-+                  Commit <span className="font-mono text-foreground">{checkpoint.commit_sha.slice(0, 8)}</span>
-+                  {" · "}
-+                  {checkpoint.tests_passed ? "tests passed" : "tests pending/failed"}
-+                  {" · "}
-+                  {checkpoint.files_changed.length} files changed
-+                </p>
-+                {checkpoint.route ? <p className="mt-1 text-xs text-muted-foreground">Route: {checkpoint.route}</p> : null}
-+              </li>
-+            ))}
-+          </ol>
-+        )}
-+      </section>
-     </div>
-   );
- }
-
+?? __tests__/coverage-reader.test.ts
+?? lib/coverage-reader.ts
+---
 
 thinking
-**Highlighting unrelated tracked changes**
-exec
-/bin/zsh -lc "nl -ba /Users/mcbee/Projects/agent-dashboard/components/LiveDashboard.tsx | sed -n '1,260p'" in /Users/mcbee/Projects/agent-dashboardexec
-/bin/zsh -lc "nl -ba /Users/mcbee/Projects/agent-dashboard/app/page.tsx | sed -n '1,120p'" in /Users/mcbee/Projects/agent-dashboard succeeded in 235ms:
-     1	import LiveDashboard from "@/components/LiveDashboard";
-     2	
-     3	export default function Home() {
-     4	  return <LiveDashboard />;
-     5	}
- succeeded in 239ms:
-     1	"use client";
-     2	
-     3	import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-     4	import React, { useEffect, useMemo, useState } from "react";
-     5	
-     6	import GitPanel from "@/components/GitPanel";
-     7	import KanbanBoard from "@/components/KanbanBoard";
-     8	import MetricsPanel from "@/components/MetricsPanel";
-     9	import ProgressPanel from "@/components/ProgressPanel";
-    10	import { useDashboardState } from "@/hooks/use-dashboard-state";
-    11	
-    12	const DEFAULT_ERROR_MESSAGE = "Unable to load dashboard state.";
-    13	const MAX_ACTIVITY_ENTRIES = 8;
-    14	
-    15	function formatLastUpdated(isoTimestamp: string | undefined): string {
-    16	  if (!isoTimestamp) {
-    17	    return "Never";
-    18	  }
-    19	
-    20	  const timestamp = new Date(isoTimestamp);
-file update:
-diff --git a/components/LiveDashboard.tsx b/components/LiveDashboard.tsx
-index 424544ddb61e95f0ce7be5a75cfb81d96934988d..3de474610dd786061183936c22043744fcbb4167
---- a/components/LiveDashboard.tsx
-+++ b/components/LiveDashboard.tsx
-@@ -10,6 +10,7 @@
- import { useDashboardState } from "@/hooks/use-dashboard-state";
- 
- const DEFAULT_ERROR_MESSAGE = "Unable to load dashboard state.";
-+const MAX_ACTIVITY_ENTRIES = 8;
- 
- function formatLastUpdated(isoTimestamp: string | undefined): string {
-   if (!isoTimestamp) {
-@@ -24,6 +25,19 @@
-   return timestamp.toLocaleTimeString();
- }
- 
-+function formatActivityTimestamp(isoTimestamp: string | null | undefined): string {
-+  if (!isoTimestamp) {
-+    return "Unknown time";
-+  }
-+
-+  const timestamp = new Date(isoTimestamp);
-+  if (Number.isNaN(timestamp.getTime())) {
-+    return "Unknown time";
-+  }
-+
-+  return timestamp.toLocaleString();
-+}
-+
- function DashboardBody() {
-   const { data, error, isPending, isFetching, dataUpdatedAt } = useDashboardState();
-   const [showUpdated, setShowUpdated] = useState(false);
-@@ -60,6 +74,9 @@
- 
-   const coveragePct = data.coverage.total?.lines.pct ?? null;
-   const startedAt = data.ralph.state?.started_at ?? null;
-+  const activityItems = [...(data.ralph.state?.checkpoints ?? [])]
-+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-+    .slice(0, MAX_ACTIVITY_ENTRIES);
- 
-   return (
-     <div className="space-y-6">
-@@ -74,19 +91,54 @@
-         </div>
-       </section>
- 
--      <ProgressPanel items={data.ralph.items} startedAt={startedAt} />
-+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-12">
-+        <div className="xl:col-span-8">
-+          <KanbanBoard items={data.ralph.items} />
-+        </div>
-+
-+        <aside className="space-y-6 xl:col-span-4">
-+          <ProgressPanel items={data.ralph.items} startedAt={startedAt} />
-+          <GitPanel git={data.git} />
-+          <MetricsPanel
-+            totalLoc={data.metrics.totalLoc}
-+            fileCount={data.metrics.fileCount}
-+            testCount={data.metrics.testFileCount}
-+            coveragePct={coveragePct}
-+          />
-+        </aside>
-+      </section>
- 
--      <div className="grid gap-6 lg:grid-cols-2">
--        <MetricsPanel
--          totalLoc={data.metrics.totalLoc}
--          fileCount={data.metrics.fileCount}
--          testCount={data.metrics.testFileCount}
--          coveragePct={coveragePct}
--        />
--        <GitPanel git={data.git} />
--      </div>
-+      <section className="rounded-lg border border-border bg-card p-4 text-card-foreground md:p-6">
-+        <div className="flex items-center justify-between gap-3">
-+          <h2 className="text-lg font-semibold">Activity Log</h2>
-+          <p className="text-xs text-muted-foreground">{activityItems.length} recent events</p>
-+        </div>
- 
--      <KanbanBoard items={data.ralph.items} />
-+        {activityItems.length === 0 ? (
-+          <p className="mt-3 rounded-md border border-dashed border-border p-3 text-sm text-muted-foreground">
-+            No activity yet. Checkpoints will appear as Ralph progresses through items.
-+          </p>
-+        ) : (
-+          <ol className="mt-4 space-y-2">
-+            {activityItems.map((checkpoint) => (
-+              <li key={`${checkpoint.commit_sha}-${checkpoint.timestamp}`} className="rounded-md border border-border bg-background/50 p-3">
-+                <div className="flex flex-wrap items-center justify-between gap-2">
-+                  <p className="text-sm font-medium">Item #{checkpoint.item_id}</p>
-+                  <p className="text-xs text-muted-foreground">{formatActivityTimestamp(checkpoint.timestamp)}</p>
-+                </div>
-+                <p className="mt-1 text-xs text-muted-foreground">
-+                  Commit <span className="font-mono text-foreground">{checkpoint.commit_sha.slice(0, 8)}</span>
-+                  {" · "}
-+                  {checkpoint.tests_passed ? "tests passed" : "tests pending/failed"}
-+                  {" · "}
-+                  {checkpoint.files_changed.length} files changed
-+                </p>
-+                {checkpoint.route ? <p className="mt-1 text-xs text-muted-foreground">Route: {checkpoint.route}</p> : null}
-+              </li>
-+            ))}
-+          </ol>
-+        )}
-+      </section>
-     </div>
-   );
- }
-
-
-thinking
-**Planning typecheck and linting**
+**Consolidating final outcome and tests**
 codex
-I’m running lint once as a final sanity check for the new JSX structure, then I’ll give you a concise verification report.
-exec
-/bin/zsh -lc 'npm run lint' in /Users/mcbee/Projects/agent-dashboard succeeded in 1.49s:
+Implemented item 6/17 with focused changes only:
 
-> ralph-dashboard@0.1.0 lint
-> next lint
+- Added coverage parser module: `lib/coverage-reader.ts`
+- Added unit tests: `__tests__/coverage-reader.test.ts`
 
-✔ No ESLint warnings or errors
-file update:
-diff --git a/components/LiveDashboard.tsx b/components/LiveDashboard.tsx
-index 424544ddb61e95f0ce7be5a75cfb81d96934988d..3de474610dd786061183936c22043744fcbb4167
---- a/components/LiveDashboard.tsx
-+++ b/components/LiveDashboard.tsx
-@@ -10,6 +10,7 @@
- import { useDashboardState } from "@/hooks/use-dashboard-state";
- 
- const DEFAULT_ERROR_MESSAGE = "Unable to load dashboard state.";
-+const MAX_ACTIVITY_ENTRIES = 8;
- 
- function formatLastUpdated(isoTimestamp: string | undefined): string {
-   if (!isoTimestamp) {
-@@ -24,6 +25,19 @@
-   return timestamp.toLocaleTimeString();
- }
- 
-+function formatActivityTimestamp(isoTimestamp: string | null | undefined): string {
-+  if (!isoTimestamp) {
-+    return "Unknown time";
-+  }
-+
-+  const timestamp = new Date(isoTimestamp);
-+  if (Number.isNaN(timestamp.getTime())) {
-+    return "Unknown time";
-+  }
-+
-+  return timestamp.toLocaleString();
-+}
-+
- function DashboardBody() {
-   const { data, error, isPending, isFetching, dataUpdatedAt } = useDashboardState();
-   const [showUpdated, setShowUpdated] = useState(false);
-@@ -60,6 +74,9 @@
- 
-   const coveragePct = data.coverage.total?.lines.pct ?? null;
-   const startedAt = data.ralph.state?.started_at ?? null;
-+  const activityItems = [...(data.ralph.state?.checkpoints ?? [])]
-+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-+    .slice(0, MAX_ACTIVITY_ENTRIES);
- 
-   return (
-     <div className="space-y-6">
-@@ -74,19 +91,54 @@
-         </div>
-       </section>
- 
--      <ProgressPanel items={data.ralph.items} startedAt={startedAt} />
-+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-12">
-+        <div className="xl:col-span-8">
-+          <KanbanBoard items={data.ralph.items} />
-+        </div>
-+
-+        <aside className="space-y-6 xl:col-span-4">
-+          <ProgressPanel items={data.ralph.items} startedAt={startedAt} />
-+          <GitPanel git={data.git} />
-+          <MetricsPanel
-+            totalLoc={data.metrics.totalLoc}
-+            fileCount={data.metrics.fileCount}
-+            testCount={data.metrics.testFileCount}
-+            coveragePct={coveragePct}
-+          />
-+        </aside>
-+      </section>
- 
--      <div className="grid gap-6 lg:grid-cols-2">
--        <MetricsPanel
--          totalLoc={data.metrics.totalLoc}
--          fileCount={data.metrics.fileCount}
--          testCount={data.metrics.testFileCount}
--          coveragePct={coveragePct}
--        />
--        <GitPanel git={data.git} />
--      </div>
-+      <section className="rounded-lg border border-border bg-card p-4 text-card-foreground md:p-6">
-+        <div className="flex items-center justify-between gap-3">
-+          <h2 className="text-lg font-semibold">Activity Log</h2>
-+          <p className="text-xs text-muted-foreground">{activityItems.length} recent events</p>
-+        </div>
- 
--      <KanbanBoard items={data.ralph.items} />
-+        {activityItems.length === 0 ? (
-+          <p className="mt-3 rounded-md border border-dashed border-border p-3 text-sm text-muted-foreground">
-+            No activity yet. Checkpoints will appear as Ralph progresses through items.
-+          </p>
-+        ) : (
-+          <ol className="mt-4 space-y-2">
-+            {activityItems.map((checkpoint) => (
-+              <li key={`${checkpoint.commit_sha}-${checkpoint.timestamp}`} className="rounded-md border border-border bg-background/50 p-3">
-+                <div className="flex flex-wrap items-center justify-between gap-2">
-+                  <p className="text-sm font-medium">Item #{checkpoint.item_id}</p>
-+                  <p className="text-xs text-muted-foreground">{formatActivityTimestamp(checkpoint.timestamp)}</p>
-+                </div>
-+                <p className="mt-1 text-xs text-muted-foreground">
-+                  Commit <span className="font-mono text-foreground">{checkpoint.commit_sha.slice(0, 8)}</span>
-+                  {" · "}
-+                  {checkpoint.tests_passed ? "tests passed" : "tests pending/failed"}
-+                  {" · "}
-+                  {checkpoint.files_changed.length} files changed
-+                </p>
-+                {checkpoint.route ? <p className="mt-1 text-xs text-muted-foreground">Route: {checkpoint.route}</p> : null}
-+              </li>
-+            ))}
-+          </ol>
-+        )}
-+      </section>
-     </div>
-   );
- }
+What’s implemented:
 
+- Supports `coverage.json` / `coverage-final.json` (Istanbul/Vitest-style JSON).
+- Supports `lcov.info`.
+- Returns:
+  - `overallPercentage`
+  - `perFilePercentages` (file -> percentage)
+- Includes a file-based reader `readCoverageReport(projectPath)` that checks common report locations and returns format/source/error metadata.
 
-thinking
-**Summarizing final implementation and validation**
-codex
-Implemented item 14/17 by composing the full dashboard layout in `components/LiveDashboard.tsx`.
+Verification:
 
-What changed:
-- Main dashboard entry remains `app/page.tsx:1` and renders the dashboard component.
-- Added responsive panel composition in `components/LiveDashboard.tsx:94`:
-  - Kanban in main area (`xl:col-span-8`)
-  - Sidebar with progress, git, and metrics (`xl:col-span-4`)
-  - Stacks on mobile (`grid-cols-1`)
-- Added bottom activity log in `components/LiveDashboard.tsx:111`, sourced from Ralph checkpoints and sorted newest-first.
-- Dark theme remains default via `app/layout.tsx:24` (`<html className="dark">`), and new sections use existing theme tokens.
+- Targeted tests: `npm test -- __tests__/coverage-reader.test.ts` passed (`7/7`).
+- Full test suite: `npm test` passed (`43/43`).
 
-Validation:
-- Tests: `npm test -- --run` passed (10 files, 36 tests).
-- Lint: `npm run lint` passed (no warnings/errors).
-- Verification criteria met:
-  - All panels visible in a cohesive responsive grid layout.
-  - Activity log present at bottom.
-  - Mobile stack + desktop grid behavior implemented.
-  - Dark theme default preserved.
+Notes on scope:
 
-Scope note:
-- Code change is focused to `components/LiveDashboard.tsx`.
-- Existing unrelated modified files (`.ralph/*`, `prd-ralph-dashboard.json`) were left untouched.
-file update:
-diff --git a/components/LiveDashboard.tsx b/components/LiveDashboard.tsx
-index 424544ddb61e95f0ce7be5a75cfb81d96934988d..3de474610dd786061183936c22043744fcbb4167
---- a/components/LiveDashboard.tsx
-+++ b/components/LiveDashboard.tsx
-@@ -10,6 +10,7 @@
- import { useDashboardState } from "@/hooks/use-dashboard-state";
- 
- const DEFAULT_ERROR_MESSAGE = "Unable to load dashboard state.";
-+const MAX_ACTIVITY_ENTRIES = 8;
- 
- function formatLastUpdated(isoTimestamp: string | undefined): string {
-   if (!isoTimestamp) {
-@@ -24,6 +25,19 @@
-   return timestamp.toLocaleTimeString();
- }
- 
-+function formatActivityTimestamp(isoTimestamp: string | null | undefined): string {
-+  if (!isoTimestamp) {
-+    return "Unknown time";
-+  }
-+
-+  const timestamp = new Date(isoTimestamp);
-+  if (Number.isNaN(timestamp.getTime())) {
-+    return "Unknown time";
-+  }
-+
-+  return timestamp.toLocaleString();
-+}
-+
- function DashboardBody() {
-   const { data, error, isPending, isFetching, dataUpdatedAt } = useDashboardState();
-   const [showUpdated, setShowUpdated] = useState(false);
-@@ -60,6 +74,9 @@
- 
-   const coveragePct = data.coverage.total?.lines.pct ?? null;
-   const startedAt = data.ralph.state?.started_at ?? null;
-+  const activityItems = [...(data.ralph.state?.checkpoints ?? [])]
-+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-+    .slice(0, MAX_ACTIVITY_ENTRIES);
- 
-   return (
-     <div className="space-y-6">
-@@ -74,19 +91,54 @@
-         </div>
-       </section>
- 
--      <ProgressPanel items={data.ralph.items} startedAt={startedAt} />
-+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-12">
-+        <div className="xl:col-span-8">
-+          <KanbanBoard items={data.ralph.items} />
-+        </div>
-+
-+        <aside className="space-y-6 xl:col-span-4">
-+          <ProgressPanel items={data.ralph.items} startedAt={startedAt} />
-+          <GitPanel git={data.git} />
-+          <MetricsPanel
-+            totalLoc={data.metrics.totalLoc}
-+            fileCount={data.metrics.fileCount}
-+            testCount={data.metrics.testFileCount}
-+            coveragePct={coveragePct}
-+          />
-+        </aside>
-+      </section>
- 
--      <div className="grid gap-6 lg:grid-cols-2">
--        <MetricsPanel
--          totalLoc={data.metrics.totalLoc}
--          fileCount={data.metrics.fileCount}
--          testCount={data.metrics.testFileCount}
--          coveragePct={coveragePct}
--        />
--        <GitPanel git={data.git} />
--      </div>
-+      <section className="rounded-lg border border-border bg-card p-4 text-card-foreground md:p-6">
-+        <div className="flex items-center justify-between gap-3">
-+          <h2 className="text-lg font-semibold">Activity Log</h2>
-+          <p className="text-xs text-muted-foreground">{activityItems.length} recent events</p>
-+        </div>
- 
--      <KanbanBoard items={data.ralph.items} />
-+        {activityItems.length === 0 ? (
-+          <p className="mt-3 rounded-md border border-dashed border-border p-3 text-sm text-muted-foreground">
-+            No activity yet. Checkpoints will appear as Ralph progresses through items.
-+          </p>
-+        ) : (
-+          <ol className="mt-4 space-y-2">
-+            {activityItems.map((checkpoint) => (
-+              <li key={`${checkpoint.commit_sha}-${checkpoint.timestamp}`} className="rounded-md border border-border bg-background/50 p-3">
-+                <div className="flex flex-wrap items-center justify-between gap-2">
-+                  <p className="text-sm font-medium">Item #{checkpoint.item_id}</p>
-+                  <p className="text-xs text-muted-foreground">{formatActivityTimestamp(checkpoint.timestamp)}</p>
-+                </div>
-+                <p className="mt-1 text-xs text-muted-foreground">
-+                  Commit <span className="font-mono text-foreground">{checkpoint.commit_sha.slice(0, 8)}</span>
-+                  {" · "}
-+                  {checkpoint.tests_passed ? "tests passed" : "tests pending/failed"}
-+                  {" · "}
-+                  {checkpoint.files_changed.length} files changed
-+                </p>
-+                {checkpoint.route ? <p className="mt-1 text-xs text-muted-foreground">Route: {checkpoint.route}</p> : null}
-+              </li>
-+            ))}
-+          </ol>
-+        )}
-+      </section>
-     </div>
-   );
- }
-
+- Changes were kept to this item: only `lib/coverage-reader.ts` and `__tests__/coverage-reader.test.ts` were added.
+- Existing unrelated workspace modifications in `.ralph/*` and `prd-ralph-dashboard.json` were left untouched.
 tokens used
-31,708
-Implemented item 14/17 by composing the full dashboard layout in `components/LiveDashboard.tsx`.
+40,185
+Implemented item 6/17 with focused changes only:
 
-What changed:
-- Main dashboard entry remains `app/page.tsx:1` and renders the dashboard component.
-- Added responsive panel composition in `components/LiveDashboard.tsx:94`:
-  - Kanban in main area (`xl:col-span-8`)
-  - Sidebar with progress, git, and metrics (`xl:col-span-4`)
-  - Stacks on mobile (`grid-cols-1`)
-- Added bottom activity log in `components/LiveDashboard.tsx:111`, sourced from Ralph checkpoints and sorted newest-first.
-- Dark theme remains default via `app/layout.tsx:24` (`<html className="dark">`), and new sections use existing theme tokens.
+- Added coverage parser module: `lib/coverage-reader.ts`
+- Added unit tests: `__tests__/coverage-reader.test.ts`
 
-Validation:
-- Tests: `npm test -- --run` passed (10 files, 36 tests).
-- Lint: `npm run lint` passed (no warnings/errors).
-- Verification criteria met:
-  - All panels visible in a cohesive responsive grid layout.
-  - Activity log present at bottom.
-  - Mobile stack + desktop grid behavior implemented.
-  - Dark theme default preserved.
+What’s implemented:
 
-Scope note:
-- Code change is focused to `components/LiveDashboard.tsx`.
-- Existing unrelated modified files (`.ralph/*`, `prd-ralph-dashboard.json`) were left untouched.
+- Supports `coverage.json` / `coverage-final.json` (Istanbul/Vitest-style JSON).
+- Supports `lcov.info`.
+- Returns:
+  - `overallPercentage`
+  - `perFilePercentages` (file -> percentage)
+- Includes a file-based reader `readCoverageReport(projectPath)` that checks common report locations and returns format/source/error metadata.
+
+Verification:
+
+- Targeted tests: `npm test -- __tests__/coverage-reader.test.ts` passed (`7/7`).
+- Full test suite: `npm test` passed (`43/43`).
+
+Notes on scope:
+
+- Changes were kept to this item: only `lib/coverage-reader.ts` and `__tests__/coverage-reader.test.ts` were added.
+- Existing unrelated workspace modifications in `.ralph/*` and `prd-ralph-dashboard.json` were left untouched.

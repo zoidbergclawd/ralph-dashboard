@@ -251,7 +251,7 @@
       "title": "Main dashboard layout",
       "description": "Compose all panels into a cohesive dashboard layout",
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "verification": "Dashboard shows all panels in responsive grid layout",
       "steps": [
         "Create app/page.tsx as main dashboard",
