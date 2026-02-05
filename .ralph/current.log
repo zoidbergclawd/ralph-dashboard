@@ -7,31 +7,30 @@ approval: never
 sandbox: danger-full-access
 reasoning effort: none
 reasoning summaries: auto
-session id: 019c2f57-14e4-7c83-b4fa-420a8d246f5b
+session id: 019c2f58-a69d-7940-932e-a16cb61db446
 --------
 user
 You are working on the project: Ralph Dashboard
 
 Goal: A real-time web UI for watching Ralph runs. Kanban-style PRD progress, live metrics, git state, test coverage — watch the magic happen.
 
-Current Item (9/17): Progress overview panel
+Current Item (10/17): Git state panel
 Category: ui
 Priority: 1
 
 Description:
-Summary panel showing overall progress: items done, time elapsed, ETA
+Panel showing git information: branch, commits, diff summary
 
 Steps:
-  1. Create components/ProgressPanel.tsx
-  2. Show: X of Y items complete
-  3. Progress bar (percentage)
-  4. Time elapsed since start
-  5. Average time per item (for ETA)
-  6. Current item title prominently displayed
-  7. Write unit tests in __tests__/ProgressPanel.test.tsx
+  1. Create components/GitPanel.tsx
+  2. Show: branch name with copy button
+  3. Show: commit count on branch
+  4. Show: diff stats (files changed, +lines, -lines)
+  5. Mini commit log (last 5 commits with messages)
+  6. Write unit tests in __tests__/GitPanel.test.tsx
 
 Verification:
-Component renders progress correctly (unit test)
+Component renders git info correctly (unit test)
 
 Please implement this item. After completion:
 1. Ensure all tests pass
@@ -41,11 +40,11 @@ Please implement this item. After completion:
 mcp startup: no servers
 
 thinking
-**Announcing skill usage**
+**Confirming skill usage decision**
 codex
-Implementing item 9/17 now. I’ll quickly inspect the existing UI/test patterns, then add `components/ProgressPanel.tsx` plus focused unit tests and run the test suite to verify. I’m using the `do-work` skill because this request is a queued work item implementation.
+Using the `do-work` skill for this turn because you asked to implement a specific queued item; I’ll read that skill workflow first, then inspect the existing UI/test patterns before adding `GitPanel` and its unit tests.
 exec
-/bin/zsh -lc 'cat /Users/mcbee/.agents/skills/do-work/SKILL.md' in /Users/mcbee/Projects/agent-dashboard succeeded in 183ms:
+/bin/zsh -lc 'cat /Users/mcbee/.agents/skills/do-work/SKILL.md' in /Users/mcbee/Projects/agent-dashboard succeeded in 204ms:
 ---
 name: do-work
 description: Task queue - add requests or process pending work
@@ -68,24 +67,25 @@ A unified entry point for task capture and processing.
 ## Routing Decision
 
 thinking
-**Listing project files**
+**Inspecting project structure**
+codex
+I’ve loaded the skill; it mostly governs queue routing, so I’ll proceed with direct implementation in this repo and align with existing component/test conventions before editing.
 exec
-/bin/zsh -lc 'rg -n "Progress|elapsed|ETA|current item|items complete" -S src components __tests__ || true' in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc 'ls -la' in /Users/mcbee/Projects/agent-dashboardexec
 /bin/zsh -lc 'rg --files' in /Users/mcbee/Projects/agent-dashboardexec
-/bin/zsh -lc 'pwd && ls -la' in /Users/mcbee/Projects/agent-dashboard succeeded in 258ms:
-/Users/mcbee/Projects/agent-dashboard
+/bin/zsh -lc 'rg -n "Panel|branch|commit|diff|copy" src __tests__ components 2>/dev/null || true' in /Users/mcbee/Projects/agent-dashboard succeeded in 259ms:
 total 680
 drwxr-xr-x   24 mcbee  staff     768 Feb  5 14:44 .
 drwxr-xr-x    6 mcbee  staff     192 Feb  5 14:01 ..
 -rw-r--r--    1 mcbee  staff      61 Feb  5 14:28 .eslintrc.json
-drwxr-xr-x   12 mcbee  staff     384 Feb  5 14:46 .git
+drwxr-xr-x   12 mcbee  staff     384 Feb  5 14:47 .git
 -rw-r--r--    1 mcbee  staff     400 Feb  5 14:31 .gitignore
 drwxr-xr-x   11 mcbee  staff     352 Feb  5 14:32 .next
 drwxr-xr-x    4 mcbee  staff     128 Feb  5 14:31 .ralph
 -rw-r--r--    1 mcbee  staff    1450 Feb  5 14:28 README.md
-drwxr-xr-x    8 mcbee  staff     256 Feb  5 14:45 __tests__
+drwxr-xr-x    9 mcbee  staff     288 Feb  5 14:47 __tests__
 drwxr-xr-x    8 mcbee  staff     256 Feb  5 14:41 app
-drwxr-xr-x    3 mcbee  staff      96 Feb  5 14:44 components
+drwxr-xr-x    4 mcbee  staff     128 Feb  5 14:46 components
 -rw-r--r--    1 mcbee  staff     481 Feb  5 14:29 components.json
 drwxr-xr-x    7 mcbee  staff     224 Feb  5 14:41 lib
 -rw-r--r--    1 mcbee  staff     228 Feb  5 14:28 next-env.d.ts
@@ -93,7 +93,8 @@ drwxr-xr-x    7 mcbee  staff     224 Feb  5 14:41 lib
 drwxr-xr-x  399 mcbee  staff   12768 Feb  5 14:34 node_modules
 -rw-r--r--    1 mcbee  staff  283646 Feb  5 14:34 package-lock.json
 -rw-r--r--    1 mcbee  staff     851 Feb  5 14:34 package.json
- succeeded in 267ms:
+-rw-r--r--    1 mcbee  staff     135 Feb  5 14:28 postcss.config.mjs
+ succeeded in 270ms:
 vitest.setup.ts
 vitest.config.ts
 tsconfig.json
@@ -109,178 +110,40 @@ __tests__/KanbanBoard.test.tsx
 __tests__/code-metrics.test.ts
 __tests__/api-state.test.ts
 __tests__/git-state.test.ts
+__tests__/ProgressPanel.test.tsx
 __tests__/ralph-state.test.ts
 __tests__/example.test.ts
+components/ProgressPanel.tsx
 components/KanbanBoard.tsx
-tailwind.config.ts
-README.md
- succeeded in 269ms:
-rg: src: No such file or directory (os error 2)
-__tests__/KanbanBoard.test.tsx:55:  it("renders items in Backlog, In Progress, and Done columns", () => {
-__tests__/KanbanBoard.test.tsx:59:    const inProgressColumn = screen.getByTestId("column-in_progress");
-__tests__/KanbanBoard.test.tsx:63:    expect(within(inProgressColumn).getByText("Current Item")).toBeInTheDocument();
-__tests__/KanbanBoard.test.tsx:73:    fireEvent.click(screen.getByRole("button", { name: /current item/i }));
-__tests__/KanbanBoard.test.tsx:82:  it("applies glow and pulse classes to the current item card", () => {
-__tests__/KanbanBoard.test.tsx:85:    const currentCard = screen.getByRole("button", { name: /current item/i });
-components/KanbanBoard.tsx:33:    const inProgress = items.filter((item) => !item.passes && item.isCurrent);
-components/KanbanBoard.tsx:38:      { key: "in_progress", title: "In Progress", items: inProgress },
-components/KanbanBoard.tsx:45:      <h2 className="text-lg font-semibold">PRD Progress</h2>
-
-thinking
-**Inspecting existing component styles**
-codex
-I found the current structure and tests; next I’m reading `KanbanBoard` and state models to match conventions before adding `ProgressPanel`.
-exec
-/bin/zsh -lc "sed -n '1,260p' __tests__/KanbanBoard.test.tsx" in /Users/mcbee/Projects/agent-dashboardexec
-/bin/zsh -lc "sed -n '1,220p' components/KanbanBoard.tsx" in /Users/mcbee/Projects/agent-dashboardexec
-/bin/zsh -lc "sed -n '1,260p' lib/ralph-state.ts" in /Users/mcbee/Projects/agent-dashboardexec
-/bin/zsh -lc "sed -n '1,240p' app/page.tsx" in /Users/mcbee/Projects/agent-dashboard succeeded in 291ms:
-import React from "react";
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
-
-import KanbanBoard from "@/components/KanbanBoard";
-import type { UnifiedPRDItem } from "@/lib/ralph-state";
-
-const items: UnifiedPRDItem[] = [
-  {
-    id: 1,
-    category: "setup",
-    title: "Backlog Item",
-    description: "Backlog description",
-    priority: 2,
-    passes: false,
-    verification: "Backlog verification",
-    steps: ["Backlog step"],
-    notes: "",
-    status: "backlog",
-    isCurrent: false,
- succeeded in 290ms:
-import { promises as fs } from "node:fs";
-import path from "node:path";
-
-export interface Checkpoint {
-  item_id: number;
-  commit_sha: string;
-  timestamp: string;
-  files_changed: string[];
-  tests_passed: boolean;
-  route: string;
-}
-
-export interface RalphState {
-  branch: string | null;
-  prd_path: string | null;
-  current_item: number | null;
-  completed_items: number[];
-  started_at: string | null;
-  checkpoints: Checkpoint[];
-  agent: string | null;
- succeeded in 295ms:
-"use client";
-
-import React from "react";
-import { useMemo, useState } from "react";
-
-import type { UnifiedPRDItem } from "@/lib/ralph-state";
-
-interface KanbanBoardProps {
-  items: UnifiedPRDItem[];
-}
-
-interface KanbanColumn {
-  key: "backlog" | "in_progress" | "done";
-  title: string;
-  items: UnifiedPRDItem[];
-}
-
-function getPriorityLabel(priority: number): string {
-  if (priority <= 1) {
-    return "High";
- succeeded in 276ms:
-export default function Home() {
-  return (
-    <section className="rounded-lg border border-border bg-card p-6 text-card-foreground">
-      <h2 className="text-lg font-medium">Run Overview</h2>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Ralph run metrics and kanban progress will render here.
-      </p>
-    </section>
-  );
-}
-
-thinking
-**Assessing test coverage and styling**
-exec
-/bin/zsh -lc 'cat package.json' in /Users/mcbee/Projects/agent-dashboardexec
-/bin/zsh -lc 'cat vitest.config.ts' in /Users/mcbee/Projects/agent-dashboardexec
-/bin/zsh -lc 'cat vitest.setup.ts' in /Users/mcbee/Projects/agent-dashboardexec
-/bin/zsh -lc 'rg -n "data-testid|aria-label|progress" components __tests__ app lib -S' in /Users/mcbee/Projects/agent-dashboard succeeded in 298ms:
-{
-  "name": "ralph-dashboard",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "test": "vitest run"
-  },
-  "dependencies": {
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "lucide-react": "^0.563.0",
-    "next": "14.2.35",
-    "react": "^18",
-    "react-dom": "^18",
-    "tailwind-merge": "^3.4.0",
-    "tailwindcss-animate": "^1.0.7"
- succeeded in 283ms:
-import path from "node:path";
-
-import { defineConfig } from "vitest/config";
-
-export default defineConfig({
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "."),
-    },
-  },
-  test: {
-    environment: "jsdom",
-    setupFiles: "./vitest.setup.ts",
-  },
-});
- succeeded in 263ms:
-import "@testing-library/jest-dom/vitest";
  succeeded in 267ms:
-__tests__/KanbanBoard.test.tsx:32:    status: "in_progress",
-__tests__/KanbanBoard.test.tsx:55:  it("renders items in Backlog, In Progress, and Done columns", () => {
-__tests__/KanbanBoard.test.tsx:59:    const inProgressColumn = screen.getByTestId("column-in_progress");
-__tests__/KanbanBoard.test.tsx:63:    expect(within(inProgressColumn).getByText("Current Item")).toBeInTheDocument();
-components/KanbanBoard.tsx:13:  key: "backlog" | "in_progress" | "done";
-components/KanbanBoard.tsx:33:    const inProgress = items.filter((item) => !item.passes && item.isCurrent);
-components/KanbanBoard.tsx:38:      { key: "in_progress", title: "In Progress", items: inProgress },
-components/KanbanBoard.tsx:45:      <h2 className="text-lg font-semibold">PRD Progress</h2>
-components/KanbanBoard.tsx:50:            data-testid={`column-${column.key}`}
-app/page.tsx:6:        Ralph run metrics and kanban progress will render here.
-lib/ralph-state.ts:51:  status: "done" | "in_progress" | "backlog";
-lib/ralph-state.ts:346:      status: isDone ? "done" : isCurrent ? "in_progress" : "backlog",
-__tests__/ralph-state.test.ts:179:          title: "In progress",
-__tests__/ralph-state.test.ts:207:      [3, "in_progress"],
+components/ProgressPanel.tsx:7:interface ProgressPanelProps {
+components/ProgressPanel.tsx:31:export default function ProgressPanel({ items, startedAt, now = new Date() }: ProgressPanelProps) {
+__tests__/api-state.test.ts:22:        branch: "main",
+__tests__/ralph-state.test.ts:33:      branch: "feature/alpha",
+__tests__/ralph-state.test.ts:39:          commit_sha: "abc123",
+__tests__/ralph-state.test.ts:55:    expect(result.data?.branch).toBe("feature/alpha");
+__tests__/ralph-state.test.ts:94:    expect(result.data?.branch).toBeNull();
+__tests__/git-state.test.ts:48:  it("collects branch, commit stats, diff stats, and uncommitted summary", async () => {
+__tests__/git-state.test.ts:54:      "diff --shortstat main...HEAD": " 5 files changed, 30 insertions(+), 10 deletions(-)",
+__tests__/git-state.test.ts:55:      "diff --shortstat": " 2 files changed, 5 insertions(+), 1 deletion(-)",
+__tests__/git-state.test.ts:56:      "diff --shortstat --cached": " 1 file changed, 3 insertions(+), 2 deletions(-)",
+__tests__/git-state.test.ts:66:    expect(state.branch).toBe("feature/dashboard");
+__tests__/git-state.test.ts:67:    expect(state.commitCount).toBe(42);
+__tests__/git-state.test.ts:70:    expect(state.diffFromBase).toEqual({
+__tests__/git-state.test.ts:75:    expect(state.uncommitted).toEqual({
+__tests__/git-state.test.ts:91:        "diff --shortstat master...HEAD": " 1 file changed, 2 insertions(+)",
+__tests__/git-state.test.ts:92:        "diff --shortstat": "",
+__tests__/git-state.test.ts:93:        "diff --shortstat --cached": "",
+__tests__/git-state.test.ts:103:    expect(state.diffFromBase).toEqual({
+__tests__/git-state.test.ts:115:    expect(state.branch).toBeNull();
 
 thinking
-**Designing progress panel component**
-codex
-I’ve confirmed the project patterns and data shape. Next I’ll add a standalone `ProgressPanel` component that computes completion %, elapsed time, average/item, ETA, and current item title from `items` + `startedAt`, then add focused unit tests with deterministic time input and run all tests.
-
-thinking
-**Applying patch for file creation**
-codex
-I’m now editing two files: `components/ProgressPanel.tsx` and `__tests__/ProgressPanel.test.tsx`, keeping the change isolated to this item.
-file update
-A /Users/mcbee/Projects/agent-dashboard/components/ProgressPanel.tsx
+**Inspecting git-state library and styles**
+exec
+/bin/zsh -lc "sed -n '1,240p' lib/git-state.ts" in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc "sed -n '1,260p' __tests__/git-state.test.ts" in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc "sed -n '1,260p' __tests__/ProgressPanel.test.tsx" in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc "sed -n '1,260p' components/ProgressPanel.tsx" in /Users/mcbee/Projects/agent-dashboard succeeded in 285ms:
 "use client";
 
 import React, { useMemo } from "react";
@@ -301,307 +164,49 @@ function formatDuration(ms: number): string {
   const seconds = totalSeconds % 60;
 
   if (days > 0) {
-    return `${days}d ${hours.toString().padStart(2, "0")}h`;
-  }
+ succeeded in 294ms:
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 
-  if (hours > 0) {
-    return `${hours}h ${minutes.toString().padStart(2, "0")}m`;
-  }
+const execFileAsync = promisify(execFile);
 
-  return `${minutes}m ${seconds.toString().padStart(2, "0")}s`;
+export interface GitDiffStats {
+  filesChanged: number;
+  insertions: number;
+  deletions: number;
 }
 
-export default function ProgressPanel({ items, startedAt, now = new Date() }: ProgressPanelProps) {
-  const stats = useMemo(() => {
-    const totalItems = items.length;
-    const completedItems = items.filter((item) => item.passes).length;
-    const progressPercent = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
-    const currentItem = items.find((item) => item.isCurrent && !item.passes) ?? items.find((item) => item.isCurrent) ?? null;
-    const startedAtDate = startedAt ? new Date(startedAt) : null;
-    const hasValidStart = startedAtDate !== null && !Number.isNaN(startedAtDate.getTime());
-    const elapsedMs = hasValidStart ? Math.max(0, now.getTime() - startedAtDate.getTime()) : null;
-    const averagePerItemMs = elapsedMs !== null && completedItems > 0 ? elapsedMs / completedItems : null;
-    const remainingItems = Math.max(0, totalItems - completedItems);
-    const etaMs = averagePerItemMs !== null ? averagePerItemMs * remainingItems : null;
-
-    return {
-      totalItems,
-      completedItems,
-      progressPercent,
-      currentItemTitle: currentItem?.title ?? "No item in progress",
-      elapsedLabel: elapsedMs !== null ? formatDuration(elapsedMs) : "N/A",
-      averageLabel: averagePerItemMs !== null ? formatDuration(averagePerItemMs) : "N/A",
-      etaLabel: etaMs !== null ? formatDuration(etaMs) : "N/A",
-    };
-  }, [items, now, startedAt]);
-
-  return (
-    <section className="rounded-lg border border-border bg-card p-4 text-card-foreground md:p-6">
-      <h2 className="text-lg font-semibold">Run Progress</h2>
-      <p className="mt-2 text-sm text-muted-foreground">
-        {stats.completedItems} of {stats.totalItems} items complete
-      </p>
-
-      <div className="mt-4">
-        <div
-          role="progressbar"
-          aria-label="Overall progress"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={stats.progressPercent}
-          className="h-2 w-full overflow-hidden rounded-full bg-muted"
-        >
-          <div
-            className="h-full bg-primary transition-[width] duration-300"
-            style={{ width: `${stats.progressPercent}%` }}
-          />
-        </div>
-        <p className="mt-2 text-xs text-muted-foreground">{stats.progressPercent}% complete</p>
-      </div>
-
-      <div className="mt-4 grid gap-3 sm:grid-cols-3">
-        <div className="rounded-md border border-border bg-background/50 p-3">
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">Elapsed</p>
-          <p className="mt-1 text-sm font-medium">{stats.elapsedLabel}</p>
-        </div>
-        <div className="rounded-md border border-border bg-background/50 p-3">
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">Avg / item</p>
-          <p className="mt-1 text-sm font-medium">{stats.averageLabel}</p>
-        </div>
-        <div className="rounded-md border border-border bg-background/50 p-3">
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">ETA</p>
-          <p className="mt-1 text-sm font-medium">{stats.etaLabel}</p>
-        </div>
-      </div>
-
-      <div className="mt-4 rounded-md border border-amber-400/50 bg-amber-400/10 p-3">
-        <p className="text-xs uppercase tracking-wide text-muted-foreground">Current Item</p>
-        <p className="mt-1 text-base font-semibold">{stats.currentItemTitle}</p>
-      </div>
-    </section>
-  );
+export interface UncommittedChangesSummary {
+  staged: GitDiffStats;
+  unstaged: GitDiffStats;
+  untrackedFiles: number;
+  total: GitDiffStats;
 }
-apply_patch(auto_approved=true) exited 0 in 37ms:
-Success. Updated the following files:
-A components/ProgressPanel.tsx
-file update:
-diff --git a/components/ProgressPanel.tsx b/components/ProgressPanel.tsx
-new file mode 100644
-index 0000000000000000000000000000000000000000..6f798601dcbb1d0b4b3e98cc278b08d9983fe71c
---- /dev/null
-+++ b/components/ProgressPanel.tsx
-@@ -0,0 +1,100 @@
-+"use client";
-+
-+import React, { useMemo } from "react";
-+
-+import type { UnifiedPRDItem } from "@/lib/ralph-state";
-+
-+interface ProgressPanelProps {
-+  items: UnifiedPRDItem[];
-+  startedAt: string | null;
-+  now?: Date;
-+}
-+
-+function formatDuration(ms: number): string {
-+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
-+  const days = Math.floor(totalSeconds / 86400);
-+  const hours = Math.floor((totalSeconds % 86400) / 3600);
-+  const minutes = Math.floor((totalSeconds % 3600) / 60);
-+  const seconds = totalSeconds % 60;
-+
-+  if (days > 0) {
-+    return `${days}d ${hours.toString().padStart(2, "0")}h`;
-+  }
-+
-+  if (hours > 0) {
-+    return `${hours}h ${minutes.toString().padStart(2, "0")}m`;
-+  }
-+
-+  return `${minutes}m ${seconds.toString().padStart(2, "0")}s`;
-+}
-+
-+export default function ProgressPanel({ items, startedAt, now = new Date() }: ProgressPanelProps) {
-+  const stats = useMemo(() => {
-+    const totalItems = items.length;
-+    const completedItems = items.filter((item) => item.passes).length;
-+    const progressPercent = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
-+    const currentItem = items.find((item) => item.isCurrent && !item.passes) ?? items.find((item) => item.isCurrent) ?? null;
-+    const startedAtDate = startedAt ? new Date(startedAt) : null;
-+    const hasValidStart = startedAtDate !== null && !Number.isNaN(startedAtDate.getTime());
-+    const elapsedMs = hasValidStart ? Math.max(0, now.getTime() - startedAtDate.getTime()) : null;
-+    const averagePerItemMs = elapsedMs !== null && completedItems > 0 ? elapsedMs / completedItems : null;
-+    const remainingItems = Math.max(0, totalItems - completedItems);
-+    const etaMs = averagePerItemMs !== null ? averagePerItemMs * remainingItems : null;
-+
-+    return {
-+      totalItems,
-+      completedItems,
-+      progressPercent,
-+      currentItemTitle: currentItem?.title ?? "No item in progress",
-+      elapsedLabel: elapsedMs !== null ? formatDuration(elapsedMs) : "N/A",
-+      averageLabel: averagePerItemMs !== null ? formatDuration(averagePerItemMs) : "N/A",
-+      etaLabel: etaMs !== null ? formatDuration(etaMs) : "N/A",
-+    };
-+  }, [items, now, startedAt]);
-+
-+  return (
-+    <section className="rounded-lg border border-border bg-card p-4 text-card-foreground md:p-6">
-+      <h2 className="text-lg font-semibold">Run Progress</h2>
-+      <p className="mt-2 text-sm text-muted-foreground">
-+        {stats.completedItems} of {stats.totalItems} items complete
-+      </p>
-+
-+      <div className="mt-4">
-+        <div
-+          role="progressbar"
-+          aria-label="Overall progress"
-+          aria-valuemin={0}
-+          aria-valuemax={100}
-+          aria-valuenow={stats.progressPercent}
-+          className="h-2 w-full overflow-hidden rounded-full bg-muted"
-+        >
-+          <div
-+            className="h-full bg-primary transition-[width] duration-300"
-+            style={{ width: `${stats.progressPercent}%` }}
-+          />
-+        </div>
-+        <p className="mt-2 text-xs text-muted-foreground">{stats.progressPercent}% complete</p>
-+      </div>
-+
-+      <div className="mt-4 grid gap-3 sm:grid-cols-3">
-+        <div className="rounded-md border border-border bg-background/50 p-3">
-+          <p className="text-xs uppercase tracking-wide text-muted-foreground">Elapsed</p>
-+          <p className="mt-1 text-sm font-medium">{stats.elapsedLabel}</p>
-+        </div>
-+        <div className="rounded-md border border-border bg-background/50 p-3">
-+          <p className="text-xs uppercase tracking-wide text-muted-foreground">Avg / item</p>
-+          <p className="mt-1 text-sm font-medium">{stats.averageLabel}</p>
-+        </div>
-+        <div className="rounded-md border border-border bg-background/50 p-3">
-+          <p className="text-xs uppercase tracking-wide text-muted-foreground">ETA</p>
-+          <p className="mt-1 text-sm font-medium">{stats.etaLabel}</p>
-+        </div>
-+      </div>
-+
-+      <div className="mt-4 rounded-md border border-amber-400/50 bg-amber-400/10 p-3">
-+        <p className="text-xs uppercase tracking-wide text-muted-foreground">Current Item</p>
-+        <p className="mt-1 text-base font-semibold">{stats.currentItemTitle}</p>
-+      </div>
-+    </section>
-+  );
-+}
 
-file update:
-diff --git a/components/ProgressPanel.tsx b/components/ProgressPanel.tsx
-new file mode 100644
-index 0000000000000000000000000000000000000000..6f798601dcbb1d0b4b3e98cc278b08d9983fe71c
---- /dev/null
-+++ b/components/ProgressPanel.tsx
-@@ -0,0 +1,100 @@
-+"use client";
-+
-+import React, { useMemo } from "react";
-+
-+import type { UnifiedPRDItem } from "@/lib/ralph-state";
-+
-+interface ProgressPanelProps {
-+  items: UnifiedPRDItem[];
-+  startedAt: string | null;
-+  now?: Date;
-+}
-+
-+function formatDuration(ms: number): string {
-+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
-+  const days = Math.floor(totalSeconds / 86400);
-+  const hours = Math.floor((totalSeconds % 86400) / 3600);
-+  const minutes = Math.floor((totalSeconds % 3600) / 60);
-+  const seconds = totalSeconds % 60;
-+
-+  if (days > 0) {
-+    return `${days}d ${hours.toString().padStart(2, "0")}h`;
-+  }
-+
-+  if (hours > 0) {
-+    return `${hours}h ${minutes.toString().padStart(2, "0")}m`;
-+  }
-+
-+  return `${minutes}m ${seconds.toString().padStart(2, "0")}s`;
-+}
-+
-+export default function ProgressPanel({ items, startedAt, now = new Date() }: ProgressPanelProps) {
-+  const stats = useMemo(() => {
-+    const totalItems = items.length;
-+    const completedItems = items.filter((item) => item.passes).length;
-+    const progressPercent = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
-+    const currentItem = items.find((item) => item.isCurrent && !item.passes) ?? items.find((item) => item.isCurrent) ?? null;
-+    const startedAtDate = startedAt ? new Date(startedAt) : null;
-+    const hasValidStart = startedAtDate !== null && !Number.isNaN(startedAtDate.getTime());
-+    const elapsedMs = hasValidStart ? Math.max(0, now.getTime() - startedAtDate.getTime()) : null;
-+    const averagePerItemMs = elapsedMs !== null && completedItems > 0 ? elapsedMs / completedItems : null;
-+    const remainingItems = Math.max(0, totalItems - completedItems);
-+    const etaMs = averagePerItemMs !== null ? averagePerItemMs * remainingItems : null;
-+
-+    return {
-+      totalItems,
-+      completedItems,
-+      progressPercent,
-+      currentItemTitle: currentItem?.title ?? "No item in progress",
-+      elapsedLabel: elapsedMs !== null ? formatDuration(elapsedMs) : "N/A",
-+      averageLabel: averagePerItemMs !== null ? formatDuration(averagePerItemMs) : "N/A",
-+      etaLabel: etaMs !== null ? formatDuration(etaMs) : "N/A",
-+    };
-+  }, [items, now, startedAt]);
-+
-+  return (
-+    <section className="rounded-lg border border-border bg-card p-4 text-card-foreground md:p-6">
-+      <h2 className="text-lg font-semibold">Run Progress</h2>
-+      <p className="mt-2 text-sm text-muted-foreground">
-+        {stats.completedItems} of {stats.totalItems} items complete
-+      </p>
-+
-+      <div className="mt-4">
-+        <div
-+          role="progressbar"
-+          aria-label="Overall progress"
-+          aria-valuemin={0}
-+          aria-valuemax={100}
-+          aria-valuenow={stats.progressPercent}
-+          className="h-2 w-full overflow-hidden rounded-full bg-muted"
-+        >
-+          <div
-+            className="h-full bg-primary transition-[width] duration-300"
-+            style={{ width: `${stats.progressPercent}%` }}
-+          />
-+        </div>
-+        <p className="mt-2 text-xs text-muted-foreground">{stats.progressPercent}% complete</p>
-+      </div>
-+
-+      <div className="mt-4 grid gap-3 sm:grid-cols-3">
-+        <div className="rounded-md border border-border bg-background/50 p-3">
-+          <p className="text-xs uppercase tracking-wide text-muted-foreground">Elapsed</p>
-+          <p className="mt-1 text-sm font-medium">{stats.elapsedLabel}</p>
-+        </div>
-+        <div className="rounded-md border border-border bg-background/50 p-3">
-+          <p className="text-xs uppercase tracking-wide text-muted-foreground">Avg / item</p>
-+          <p className="mt-1 text-sm font-medium">{stats.averageLabel}</p>
-+        </div>
-+        <div className="rounded-md border border-border bg-background/50 p-3">
-+          <p className="text-xs uppercase tracking-wide text-muted-foreground">ETA</p>
-+          <p className="mt-1 text-sm font-medium">{stats.etaLabel}</p>
-+        </div>
-+      </div>
-+
-+      <div className="mt-4 rounded-md border border-amber-400/50 bg-amber-400/10 p-3">
-+        <p className="text-xs uppercase tracking-wide text-muted-foreground">Current Item</p>
-+        <p className="mt-1 text-base font-semibold">{stats.currentItemTitle}</p>
-+      </div>
-+    </section>
-+  );
-+}
+export interface GitState {
+  branch: string | null;
+ succeeded in 285ms:
+import { describe, expect, it } from "vitest";
 
-file update
-A /Users/mcbee/Projects/agent-dashboard/__tests__/ProgressPanel.test.tsx
+import { parseDiffShortStat, readGitState } from "../lib/git-state";
+
+function createMockRunner(outputs: Record<string, string>, failures: Set<string> = new Set()) {
+  return async (args: string[]): Promise<string> => {
+    const key = args.join(" ");
+
+    if (failures.has(key)) {
+      throw new Error(`command failed: ${key}`);
+    }
+
+    if (!(key in outputs)) {
+      throw new Error(`missing mock output: ${key}`);
+    }
+
+    return outputs[key];
+  };
+}
+
+ succeeded in 290ms:
 import React from "react";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
@@ -622,521 +227,874 @@ const items: UnifiedPRDItem[] = [
     notes: "",
     status: "done",
     isCurrent: false,
+
+thinking
+**Assessing component inclusion**
+codex
+I found a `lib/git-state.ts` already providing exactly the data this panel needs, so next I’m checking page wiring to decide whether `GitPanel` should be added to the dashboard layout now or kept as a standalone tested component.
+exec
+/bin/zsh -lc "sed -n '1,280p' app/page.tsx" in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc "sed -n '1,320p' lib/ralph-state.ts" in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc "sed -n '1,280p' app/api/state/route.ts" in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc "sed -n '1,260p' __tests__/api-state.test.ts" in /Users/mcbee/Projects/agent-dashboard succeeded in 300ms:
+import { promises as fs } from "node:fs";
+import path from "node:path";
+
+export interface Checkpoint {
+  item_id: number;
+  commit_sha: string;
+  timestamp: string;
+  files_changed: string[];
+  tests_passed: boolean;
+  route: string;
+}
+
+export interface RalphState {
+  branch: string | null;
+  prd_path: string | null;
+  current_item: number | null;
+  completed_items: number[];
+  started_at: string | null;
+  checkpoints: Checkpoint[];
+  agent: string | null;
+ succeeded in 286ms:
+import { stat } from "node:fs/promises";
+import path from "node:path";
+
+import { NextResponse } from "next/server";
+
+import { readCodeMetrics } from "@/lib/code-metrics";
+import { readCoverageState } from "@/lib/coverage-state";
+import { readGitState } from "@/lib/git-state";
+import { getRalphUnifiedView } from "@/lib/ralph-state";
+
+function resolveProjectPath(request: Request): string | null {
+  const { searchParams } = new URL(request.url);
+
+  const fromQuery = searchParams.get("projectPath") ?? searchParams.get("path");
+  const fromEnv = process.env.RALPH_PROJECT_PATH;
+  const selected = fromQuery ?? fromEnv ?? null;
+
+  if (!selected) {
+    return null;
+  }
+ succeeded in 265ms:
+import os from "node:os";
+import path from "node:path";
+import { promises as fs } from "node:fs";
+
+import { afterEach, describe, expect, it } from "vitest";
+
+import { GET as healthGET } from "../app/api/health/route";
+import { GET as stateGET } from "../app/api/state/route";
+
+const createdDirs: string[] = [];
+const createdFiles: string[] = [];
+
+async function makeProjectFixture(): Promise<string> {
+  const projectDir = await fs.mkdtemp(path.join(os.tmpdir(), "api-state-test-"));
+  createdDirs.push(projectDir);
+
+  await fs.mkdir(path.join(projectDir, ".ralph"), { recursive: true });
+  await fs.writeFile(
+    path.join(projectDir, ".ralph", "state.json"),
+    JSON.stringify(
+ succeeded in 302ms:
+export default function Home() {
+  return (
+    <section className="rounded-lg border border-border bg-card p-6 text-card-foreground">
+      <h2 className="text-lg font-medium">Run Overview</h2>
+      <p className="mt-2 text-sm text-muted-foreground">
+        Ralph run metrics and kanban progress will render here.
+      </p>
+    </section>
+  );
+}
+
+thinking
+**Checking test environment setup**
+exec
+/bin/zsh -lc 'cat vitest.setup.ts && cat vitest.config.ts && cat package.json' in /Users/mcbee/Projects/agent-dashboard succeeded in 219ms:
+import "@testing-library/jest-dom/vitest";
+import path from "node:path";
+
+import { defineConfig } from "vitest/config";
+
+export default defineConfig({
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "."),
+    },
   },
-  {
-    id: 2,
-    category: "api",
-    title: "Done Item B",
-    description: "Done B",
-    priority: 2,
-    passes: true,
-    verification: "Done B verification",
-    steps: [],
-    notes: "",
-    status: "done",
-    isCurrent: false,
+  test: {
+    environment: "jsdom",
+    setupFiles: "./vitest.setup.ts",
   },
-  {
-    id: 3,
-    category: "ui",
-    title: "Current Item",
-    description: "Current",
-    priority: 1,
-    passes: false,
-    verification: "Current verification",
-    steps: [],
-    notes: "",
-    status: "in_progress",
-    isCurrent: true,
+});
+{
+  "name": "ralph-dashboard",
+  "version": "0.1.0",
+  "private": true,
+
+thinking
+**Designing Git panel component and tests**
+codex
+I have enough context and will now add `components/GitPanel.tsx` plus `__tests__/GitPanel.test.tsx`, using `lib/git-state` data shape directly so it’s easy to wire into the dashboard later without extra adapters.
+file update
+A /Users/mcbee/Projects/agent-dashboard/components/GitPanel.tsx
+"use client";
+
+import React, { useState } from "react";
+
+import type { GitState } from "@/lib/git-state";
+
+type GitPanelData = Pick<GitState, "branch" | "commitCount" | "recentCommits" | "baseBranch" | "diffFromBase" | "error">;
+
+interface GitPanelProps {
+  git: GitPanelData;
+}
+
+export default function GitPanel({ git }: GitPanelProps) {
+  const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "error">("idle");
+  const commitsToShow = git.recentCommits.slice(0, 5);
+  const canCopyBranch = Boolean(git.branch);
+  const diffLabel = git.baseBranch ? `Diff vs ${git.baseBranch}` : "Diff summary";
+
+  const handleCopyBranch = async () => {
+    if (!git.branch) {
+      return;
+    }
+
+    try {
+      if (!navigator.clipboard?.writeText) {
+        throw new Error("Clipboard API unavailable");
+      }
+
+      await navigator.clipboard.writeText(git.branch);
+      setCopyStatus("copied");
+    } catch {
+      setCopyStatus("error");
+    }
+  };
+
+  return (
+    <section className="rounded-lg border border-border bg-card p-4 text-card-foreground md:p-6">
+      <h2 className="text-lg font-semibold">Git State</h2>
+
+      <div className="mt-4 rounded-md border border-border bg-background/50 p-3">
+        <p className="text-xs uppercase tracking-wide text-muted-foreground">Branch</p>
+        <div className="mt-2 flex items-center justify-between gap-3">
+          <p className="truncate text-sm font-medium">{git.branch ?? "Detached / unavailable"}</p>
+          <button
+            type="button"
+            onClick={handleCopyBranch}
+            disabled={!canCopyBranch}
+            className="shrink-0 rounded border border-border bg-background px-2 py-1 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-50"
+            aria-label="Copy branch name"
+          >
+            Copy
+          </button>
+        </div>
+        {copyStatus === "copied" ? <p className="mt-2 text-xs text-green-600">Copied.</p> : null}
+        {copyStatus === "error" ? <p className="mt-2 text-xs text-red-600">Unable to copy.</p> : null}
+      </div>
+
+      <div className="mt-4 rounded-md border border-border bg-background/50 p-3">
+        <p className="text-xs uppercase tracking-wide text-muted-foreground">Commits</p>
+        <p className="mt-1 text-sm font-medium">{git.commitCount} commits on this branch</p>
+      </div>
+
+      <div className="mt-4 rounded-md border border-border bg-background/50 p-3">
+        <p className="text-xs uppercase tracking-wide text-muted-foreground">{diffLabel}</p>
+        <div className="mt-3 grid grid-cols-3 gap-3 text-sm">
+          <div>
+            <p className="text-xs text-muted-foreground">Files</p>
+            <p className="font-semibold">{git.diffFromBase.filesChanged}</p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">+ Lines</p>
+            <p className="font-semibold">{git.diffFromBase.insertions}</p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">- Lines</p>
+            <p className="font-semibold">{git.diffFromBase.deletions}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-4 rounded-md border border-border bg-background/50 p-3">
+        <p className="text-xs uppercase tracking-wide text-muted-foreground">Recent commits</p>
+        {commitsToShow.length > 0 ? (
+          <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm">
+            {commitsToShow.map((commit) => (
+              <li key={commit}>{commit}</li>
+            ))}
+          </ol>
+        ) : (
+          <p className="mt-2 text-sm text-muted-foreground">No commits available.</p>
+        )}
+      </div>
+
+      {git.error ? <p className="mt-4 text-xs text-red-600">Git error: {git.error}</p> : null}
+    </section>
+  );
+}
+apply_patch(auto_approved=true) exited 0 in 37ms:
+Success. Updated the following files:
+A components/GitPanel.tsx
+file update:
+diff --git a/components/GitPanel.tsx b/components/GitPanel.tsx
+new file mode 100644
+index 0000000000000000000000000000000000000000..e819601606978e1667fde1dc71380ce3278ddb08
+--- /dev/null
++++ b/components/GitPanel.tsx
+@@ -0,0 +1,97 @@
++"use client";
++
++import React, { useState } from "react";
++
++import type { GitState } from "@/lib/git-state";
++
++type GitPanelData = Pick<GitState, "branch" | "commitCount" | "recentCommits" | "baseBranch" | "diffFromBase" | "error">;
++
++interface GitPanelProps {
++  git: GitPanelData;
++}
++
++export default function GitPanel({ git }: GitPanelProps) {
++  const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "error">("idle");
++  const commitsToShow = git.recentCommits.slice(0, 5);
++  const canCopyBranch = Boolean(git.branch);
++  const diffLabel = git.baseBranch ? `Diff vs ${git.baseBranch}` : "Diff summary";
++
++  const handleCopyBranch = async () => {
++    if (!git.branch) {
++      return;
++    }
++
++    try {
++      if (!navigator.clipboard?.writeText) {
++        throw new Error("Clipboard API unavailable");
++      }
++
++      await navigator.clipboard.writeText(git.branch);
++      setCopyStatus("copied");
++    } catch {
++      setCopyStatus("error");
++    }
++  };
++
++  return (
++    <section className="rounded-lg border border-border bg-card p-4 text-card-foreground md:p-6">
++      <h2 className="text-lg font-semibold">Git State</h2>
++
++      <div className="mt-4 rounded-md border border-border bg-background/50 p-3">
++        <p className="text-xs uppercase tracking-wide text-muted-foreground">Branch</p>
++        <div className="mt-2 flex items-center justify-between gap-3">
++          <p className="truncate text-sm font-medium">{git.branch ?? "Detached / unavailable"}</p>
++          <button
++            type="button"
++            onClick={handleCopyBranch}
++            disabled={!canCopyBranch}
++            className="shrink-0 rounded border border-border bg-background px-2 py-1 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-50"
++            aria-label="Copy branch name"
++          >
++            Copy
++          </button>
++        </div>
++        {copyStatus === "copied" ? <p className="mt-2 text-xs text-green-600">Copied.</p> : null}
++        {copyStatus === "error" ? <p className="mt-2 text-xs text-red-600">Unable to copy.</p> : null}
++      </div>
++
++      <div className="mt-4 rounded-md border border-border bg-background/50 p-3">
++        <p className="text-xs uppercase tracking-wide text-muted-foreground">Commits</p>
++        <p className="mt-1 text-sm font-medium">{git.commitCount} commits on this branch</p>
++      </div>
++
++      <div className="mt-4 rounded-md border border-border bg-background/50 p-3">
++        <p className="text-xs uppercase tracking-wide text-muted-foreground">{diffLabel}</p>
++        <div className="mt-3 grid grid-cols-3 gap-3 text-sm">
++          <div>
++            <p className="text-xs text-muted-foreground">Files</p>
++            <p className="font-semibold">{git.diffFromBase.filesChanged}</p>
++          </div>
++          <div>
++            <p className="text-xs text-muted-foreground">+ Lines</p>
++            <p className="font-semibold">{git.diffFromBase.insertions}</p>
++          </div>
++          <div>
++            <p className="text-xs text-muted-foreground">- Lines</p>
++            <p className="font-semibold">{git.diffFromBase.deletions}</p>
++          </div>
++        </div>
++      </div>
++
++      <div className="mt-4 rounded-md border border-border bg-background/50 p-3">
++        <p className="text-xs uppercase tracking-wide text-muted-foreground">Recent commits</p>
++        {commitsToShow.length > 0 ? (
++          <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm">
++            {commitsToShow.map((commit) => (
++              <li key={commit}>{commit}</li>
++            ))}
++          </ol>
++        ) : (
++          <p className="mt-2 text-sm text-muted-foreground">No commits available.</p>
++        )}
++      </div>
++
++      {git.error ? <p className="mt-4 text-xs text-red-600">Git error: {git.error}</p> : null}
++    </section>
++  );
++}
+
+file update:
+diff --git a/components/GitPanel.tsx b/components/GitPanel.tsx
+new file mode 100644
+index 0000000000000000000000000000000000000000..e819601606978e1667fde1dc71380ce3278ddb08
+--- /dev/null
++++ b/components/GitPanel.tsx
+@@ -0,0 +1,97 @@
++"use client";
++
++import React, { useState } from "react";
++
++import type { GitState } from "@/lib/git-state";
++
++type GitPanelData = Pick<GitState, "branch" | "commitCount" | "recentCommits" | "baseBranch" | "diffFromBase" | "error">;
++
++interface GitPanelProps {
++  git: GitPanelData;
++}
++
++export default function GitPanel({ git }: GitPanelProps) {
++  const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "error">("idle");
++  const commitsToShow = git.recentCommits.slice(0, 5);
++  const canCopyBranch = Boolean(git.branch);
++  const diffLabel = git.baseBranch ? `Diff vs ${git.baseBranch}` : "Diff summary";
++
++  const handleCopyBranch = async () => {
++    if (!git.branch) {
++      return;
++    }
++
++    try {
++      if (!navigator.clipboard?.writeText) {
++        throw new Error("Clipboard API unavailable");
++      }
++
++      await navigator.clipboard.writeText(git.branch);
++      setCopyStatus("copied");
++    } catch {
++      setCopyStatus("error");
++    }
++  };
++
++  return (
++    <section className="rounded-lg border border-border bg-card p-4 text-card-foreground md:p-6">
++      <h2 className="text-lg font-semibold">Git State</h2>
++
++      <div className="mt-4 rounded-md border border-border bg-background/50 p-3">
++        <p className="text-xs uppercase tracking-wide text-muted-foreground">Branch</p>
++        <div className="mt-2 flex items-center justify-between gap-3">
++          <p className="truncate text-sm font-medium">{git.branch ?? "Detached / unavailable"}</p>
++          <button
++            type="button"
++            onClick={handleCopyBranch}
++            disabled={!canCopyBranch}
++            className="shrink-0 rounded border border-border bg-background px-2 py-1 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-50"
++            aria-label="Copy branch name"
++          >
++            Copy
++          </button>
++        </div>
++        {copyStatus === "copied" ? <p className="mt-2 text-xs text-green-600">Copied.</p> : null}
++        {copyStatus === "error" ? <p className="mt-2 text-xs text-red-600">Unable to copy.</p> : null}
++      </div>
++
++      <div className="mt-4 rounded-md border border-border bg-background/50 p-3">
++        <p className="text-xs uppercase tracking-wide text-muted-foreground">Commits</p>
++        <p className="mt-1 text-sm font-medium">{git.commitCount} commits on this branch</p>
++      </div>
++
++      <div className="mt-4 rounded-md border border-border bg-background/50 p-3">
++        <p className="text-xs uppercase tracking-wide text-muted-foreground">{diffLabel}</p>
++        <div className="mt-3 grid grid-cols-3 gap-3 text-sm">
++          <div>
++            <p className="text-xs text-muted-foreground">Files</p>
++            <p className="font-semibold">{git.diffFromBase.filesChanged}</p>
++          </div>
++          <div>
++            <p className="text-xs text-muted-foreground">+ Lines</p>
++            <p className="font-semibold">{git.diffFromBase.insertions}</p>
++          </div>
++          <div>
++            <p className="text-xs text-muted-foreground">- Lines</p>
++            <p className="font-semibold">{git.diffFromBase.deletions}</p>
++          </div>
++        </div>
++      </div>
++
++      <div className="mt-4 rounded-md border border-border bg-background/50 p-3">
++        <p className="text-xs uppercase tracking-wide text-muted-foreground">Recent commits</p>
++        {commitsToShow.length > 0 ? (
++          <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm">
++            {commitsToShow.map((commit) => (
++              <li key={commit}>{commit}</li>
++            ))}
++          </ol>
++        ) : (
++          <p className="mt-2 text-sm text-muted-foreground">No commits available.</p>
++        )}
++      </div>
++
++      {git.error ? <p className="mt-4 text-xs text-red-600">Git error: {git.error}</p> : null}
++    </section>
++  );
++}
+
+codex
+`GitPanel` is in place with branch copy, commit count, diff stats, and a capped 5-item commit log. I’m adding focused unit tests now, including a clipboard interaction check and last-5 commit behavior.
+file update
+A /Users/mcbee/Projects/agent-dashboard/__tests__/GitPanel.test.tsx
+import React from "react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+import GitPanel from "@/components/GitPanel";
+import type { GitState } from "@/lib/git-state";
+
+const baseGit: Pick<GitState, "branch" | "commitCount" | "recentCommits" | "baseBranch" | "diffFromBase" | "error"> = {
+  branch: "feature/git-panel",
+  commitCount: 42,
+  recentCommits: [
+    "feat: add git panel",
+    "test: add git panel tests",
+    "refactor: tidy panel layout",
+    "fix: branch copy state",
+    "chore: update styles",
+    "docs: note git state panel",
+  ],
+  baseBranch: "main",
+  diffFromBase: {
+    filesChanged: 5,
+    insertions: 30,
+    deletions: 10,
   },
-  {
-    id: 4,
-    category: "tests",
-    title: "Backlog Item",
-    description: "Backlog",
-    priority: 2,
-    passes: false,
-    verification: "Backlog verification",
-    steps: [],
-    notes: "",
-    status: "backlog",
-    isCurrent: false,
-  },
-];
+  error: null,
+};
 
 afterEach(() => {
   cleanup();
+  vi.restoreAllMocks();
 });
 
-describe("ProgressPanel", () => {
-  it("renders completion, progress, elapsed time, average, ETA, and current item", () => {
-    render(
-      <ProgressPanel
-        items={items}
-        startedAt="2026-02-05T10:00:00.000Z"
-        now={new Date("2026-02-05T11:00:00.000Z")}
-      />,
-    );
+describe("GitPanel", () => {
+  it("renders branch, commit count, diff stats, and only the latest five commit messages", () => {
+    render(<GitPanel git={baseGit} />);
 
-    expect(screen.getByText("2 of 4 items complete")).toBeInTheDocument();
-    expect(screen.getByText("50% complete")).toBeInTheDocument();
+    expect(screen.getByText("feature/git-panel")).toBeInTheDocument();
+    expect(screen.getByText("42 commits on this branch")).toBeInTheDocument();
+    expect(screen.getByText("Diff vs main")).toBeInTheDocument();
 
-    const progress = screen.getByRole("progressbar", { name: "Overall progress" });
-    expect(progress).toHaveAttribute("aria-valuenow", "50");
+    expect(screen.getByText("5")).toBeInTheDocument();
+    expect(screen.getByText("30")).toBeInTheDocument();
+    expect(screen.getByText("10")).toBeInTheDocument();
 
-    expect(screen.getByText("1h 00m")).toBeInTheDocument();
-    expect(screen.getByText("30m 00s")).toBeInTheDocument();
-    expect(screen.getByText("Current Item")).toBeInTheDocument();
+    expect(screen.getByText("feat: add git panel")).toBeInTheDocument();
+    expect(screen.getByText("test: add git panel tests")).toBeInTheDocument();
+    expect(screen.getByText("refactor: tidy panel layout")).toBeInTheDocument();
+    expect(screen.getByText("fix: branch copy state")).toBeInTheDocument();
+    expect(screen.getByText("chore: update styles")).toBeInTheDocument();
+    expect(screen.queryByText("docs: note git state panel")).not.toBeInTheDocument();
   });
 
-  it("shows N/A values when there is no valid start or no completed items", () => {
-    const noDoneItems = items.map((item) => ({ ...item, passes: false }));
+  it("copies the branch name when the copy button is pressed", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText },
+      configurable: true,
+    });
 
-    render(<ProgressPanel items={noDoneItems} startedAt={null} now={new Date("2026-02-05T11:00:00.000Z")} />);
+    render(<GitPanel git={baseGit} />);
+    fireEvent.click(screen.getByRole("button", { name: "Copy branch name" }));
 
-    expect(screen.getByText("0 of 4 items complete")).toBeInTheDocument();
-    expect(screen.getByText("0% complete")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(writeText).toHaveBeenCalledWith("feature/git-panel");
+    });
 
-    const naLabels = screen.getAllByText("N/A");
-    expect(naLabels).toHaveLength(3);
+    expect(screen.getByText("Copied.")).toBeInTheDocument();
   });
 });
-apply_patch(auto_approved=true) exited 0 in 39ms:
+apply_patch(auto_approved=true) exited 0 in 52ms:
 Success. Updated the following files:
-A __tests__/ProgressPanel.test.tsx
+A __tests__/GitPanel.test.tsx
 file update:
-diff --git a/__tests__/ProgressPanel.test.tsx b/__tests__/ProgressPanel.test.tsx
+diff --git a/__tests__/GitPanel.test.tsx b/__tests__/GitPanel.test.tsx
 new file mode 100644
-index 0000000000000000000000000000000000000000..77a60ad07295c5d203fd937298e8e84967b1722b
+index 0000000000000000000000000000000000000000..9b631b095dab8cfe06cc80500956dfea3d6cee43
 --- /dev/null
-+++ b/__tests__/ProgressPanel.test.tsx
-@@ -0,0 +1,99 @@
++++ b/__tests__/GitPanel.test.tsx
+@@ -0,0 +1,69 @@
 +import React from "react";
-+import { cleanup, render, screen } from "@testing-library/react";
-+import { afterEach, describe, expect, it } from "vitest";
++import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
++import { afterEach, describe, expect, it, vi } from "vitest";
 +
-+import ProgressPanel from "@/components/ProgressPanel";
-+import type { UnifiedPRDItem } from "@/lib/ralph-state";
++import GitPanel from "@/components/GitPanel";
++import type { GitState } from "@/lib/git-state";
 +
-+const items: UnifiedPRDItem[] = [
-+  {
-+    id: 1,
-+    category: "setup",
-+    title: "Done Item A",
-+    description: "Done A",
-+    priority: 1,
-+    passes: true,
-+    verification: "Done A verification",
-+    steps: [],
-+    notes: "",
-+    status: "done",
-+    isCurrent: false,
++const baseGit: Pick<GitState, "branch" | "commitCount" | "recentCommits" | "baseBranch" | "diffFromBase" | "error"> = {
++  branch: "feature/git-panel",
++  commitCount: 42,
++  recentCommits: [
++    "feat: add git panel",
++    "test: add git panel tests",
++    "refactor: tidy panel layout",
++    "fix: branch copy state",
++    "chore: update styles",
++    "docs: note git state panel",
++  ],
++  baseBranch: "main",
++  diffFromBase: {
++    filesChanged: 5,
++    insertions: 30,
++    deletions: 10,
 +  },
-+  {
-+    id: 2,
-+    category: "api",
-+    title: "Done Item B",
-+    description: "Done B",
-+    priority: 2,
-+    passes: true,
-+    verification: "Done B verification",
-+    steps: [],
-+    notes: "",
-+    status: "done",
-+    isCurrent: false,
-+  },
-+  {
-+    id: 3,
-+    category: "ui",
-+    title: "Current Item",
-+    description: "Current",
-+    priority: 1,
-+    passes: false,
-+    verification: "Current verification",
-+    steps: [],
-+    notes: "",
-+    status: "in_progress",
-+    isCurrent: true,
-+  },
-+  {
-+    id: 4,
-+    category: "tests",
-+    title: "Backlog Item",
-+    description: "Backlog",
-+    priority: 2,
-+    passes: false,
-+    verification: "Backlog verification",
-+    steps: [],
-+    notes: "",
-+    status: "backlog",
-+    isCurrent: false,
-+  },
-+];
++  error: null,
++};
 +
 +afterEach(() => {
 +  cleanup();
++  vi.restoreAllMocks();
 +});
 +
-+describe("ProgressPanel", () => {
-+  it("renders completion, progress, elapsed time, average, ETA, and current item", () => {
-+    render(
-+      <ProgressPanel
-+        items={items}
-+        startedAt="2026-02-05T10:00:00.000Z"
-+        now={new Date("2026-02-05T11:00:00.000Z")}
-+      />,
-+    );
++describe("GitPanel", () => {
++  it("renders branch, commit count, diff stats, and only the latest five commit messages", () => {
++    render(<GitPanel git={baseGit} />);
 +
-+    expect(screen.getByText("2 of 4 items complete")).toBeInTheDocument();
-+    expect(screen.getByText("50% complete")).toBeInTheDocument();
++    expect(screen.getByText("feature/git-panel")).toBeInTheDocument();
++    expect(screen.getByText("42 commits on this branch")).toBeInTheDocument();
++    expect(screen.getByText("Diff vs main")).toBeInTheDocument();
 +
-+    const progress = screen.getByRole("progressbar", { name: "Overall progress" });
-+    expect(progress).toHaveAttribute("aria-valuenow", "50");
++    expect(screen.getByText("5")).toBeInTheDocument();
++    expect(screen.getByText("30")).toBeInTheDocument();
++    expect(screen.getByText("10")).toBeInTheDocument();
 +
-+    expect(screen.getByText("1h 00m")).toBeInTheDocument();
-+    expect(screen.getByText("30m 00s")).toBeInTheDocument();
-+    expect(screen.getByText("Current Item")).toBeInTheDocument();
++    expect(screen.getByText("feat: add git panel")).toBeInTheDocument();
++    expect(screen.getByText("test: add git panel tests")).toBeInTheDocument();
++    expect(screen.getByText("refactor: tidy panel layout")).toBeInTheDocument();
++    expect(screen.getByText("fix: branch copy state")).toBeInTheDocument();
++    expect(screen.getByText("chore: update styles")).toBeInTheDocument();
++    expect(screen.queryByText("docs: note git state panel")).not.toBeInTheDocument();
 +  });
 +
-+  it("shows N/A values when there is no valid start or no completed items", () => {
-+    const noDoneItems = items.map((item) => ({ ...item, passes: false }));
++  it("copies the branch name when the copy button is pressed", async () => {
++    const writeText = vi.fn().mockResolvedValue(undefined);
++    Object.defineProperty(navigator, "clipboard", {
++      value: { writeText },
++      configurable: true,
++    });
 +
-+    render(<ProgressPanel items={noDoneItems} startedAt={null} now={new Date("2026-02-05T11:00:00.000Z")} />);
++    render(<GitPanel git={baseGit} />);
++    fireEvent.click(screen.getByRole("button", { name: "Copy branch name" }));
 +
-+    expect(screen.getByText("0 of 4 items complete")).toBeInTheDocument();
-+    expect(screen.getByText("0% complete")).toBeInTheDocument();
++    await waitFor(() => {
++      expect(writeText).toHaveBeenCalledWith("feature/git-panel");
++    });
 +
-+    const naLabels = screen.getAllByText("N/A");
-+    expect(naLabels).toHaveLength(3);
++    expect(screen.getByText("Copied.")).toBeInTheDocument();
 +  });
 +});
-diff --git a/components/ProgressPanel.tsx b/components/ProgressPanel.tsx
+diff --git a/components/GitPanel.tsx b/components/GitPanel.tsx
 new file mode 100644
-index 0000000000000000000000000000000000000000..6f798601dcbb1d0b4b3e98cc278b08d9983fe71c
+index 0000000000000000000000000000000000000000..e819601606978e1667fde1dc71380ce3278ddb08
 --- /dev/null
-+++ b/components/ProgressPanel.tsx
-@@ -0,0 +1,100 @@
++++ b/components/GitPanel.tsx
+@@ -0,0 +1,97 @@
 +"use client";
 +
-+import React, { useMemo } from "react";
++import React, { useState } from "react";
 +
-+import type { UnifiedPRDItem } from "@/lib/ralph-state";
++import type { GitState } from "@/lib/git-state";
 +
-+interface ProgressPanelProps {
-+  items: UnifiedPRDItem[];
-+  startedAt: string | null;
-+  now?: Date;
++type GitPanelData = Pick<GitState, "branch" | "commitCount" | "recentCommits" | "baseBranch" | "diffFromBase" | "error">;
++
++interface GitPanelProps {
++  git: GitPanelData;
 +}
 +
-+function formatDuration(ms: number): string {
-+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
-+  const days = Math.floor(totalSeconds / 86400);
-+  const hours = Math.floor((totalSeconds % 86400) / 3600);
-+  const minutes = Math.floor((totalSeconds % 3600) / 60);
-+  const seconds = totalSeconds % 60;
++export default function GitPanel({ git }: GitPanelProps) {
++  const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "error">("idle");
++  const commitsToShow = git.recentCommits.slice(0, 5);
++  const canCopyBranch = Boolean(git.branch);
++  const diffLabel = git.baseBranch ? `Diff vs ${git.baseBranch}` : "Diff summary";
 +
-+  if (days > 0) {
-+    return `${days}d ${hours.toString().padStart(2, "0")}h`;
-+  }
++  const handleCopyBranch = async () => {
++    if (!git.branch) {
++      return;
++    }
 +
-+  if (hours > 0) {
-+    return `${hours}h ${minutes.toString().padStart(2, "0")}m`;
-+  }
++    try {
++      if (!navigator.clipboard?.writeText) {
++        throw new Error("Clipboard API unavailable");
++      }
 +
-+  return `${minutes}m ${seconds.toString().padStart(2, "0")}s`;
-+}
-+
-+export default function ProgressPanel({ items, startedAt, now = new Date() }: ProgressPanelProps) {
-+  const stats = useMemo(() => {
-+    const totalItems = items.length;
-+    const completedItems = items.filter((item) => item.passes).length;
-+    const progressPercent = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
-+    const currentItem = items.find((item) => item.isCurrent && !item.passes) ?? items.find((item) => item.isCurrent) ?? null;
-+    const startedAtDate = startedAt ? new Date(startedAt) : null;
-+    const hasValidStart = startedAtDate !== null && !Number.isNaN(startedAtDate.getTime());
-+    const elapsedMs = hasValidStart ? Math.max(0, now.getTime() - startedAtDate.getTime()) : null;
-+    const averagePerItemMs = elapsedMs !== null && completedItems > 0 ? elapsedMs / completedItems : null;
-+    const remainingItems = Math.max(0, totalItems - completedItems);
-+    const etaMs = averagePerItemMs !== null ? averagePerItemMs * remainingItems : null;
-+
-+    return {
-+      totalItems,
-+      completedItems,
-+      progressPercent,
-+      currentItemTitle: currentItem?.title ?? "No item in progress",
-+      elapsedLabel: elapsedMs !== null ? formatDuration(elapsedMs) : "N/A",
-+      averageLabel: averagePerItemMs !== null ? formatDuration(averagePerItemMs) : "N/A",
-+      etaLabel: etaMs !== null ? formatDuration(etaMs) : "N/A",
-+    };
-+  }, [items, now, startedAt]);
++      await navigator.clipboard.writeText(git.branch);
++      setCopyStatus("copied");
++    } catch {
++      setCopyStatus("error");
++    }
++  };
 +
 +  return (
 +    <section className="rounded-lg border border-border bg-card p-4 text-card-foreground md:p-6">
-+      <h2 className="text-lg font-semibold">Run Progress</h2>
-+      <p className="mt-2 text-sm text-muted-foreground">
-+        {stats.completedItems} of {stats.totalItems} items complete
-+      </p>
++      <h2 className="text-lg font-semibold">Git State</h2>
 +
-+      <div className="mt-4">
-+        <div
-+          role="progressbar"
-+          aria-label="Overall progress"
-+          aria-valuemin={0}
-+          aria-valuemax={100}
-+          aria-valuenow={stats.progressPercent}
-+          className="h-2 w-full overflow-hidden rounded-full bg-muted"
-+        >
-+          <div
-+            className="h-full bg-primary transition-[width] duration-300"
-+            style={{ width: `${stats.progressPercent}%` }}
-+          />
++      <div className="mt-4 rounded-md border border-border bg-background/50 p-3">
++        <p className="text-xs uppercase tracking-wide text-muted-foreground">Branch</p>
++        <div className="mt-2 flex items-center justify-between gap-3">
++          <p className="truncate text-sm font-medium">{git.branch ?? "Detached / unavailable"}</p>
++          <button
++            type="button"
++            onClick={handleCopyBranch}
++            disabled={!canCopyBranch}
++            className="shrink-0 rounded border border-border bg-background px-2 py-1 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-50"
++            aria-label="Copy branch name"
++          >
++            Copy
++          </button>
 +        </div>
-+        <p className="mt-2 text-xs text-muted-foreground">{stats.progressPercent}% complete</p>
++        {copyStatus === "copied" ? <p className="mt-2 text-xs text-green-600">Copied.</p> : null}
++        {copyStatus === "error" ? <p className="mt-2 text-xs text-red-600">Unable to copy.</p> : null}
 +      </div>
 +
-+      <div className="mt-4 grid gap-3 sm:grid-cols-3">
-+        <div className="rounded-md border border-border bg-background/50 p-3">
-+          <p className="text-xs uppercase tracking-wide text-muted-foreground">Elapsed</p>
-+          <p className="mt-1 text-sm font-medium">{stats.elapsedLabel}</p>
-+        </div>
-+        <div className="rounded-md border border-border bg-background/50 p-3">
-+          <p className="text-xs uppercase tracking-wide text-muted-foreground">Avg / item</p>
-+          <p className="mt-1 text-sm font-medium">{stats.averageLabel}</p>
-+        </div>
-+        <div className="rounded-md border border-border bg-background/50 p-3">
-+          <p className="text-xs uppercase tracking-wide text-muted-foreground">ETA</p>
-+          <p className="mt-1 text-sm font-medium">{stats.etaLabel}</p>
++      <div className="mt-4 rounded-md border border-border bg-background/50 p-3">
++        <p className="text-xs uppercase tracking-wide text-muted-foreground">Commits</p>
++        <p className="mt-1 text-sm font-medium">{git.commitCount} commits on this branch</p>
++      </div>
++
++      <div className="mt-4 rounded-md border border-border bg-background/50 p-3">
++        <p className="text-xs uppercase tracking-wide text-muted-foreground">{diffLabel}</p>
++        <div className="mt-3 grid grid-cols-3 gap-3 text-sm">
++          <div>
++            <p className="text-xs text-muted-foreground">Files</p>
++            <p className="font-semibold">{git.diffFromBase.filesChanged}</p>
++          </div>
++          <div>
++            <p className="text-xs text-muted-foreground">+ Lines</p>
++            <p className="font-semibold">{git.diffFromBase.insertions}</p>
++          </div>
++          <div>
++            <p className="text-xs text-muted-foreground">- Lines</p>
++            <p className="font-semibold">{git.diffFromBase.deletions}</p>
++          </div>
 +        </div>
 +      </div>
 +
-+      <div className="mt-4 rounded-md border border-amber-400/50 bg-amber-400/10 p-3">
-+        <p className="text-xs uppercase tracking-wide text-muted-foreground">Current Item</p>
-+        <p className="mt-1 text-base font-semibold">{stats.currentItemTitle}</p>
++      <div className="mt-4 rounded-md border border-border bg-background/50 p-3">
++        <p className="text-xs uppercase tracking-wide text-muted-foreground">Recent commits</p>
++        {commitsToShow.length > 0 ? (
++          <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm">
++            {commitsToShow.map((commit) => (
++              <li key={commit}>{commit}</li>
++            ))}
++          </ol>
++        ) : (
++          <p className="mt-2 text-sm text-muted-foreground">No commits available.</p>
++        )}
 +      </div>
++
++      {git.error ? <p className="mt-4 text-xs text-red-600">Git error: {git.error}</p> : null}
 +    </section>
 +  );
 +}
 
 file update:
-diff --git a/__tests__/ProgressPanel.test.tsx b/__tests__/ProgressPanel.test.tsx
+diff --git a/__tests__/GitPanel.test.tsx b/__tests__/GitPanel.test.tsx
 new file mode 100644
-index 0000000000000000000000000000000000000000..77a60ad07295c5d203fd937298e8e84967b1722b
+index 0000000000000000000000000000000000000000..9b631b095dab8cfe06cc80500956dfea3d6cee43
 --- /dev/null
-+++ b/__tests__/ProgressPanel.test.tsx
-@@ -0,0 +1,99 @@
++++ b/__tests__/GitPanel.test.tsx
+@@ -0,0 +1,69 @@
 +import React from "react";
-+import { cleanup, render, screen } from "@testing-library/react";
-+import { afterEach, describe, expect, it } from "vitest";
++import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
++import { afterEach, describe, expect, it, vi } from "vitest";
 +
-+import ProgressPanel from "@/components/ProgressPanel";
-+import type { UnifiedPRDItem } from "@/lib/ralph-state";
++import GitPanel from "@/components/GitPanel";
++import type { GitState } from "@/lib/git-state";
 +
-+const items: UnifiedPRDItem[] = [
-+  {
-+    id: 1,
-+    category: "setup",
-+    title: "Done Item A",
-+    description: "Done A",
-+    priority: 1,
-+    passes: true,
-+    verification: "Done A verification",
-+    steps: [],
-+    notes: "",
-+    status: "done",
-+    isCurrent: false,
++const baseGit: Pick<GitState, "branch" | "commitCount" | "recentCommits" | "baseBranch" | "diffFromBase" | "error"> = {
++  branch: "feature/git-panel",
++  commitCount: 42,
++  recentCommits: [
++    "feat: add git panel",
++    "test: add git panel tests",
++    "refactor: tidy panel layout",
++    "fix: branch copy state",
++    "chore: update styles",
++    "docs: note git state panel",
++  ],
++  baseBranch: "main",
++  diffFromBase: {
++    filesChanged: 5,
++    insertions: 30,
++    deletions: 10,
 +  },
-+  {
-+    id: 2,
-+    category: "api",
-+    title: "Done Item B",
-+    description: "Done B",
-+    priority: 2,
-+    passes: true,
-+    verification: "Done B verification",
-+    steps: [],
-+    notes: "",
-+    status: "done",
-+    isCurrent: false,
-+  },
-+  {
-+    id: 3,
-+    category: "ui",
-+    title: "Current Item",
-+    description: "Current",
-+    priority: 1,
-+    passes: false,
-+    verification: "Current verification",
-+    steps: [],
-+    notes: "",
-+    status: "in_progress",
-+    isCurrent: true,
-+  },
-+  {
-+    id: 4,
-+    category: "tests",
-+    title: "Backlog Item",
-+    description: "Backlog",
-+    priority: 2,
-+    passes: false,
-+    verification: "Backlog verification",
-+    steps: [],
-+    notes: "",
-+    status: "backlog",
-+    isCurrent: false,
-+  },
-+];
++  error: null,
++};
 +
 +afterEach(() => {
 +  cleanup();
++  vi.restoreAllMocks();
 +});
 +
-+describe("ProgressPanel", () => {
-+  it("renders completion, progress, elapsed time, average, ETA, and current item", () => {
-+    render(
-+      <ProgressPanel
-+        items={items}
-+        startedAt="2026-02-05T10:00:00.000Z"
-+        now={new Date("2026-02-05T11:00:00.000Z")}
-+      />,
-+    );
++describe("GitPanel", () => {
++  it("renders branch, commit count, diff stats, and only the latest five commit messages", () => {
++    render(<GitPanel git={baseGit} />);
 +
-+    expect(screen.getByText("2 of 4 items complete")).toBeInTheDocument();
-+    expect(screen.getByText("50% complete")).toBeInTheDocument();
++    expect(screen.getByText("feature/git-panel")).toBeInTheDocument();
++    expect(screen.getByText("42 commits on this branch")).toBeInTheDocument();
++    expect(screen.getByText("Diff vs main")).toBeInTheDocument();
 +
-+    const progress = screen.getByRole("progressbar", { name: "Overall progress" });
-+    expect(progress).toHaveAttribute("aria-valuenow", "50");
++    expect(screen.getByText("5")).toBeInTheDocument();
++    expect(screen.getByText("30")).toBeInTheDocument();
++    expect(screen.getByText("10")).toBeInTheDocument();
 +
-+    expect(screen.getByText("1h 00m")).toBeInTheDocument();
-+    expect(screen.getByText("30m 00s")).toBeInTheDocument();
-+    expect(screen.getByText("Current Item")).toBeInTheDocument();
++    expect(screen.getByText("feat: add git panel")).toBeInTheDocument();
++    expect(screen.getByText("test: add git panel tests")).toBeInTheDocument();
++    expect(screen.getByText("refactor: tidy panel layout")).toBeInTheDocument();
++    expect(screen.getByText("fix: branch copy state")).toBeInTheDocument();
++    expect(screen.getByText("chore: update styles")).toBeInTheDocument();
++    expect(screen.queryByText("docs: note git state panel")).not.toBeInTheDocument();
 +  });
 +
-+  it("shows N/A values when there is no valid start or no completed items", () => {
-+    const noDoneItems = items.map((item) => ({ ...item, passes: false }));
++  it("copies the branch name when the copy button is pressed", async () => {
++    const writeText = vi.fn().mockResolvedValue(undefined);
++    Object.defineProperty(navigator, "clipboard", {
++      value: { writeText },
++      configurable: true,
++    });
 +
-+    render(<ProgressPanel items={noDoneItems} startedAt={null} now={new Date("2026-02-05T11:00:00.000Z")} />);
++    render(<GitPanel git={baseGit} />);
++    fireEvent.click(screen.getByRole("button", { name: "Copy branch name" }));
 +
-+    expect(screen.getByText("0 of 4 items complete")).toBeInTheDocument();
-+    expect(screen.getByText("0% complete")).toBeInTheDocument();
++    await waitFor(() => {
++      expect(writeText).toHaveBeenCalledWith("feature/git-panel");
++    });
 +
-+    const naLabels = screen.getAllByText("N/A");
-+    expect(naLabels).toHaveLength(3);
++    expect(screen.getByText("Copied.")).toBeInTheDocument();
 +  });
 +});
-diff --git a/components/ProgressPanel.tsx b/components/ProgressPanel.tsx
+diff --git a/components/GitPanel.tsx b/components/GitPanel.tsx
 new file mode 100644
-index 0000000000000000000000000000000000000000..6f798601dcbb1d0b4b3e98cc278b08d9983fe71c
+index 0000000000000000000000000000000000000000..e819601606978e1667fde1dc71380ce3278ddb08
 --- /dev/null
-+++ b/components/ProgressPanel.tsx
-@@ -0,0 +1,100 @@
++++ b/components/GitPanel.tsx
+@@ -0,0 +1,97 @@
 +"use client";
 +
-+import React, { useMemo } from "react";
++import React, { useState } from "react";
 +
-+import type { UnifiedPRDItem } from "@/lib/ralph-state";
++import type { GitState } from "@/lib/git-state";
 +
-+interface ProgressPanelProps {
-+  items: UnifiedPRDItem[];
-+  startedAt: string | null;
-+  now?: Date;
++type GitPanelData = Pick<GitState, "branch" | "commitCount" | "recentCommits" | "baseBranch" | "diffFromBase" | "error">;
++
++interface GitPanelProps {
++  git: GitPanelData;
 +}
 +
-+function formatDuration(ms: number): string {
-+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
-+  const days = Math.floor(totalSeconds / 86400);
-+  const hours = Math.floor((totalSeconds % 86400) / 3600);
-+  const minutes = Math.floor((totalSeconds % 3600) / 60);
-+  const seconds = totalSeconds % 60;
++export default function GitPanel({ git }: GitPanelProps) {
++  const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "error">("idle");
++  const commitsToShow = git.recentCommits.slice(0, 5);
++  const canCopyBranch = Boolean(git.branch);
++  const diffLabel = git.baseBranch ? `Diff vs ${git.baseBranch}` : "Diff summary";
 +
-+  if (days > 0) {
-+    return `${days}d ${hours.toString().padStart(2, "0")}h`;
-+  }
++  const handleCopyBranch = async () => {
++    if (!git.branch) {
++      return;
++    }
 +
-+  if (hours > 0) {
-+    return `${hours}h ${minutes.toString().padStart(2, "0")}m`;
-+  }
++    try {
++      if (!navigator.clipboard?.writeText) {
++        throw new Error("Clipboard API unavailable");
++      }
 +
-+  return `${minutes}m ${seconds.toString().padStart(2, "0")}s`;
-+}
-+
-+export default function ProgressPanel({ items, startedAt, now = new Date() }: ProgressPanelProps) {
-+  const stats = useMemo(() => {
-+    const totalItems = items.length;
-+    const completedItems = items.filter((item) => item.passes).length;
-+    const progressPercent = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
-+    const currentItem = items.find((item) => item.isCurrent && !item.passes) ?? items.find((item) => item.isCurrent) ?? null;
-+    const startedAtDate = startedAt ? new Date(startedAt) : null;
-+    const hasValidStart = startedAtDate !== null && !Number.isNaN(startedAtDate.getTime());
-+    const elapsedMs = hasValidStart ? Math.max(0, now.getTime() - startedAtDate.getTime()) : null;
-+    const averagePerItemMs = elapsedMs !== null && completedItems > 0 ? elapsedMs / completedItems : null;
-+    const remainingItems = Math.max(0, totalItems - completedItems);
-+    const etaMs = averagePerItemMs !== null ? averagePerItemMs * remainingItems : null;
-+
-+    return {
-+      totalItems,
-+      completedItems,
-+      progressPercent,
-+      currentItemTitle: currentItem?.title ?? "No item in progress",
-+      elapsedLabel: elapsedMs !== null ? formatDuration(elapsedMs) : "N/A",
-+      averageLabel: averagePerItemMs !== null ? formatDuration(averagePerItemMs) : "N/A",
-+      etaLabel: etaMs !== null ? formatDuration(etaMs) : "N/A",
-+    };
-+  }, [items, now, startedAt]);
++      await navigator.clipboard.writeText(git.branch);
++      setCopyStatus("copied");
++    } catch {
++      setCopyStatus("error");
++    }
++  };
 +
 +  return (
 +    <section className="rounded-lg border border-border bg-card p-4 text-card-foreground md:p-6">
-+      <h2 className="text-lg font-semibold">Run Progress</h2>
-+      <p className="mt-2 text-sm text-muted-foreground">
-+        {stats.completedItems} of {stats.totalItems} items complete
-+      </p>
++      <h2 className="text-lg font-semibold">Git State</h2>
 +
-+      <div className="mt-4">
-+        <div
-+          role="progressbar"
-+          aria-label="Overall progress"
-+          aria-valuemin={0}
-+          aria-valuemax={100}
-+          aria-valuenow={stats.progressPercent}
-+          className="h-2 w-full overflow-hidden rounded-full bg-muted"
-+        >
-+          <div
-+            className="h-full bg-primary transition-[width] duration-300"
-+            style={{ width: `${stats.progressPercent}%` }}
-+          />
++      <div className="mt-4 rounded-md border border-border bg-background/50 p-3">
++        <p className="text-xs uppercase tracking-wide text-muted-foreground">Branch</p>
++        <div className="mt-2 flex items-center justify-between gap-3">
++          <p className="truncate text-sm font-medium">{git.branch ?? "Detached / unavailable"}</p>
++          <button
++            type="button"
++            onClick={handleCopyBranch}
++            disabled={!canCopyBranch}
++            className="shrink-0 rounded border border-border bg-background px-2 py-1 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-50"
++            aria-label="Copy branch name"
++          >
++            Copy
++          </button>
 +        </div>
-+        <p className="mt-2 text-xs text-muted-foreground">{stats.progressPercent}% complete</p>
++        {copyStatus === "copied" ? <p className="mt-2 text-xs text-green-600">Copied.</p> : null}
++        {copyStatus === "error" ? <p className="mt-2 text-xs text-red-600">Unable to copy.</p> : null}
 +      </div>
 +
-+      <div className="mt-4 grid gap-3 sm:grid-cols-3">
-+        <div className="rounded-md border border-border bg-background/50 p-3">
-+          <p className="text-xs uppercase tracking-wide text-muted-foreground">Elapsed</p>
-+          <p className="mt-1 text-sm font-medium">{stats.elapsedLabel}</p>
-+        </div>
-+        <div className="rounded-md border border-border bg-background/50 p-3">
-+          <p className="text-xs uppercase tracking-wide text-muted-foreground">Avg / item</p>
-+          <p className="mt-1 text-sm font-medium">{stats.averageLabel}</p>
-+        </div>
-+        <div className="rounded-md border border-border bg-background/50 p-3">
-+          <p className="text-xs uppercase tracking-wide text-muted-foreground">ETA</p>
-+          <p className="mt-1 text-sm font-medium">{stats.etaLabel}</p>
++      <div className="mt-4 rounded-md border border-border bg-background/50 p-3">
++        <p className="text-xs uppercase tracking-wide text-muted-foreground">Commits</p>
++        <p className="mt-1 text-sm font-medium">{git.commitCount} commits on this branch</p>
++      </div>
++
++      <div className="mt-4 rounded-md border border-border bg-background/50 p-3">
++        <p className="text-xs uppercase tracking-wide text-muted-foreground">{diffLabel}</p>
++        <div className="mt-3 grid grid-cols-3 gap-3 text-sm">
++          <div>
++            <p className="text-xs text-muted-foreground">Files</p>
++            <p className="font-semibold">{git.diffFromBase.filesChanged}</p>
++          </div>
++          <div>
++            <p className="text-xs text-muted-foreground">+ Lines</p>
++            <p className="font-semibold">{git.diffFromBase.insertions}</p>
++          </div>
++          <div>
++            <p className="text-xs text-muted-foreground">- Lines</p>
++            <p className="font-semibold">{git.diffFromBase.deletions}</p>
++          </div>
 +        </div>
 +      </div>
 +
-+      <div className="mt-4 rounded-md border border-amber-400/50 bg-amber-400/10 p-3">
-+        <p className="text-xs uppercase tracking-wide text-muted-foreground">Current Item</p>
-+        <p className="mt-1 text-base font-semibold">{stats.currentItemTitle}</p>
++      <div className="mt-4 rounded-md border border-border bg-background/50 p-3">
++        <p className="text-xs uppercase tracking-wide text-muted-foreground">Recent commits</p>
++        {commitsToShow.length > 0 ? (
++          <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm">
++            {commitsToShow.map((commit) => (
++              <li key={commit}>{commit}</li>
++            ))}
++          </ol>
++        ) : (
++          <p className="mt-2 text-sm text-muted-foreground">No commits available.</p>
++        )}
 +      </div>
++
++      {git.error ? <p className="mt-4 text-xs text-red-600">Git error: {git.error}</p> : null}
 +    </section>
 +  );
 +}
 
 
 thinking
-**Running tests to verify**
+**Running full tests next**
 codex
-Component and tests are in place. I’m running the test suite now to confirm everything passes and the verification criteria is satisfied.
+I’ve finished the code changes for this item and will now run the full test suite to confirm everything passes and that the new `GitPanel` tests satisfy the verification criteria.
 exec
-/bin/zsh -lc 'npm test' in /Users/mcbee/Projects/agent-dashboard exited 1 in 1.14s:
+/bin/zsh -lc 'npm test' in /Users/mcbee/Projects/agent-dashboard succeeded in 1.18s:
 
 > ralph-dashboard@0.1.0 test
 > vitest run
@@ -1144,1392 +1102,418 @@ exec
 
  RUN  v4.0.18 /Users/mcbee/Projects/agent-dashboard
 
- ✓ __tests__/git-state.test.ts (5 tests) 3ms
- ✓ __tests__/code-metrics.test.ts (3 tests) 16ms
- ✓ __tests__/ralph-state.test.ts (9 tests) 20ms
- ✓ __tests__/example.test.ts (1 test) 9ms
- ✓ __tests__/api-state.test.ts (6 tests) 33ms
- ❯ __tests__/ProgressPanel.test.tsx (2 tests | 1 failed) 58ms
-     × renders completion, progress, elapsed time, average, ETA, and current item 56ms
-     ✓ shows N/A values when there is no valid start or no completed items 2ms
- ✓ __tests__/KanbanBoard.test.tsx (3 tests) 90ms
+ ✓ __tests__/git-state.test.ts (5 tests) 2ms
+ ✓ __tests__/ralph-state.test.ts (9 tests) 22ms
+ ✓ __tests__/code-metrics.test.ts (3 tests) 15ms
+ ✓ __tests__/example.test.ts (1 test) 12ms
+ ✓ __tests__/api-state.test.ts (6 tests) 41ms
+ ✓ __tests__/ProgressPanel.test.tsx (2 tests) 61ms
+ ✓ __tests__/GitPanel.test.tsx (2 tests) 70ms
+ ✓ __tests__/KanbanBoard.test.tsx (3 tests) 92ms
 
-⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
-
- FAIL  __tests__/ProgressPanel.test.tsx > ProgressPanel > renders completion, progress, elapsed time, average, ETA, and current item
+ Test Files  8 passed (8)
+      Tests  31 passed (31)
+   Start at  14:48:51
+   Duration  708ms (transform 259ms, setup 330ms, import 441ms, tests 315ms, environment 2.62s)
 file update:
-diff --git a/__tests__/ProgressPanel.test.tsx b/__tests__/ProgressPanel.test.tsx
+diff --git a/__tests__/GitPanel.test.tsx b/__tests__/GitPanel.test.tsx
 new file mode 100644
-index 0000000000000000000000000000000000000000..77a60ad07295c5d203fd937298e8e84967b1722b
+index 0000000000000000000000000000000000000000..9b631b095dab8cfe06cc80500956dfea3d6cee43
 --- /dev/null
-+++ b/__tests__/ProgressPanel.test.tsx
-@@ -0,0 +1,99 @@
++++ b/__tests__/GitPanel.test.tsx
+@@ -0,0 +1,69 @@
 +import React from "react";
-+import { cleanup, render, screen } from "@testing-library/react";
-+import { afterEach, describe, expect, it } from "vitest";
++import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
++import { afterEach, describe, expect, it, vi } from "vitest";
 +
-+import ProgressPanel from "@/components/ProgressPanel";
-+import type { UnifiedPRDItem } from "@/lib/ralph-state";
++import GitPanel from "@/components/GitPanel";
++import type { GitState } from "@/lib/git-state";
 +
-+const items: UnifiedPRDItem[] = [
-+  {
-+    id: 1,
-+    category: "setup",
-+    title: "Done Item A",
-+    description: "Done A",
-+    priority: 1,
-+    passes: true,
-+    verification: "Done A verification",
-+    steps: [],
-+    notes: "",
-+    status: "done",
-+    isCurrent: false,
++const baseGit: Pick<GitState, "branch" | "commitCount" | "recentCommits" | "baseBranch" | "diffFromBase" | "error"> = {
++  branch: "feature/git-panel",
++  commitCount: 42,
++  recentCommits: [
++    "feat: add git panel",
++    "test: add git panel tests",
++    "refactor: tidy panel layout",
++    "fix: branch copy state",
++    "chore: update styles",
++    "docs: note git state panel",
++  ],
++  baseBranch: "main",
++  diffFromBase: {
++    filesChanged: 5,
++    insertions: 30,
++    deletions: 10,
 +  },
-+  {
-+    id: 2,
-+    category: "api",
-+    title: "Done Item B",
-+    description: "Done B",
-+    priority: 2,
-+    passes: true,
-+    verification: "Done B verification",
-+    steps: [],
-+    notes: "",
-+    status: "done",
-+    isCurrent: false,
-+  },
-+  {
-+    id: 3,
-+    category: "ui",
-+    title: "Current Item",
-+    description: "Current",
-+    priority: 1,
-+    passes: false,
-+    verification: "Current verification",
-+    steps: [],
-+    notes: "",
-+    status: "in_progress",
-+    isCurrent: true,
-+  },
-+  {
-+    id: 4,
-+    category: "tests",
-+    title: "Backlog Item",
-+    description: "Backlog",
-+    priority: 2,
-+    passes: false,
-+    verification: "Backlog verification",
-+    steps: [],
-+    notes: "",
-+    status: "backlog",
-+    isCurrent: false,
-+  },
-+];
++  error: null,
++};
 +
 +afterEach(() => {
 +  cleanup();
++  vi.restoreAllMocks();
 +});
 +
-+describe("ProgressPanel", () => {
-+  it("renders completion, progress, elapsed time, average, ETA, and current item", () => {
-+    render(
-+      <ProgressPanel
-+        items={items}
-+        startedAt="2026-02-05T10:00:00.000Z"
-+        now={new Date("2026-02-05T11:00:00.000Z")}
-+      />,
-+    );
++describe("GitPanel", () => {
++  it("renders branch, commit count, diff stats, and only the latest five commit messages", () => {
++    render(<GitPanel git={baseGit} />);
 +
-+    expect(screen.getByText("2 of 4 items complete")).toBeInTheDocument();
-+    expect(screen.getByText("50% complete")).toBeInTheDocument();
++    expect(screen.getByText("feature/git-panel")).toBeInTheDocument();
++    expect(screen.getByText("42 commits on this branch")).toBeInTheDocument();
++    expect(screen.getByText("Diff vs main")).toBeInTheDocument();
 +
-+    const progress = screen.getByRole("progressbar", { name: "Overall progress" });
-+    expect(progress).toHaveAttribute("aria-valuenow", "50");
++    expect(screen.getByText("5")).toBeInTheDocument();
++    expect(screen.getByText("30")).toBeInTheDocument();
++    expect(screen.getByText("10")).toBeInTheDocument();
 +
-+    expect(screen.getByText("1h 00m")).toBeInTheDocument();
-+    expect(screen.getByText("30m 00s")).toBeInTheDocument();
-+    expect(screen.getByText("Current Item")).toBeInTheDocument();
++    expect(screen.getByText("feat: add git panel")).toBeInTheDocument();
++    expect(screen.getByText("test: add git panel tests")).toBeInTheDocument();
++    expect(screen.getByText("refactor: tidy panel layout")).toBeInTheDocument();
++    expect(screen.getByText("fix: branch copy state")).toBeInTheDocument();
++    expect(screen.getByText("chore: update styles")).toBeInTheDocument();
++    expect(screen.queryByText("docs: note git state panel")).not.toBeInTheDocument();
 +  });
 +
-+  it("shows N/A values when there is no valid start or no completed items", () => {
-+    const noDoneItems = items.map((item) => ({ ...item, passes: false }));
++  it("copies the branch name when the copy button is pressed", async () => {
++    const writeText = vi.fn().mockResolvedValue(undefined);
++    Object.defineProperty(navigator, "clipboard", {
++      value: { writeText },
++      configurable: true,
++    });
 +
-+    render(<ProgressPanel items={noDoneItems} startedAt={null} now={new Date("2026-02-05T11:00:00.000Z")} />);
++    render(<GitPanel git={baseGit} />);
++    fireEvent.click(screen.getByRole("button", { name: "Copy branch name" }));
 +
-+    expect(screen.getByText("0 of 4 items complete")).toBeInTheDocument();
-+    expect(screen.getByText("0% complete")).toBeInTheDocument();
++    await waitFor(() => {
++      expect(writeText).toHaveBeenCalledWith("feature/git-panel");
++    });
 +
-+    const naLabels = screen.getAllByText("N/A");
-+    expect(naLabels).toHaveLength(3);
++    expect(screen.getByText("Copied.")).toBeInTheDocument();
 +  });
 +});
-diff --git a/components/ProgressPanel.tsx b/components/ProgressPanel.tsx
+diff --git a/components/GitPanel.tsx b/components/GitPanel.tsx
 new file mode 100644
-index 0000000000000000000000000000000000000000..6f798601dcbb1d0b4b3e98cc278b08d9983fe71c
+index 0000000000000000000000000000000000000000..e819601606978e1667fde1dc71380ce3278ddb08
 --- /dev/null
-+++ b/components/ProgressPanel.tsx
-@@ -0,0 +1,100 @@
++++ b/components/GitPanel.tsx
+@@ -0,0 +1,97 @@
 +"use client";
 +
-+import React, { useMemo } from "react";
++import React, { useState } from "react";
 +
-+import type { UnifiedPRDItem } from "@/lib/ralph-state";
++import type { GitState } from "@/lib/git-state";
 +
-+interface ProgressPanelProps {
-+  items: UnifiedPRDItem[];
-+  startedAt: string | null;
-+  now?: Date;
++type GitPanelData = Pick<GitState, "branch" | "commitCount" | "recentCommits" | "baseBranch" | "diffFromBase" | "error">;
++
++interface GitPanelProps {
++  git: GitPanelData;
 +}
 +
-+function formatDuration(ms: number): string {
-+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
-+  const days = Math.floor(totalSeconds / 86400);
-+  const hours = Math.floor((totalSeconds % 86400) / 3600);
-+  const minutes = Math.floor((totalSeconds % 3600) / 60);
-+  const seconds = totalSeconds % 60;
++export default function GitPanel({ git }: GitPanelProps) {
++  const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "error">("idle");
++  const commitsToShow = git.recentCommits.slice(0, 5);
++  const canCopyBranch = Boolean(git.branch);
++  const diffLabel = git.baseBranch ? `Diff vs ${git.baseBranch}` : "Diff summary";
 +
-+  if (days > 0) {
-+    return `${days}d ${hours.toString().padStart(2, "0")}h`;
-+  }
++  const handleCopyBranch = async () => {
++    if (!git.branch) {
++      return;
++    }
 +
-+  if (hours > 0) {
-+    return `${hours}h ${minutes.toString().padStart(2, "0")}m`;
-+  }
++    try {
++      if (!navigator.clipboard?.writeText) {
++        throw new Error("Clipboard API unavailable");
++      }
 +
-+  return `${minutes}m ${seconds.toString().padStart(2, "0")}s`;
-+}
-+
-+export default function ProgressPanel({ items, startedAt, now = new Date() }: ProgressPanelProps) {
-+  const stats = useMemo(() => {
-+    const totalItems = items.length;
-+    const completedItems = items.filter((item) => item.passes).length;
-+    const progressPercent = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
-+    const currentItem = items.find((item) => item.isCurrent && !item.passes) ?? items.find((item) => item.isCurrent) ?? null;
-+    const startedAtDate = startedAt ? new Date(startedAt) : null;
-+    const hasValidStart = startedAtDate !== null && !Number.isNaN(startedAtDate.getTime());
-+    const elapsedMs = hasValidStart ? Math.max(0, now.getTime() - startedAtDate.getTime()) : null;
-+    const averagePerItemMs = elapsedMs !== null && completedItems > 0 ? elapsedMs / completedItems : null;
-+    const remainingItems = Math.max(0, totalItems - completedItems);
-+    const etaMs = averagePerItemMs !== null ? averagePerItemMs * remainingItems : null;
-+
-+    return {
-+      totalItems,
-+      completedItems,
-+      progressPercent,
-+      currentItemTitle: currentItem?.title ?? "No item in progress",
-+      elapsedLabel: elapsedMs !== null ? formatDuration(elapsedMs) : "N/A",
-+      averageLabel: averagePerItemMs !== null ? formatDuration(averagePerItemMs) : "N/A",
-+      etaLabel: etaMs !== null ? formatDuration(etaMs) : "N/A",
-+    };
-+  }, [items, now, startedAt]);
++      await navigator.clipboard.writeText(git.branch);
++      setCopyStatus("copied");
++    } catch {
++      setCopyStatus("error");
++    }
++  };
 +
 +  return (
 +    <section className="rounded-lg border border-border bg-card p-4 text-card-foreground md:p-6">
-+      <h2 className="text-lg font-semibold">Run Progress</h2>
-+      <p className="mt-2 text-sm text-muted-foreground">
-+        {stats.completedItems} of {stats.totalItems} items complete
-+      </p>
++      <h2 className="text-lg font-semibold">Git State</h2>
 +
-+      <div className="mt-4">
-+        <div
-+          role="progressbar"
-+          aria-label="Overall progress"
-+          aria-valuemin={0}
-+          aria-valuemax={100}
-+          aria-valuenow={stats.progressPercent}
-+          className="h-2 w-full overflow-hidden rounded-full bg-muted"
-+        >
-+          <div
-+            className="h-full bg-primary transition-[width] duration-300"
-+            style={{ width: `${stats.progressPercent}%` }}
-+          />
++      <div className="mt-4 rounded-md border border-border bg-background/50 p-3">
++        <p className="text-xs uppercase tracking-wide text-muted-foreground">Branch</p>
++        <div className="mt-2 flex items-center justify-between gap-3">
++          <p className="truncate text-sm font-medium">{git.branch ?? "Detached / unavailable"}</p>
++          <button
++            type="button"
++            onClick={handleCopyBranch}
++            disabled={!canCopyBranch}
++            className="shrink-0 rounded border border-border bg-background px-2 py-1 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-50"
++            aria-label="Copy branch name"
++          >
++            Copy
++          </button>
 +        </div>
-+        <p className="mt-2 text-xs text-muted-foreground">{stats.progressPercent}% complete</p>
++        {copyStatus === "copied" ? <p className="mt-2 text-xs text-green-600">Copied.</p> : null}
++        {copyStatus === "error" ? <p className="mt-2 text-xs text-red-600">Unable to copy.</p> : null}
 +      </div>
 +
-+      <div className="mt-4 grid gap-3 sm:grid-cols-3">
-+        <div className="rounded-md border border-border bg-background/50 p-3">
-+          <p className="text-xs uppercase tracking-wide text-muted-foreground">Elapsed</p>
-+          <p className="mt-1 text-sm font-medium">{stats.elapsedLabel}</p>
-+        </div>
-+        <div className="rounded-md border border-border bg-background/50 p-3">
-+          <p className="text-xs uppercase tracking-wide text-muted-foreground">Avg / item</p>
-+          <p className="mt-1 text-sm font-medium">{stats.averageLabel}</p>
-+        </div>
-+        <div className="rounded-md border border-border bg-background/50 p-3">
-+          <p className="text-xs uppercase tracking-wide text-muted-foreground">ETA</p>
-+          <p className="mt-1 text-sm font-medium">{stats.etaLabel}</p>
++      <div className="mt-4 rounded-md border border-border bg-background/50 p-3">
++        <p className="text-xs uppercase tracking-wide text-muted-foreground">Commits</p>
++        <p className="mt-1 text-sm font-medium">{git.commitCount} commits on this branch</p>
++      </div>
++
++      <div className="mt-4 rounded-md border border-border bg-background/50 p-3">
++        <p className="text-xs uppercase tracking-wide text-muted-foreground">{diffLabel}</p>
++        <div className="mt-3 grid grid-cols-3 gap-3 text-sm">
++          <div>
++            <p className="text-xs text-muted-foreground">Files</p>
++            <p className="font-semibold">{git.diffFromBase.filesChanged}</p>
++          </div>
++          <div>
++            <p className="text-xs text-muted-foreground">+ Lines</p>
++            <p className="font-semibold">{git.diffFromBase.insertions}</p>
++          </div>
++          <div>
++            <p className="text-xs text-muted-foreground">- Lines</p>
++            <p className="font-semibold">{git.diffFromBase.deletions}</p>
++          </div>
 +        </div>
 +      </div>
 +
-+      <div className="mt-4 rounded-md border border-amber-400/50 bg-amber-400/10 p-3">
-+        <p className="text-xs uppercase tracking-wide text-muted-foreground">Current Item</p>
-+        <p className="mt-1 text-base font-semibold">{stats.currentItemTitle}</p>
++      <div className="mt-4 rounded-md border border-border bg-background/50 p-3">
++        <p className="text-xs uppercase tracking-wide text-muted-foreground">Recent commits</p>
++        {commitsToShow.length > 0 ? (
++          <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm">
++            {commitsToShow.map((commit) => (
++              <li key={commit}>{commit}</li>
++            ))}
++          </ol>
++        ) : (
++          <p className="mt-2 text-sm text-muted-foreground">No commits available.</p>
++        )}
 +      </div>
++
++      {git.error ? <p className="mt-4 text-xs text-red-600">Git error: {git.error}</p> : null}
 +    </section>
 +  );
 +}
 
 
 thinking
-**Adjusting test assertions for duplicates**
+**Confirming unit test coverage**
 codex
-One test failed due duplicate text matches (`1h 00m` appears for both elapsed and ETA). I’m tightening assertions to check counts/labels instead of assuming uniqueness, then rerunning tests.
-file update
-M /Users/mcbee/Projects/agent-dashboard/__tests__/ProgressPanel.test.tsx
-@@ -82,5 +82,5 @@
- 
--    expect(screen.getByText("1h 00m")).toBeInTheDocument();
-+    expect(screen.getAllByText("1h 00m")).toHaveLength(2);
-     expect(screen.getByText("30m 00s")).toBeInTheDocument();
--    expect(screen.getByText("Current Item")).toBeInTheDocument();
-+    expect(screen.getAllByText("Current Item")).toHaveLength(2);
-   });
-apply_patch(auto_approved=true) exited 0 in 53ms:
-Success. Updated the following files:
-M __tests__/ProgressPanel.test.tsx
+Implemented item 10/17 with focused changes:
+
+- Added `components/GitPanel.tsx`
+  - Branch display with copy button
+  - Commit count on branch
+  - Diff stats (`files changed`, `+ lines`, `- lines`) from `diffFromBase`
+  - Mini commit log capped to last 5 messages
+  - Basic copy feedback (`Copied.` / `Unable to copy.`)
+- Added unit tests in `__tests__/GitPanel.test.tsx`
+  - Verifies rendering of branch, commit count, diff stats, and 5-commit cap
+  - Verifies branch copy button writes to clipboard
+
+Verification run:
+
+- `npm test` passed
+- Result: `8` test files passed, `31` tests passed (including `__tests__/GitPanel.test.tsx`)
+
+This meets the requested verification criteria: the component renders git info correctly via unit tests.
 file update:
-diff --git a/__tests__/ProgressPanel.test.tsx b/__tests__/ProgressPanel.test.tsx
+diff --git a/__tests__/GitPanel.test.tsx b/__tests__/GitPanel.test.tsx
 new file mode 100644
-index 0000000000000000000000000000000000000000..672507757d89121b5c9a70ee7d3c860c6336fa1a
+index 0000000000000000000000000000000000000000..9b631b095dab8cfe06cc80500956dfea3d6cee43
 --- /dev/null
-+++ b/__tests__/ProgressPanel.test.tsx
-@@ -0,0 +1,99 @@
++++ b/__tests__/GitPanel.test.tsx
+@@ -0,0 +1,69 @@
 +import React from "react";
-+import { cleanup, render, screen } from "@testing-library/react";
-+import { afterEach, describe, expect, it } from "vitest";
++import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
++import { afterEach, describe, expect, it, vi } from "vitest";
 +
-+import ProgressPanel from "@/components/ProgressPanel";
-+import type { UnifiedPRDItem } from "@/lib/ralph-state";
++import GitPanel from "@/components/GitPanel";
++import type { GitState } from "@/lib/git-state";
 +
-+const items: UnifiedPRDItem[] = [
-+  {
-+    id: 1,
-+    category: "setup",
-+    title: "Done Item A",
-+    description: "Done A",
-+    priority: 1,
-+    passes: true,
-+    verification: "Done A verification",
-+    steps: [],
-+    notes: "",
-+    status: "done",
-+    isCurrent: false,
++const baseGit: Pick<GitState, "branch" | "commitCount" | "recentCommits" | "baseBranch" | "diffFromBase" | "error"> = {
++  branch: "feature/git-panel",
++  commitCount: 42,
++  recentCommits: [
++    "feat: add git panel",
++    "test: add git panel tests",
++    "refactor: tidy panel layout",
++    "fix: branch copy state",
++    "chore: update styles",
++    "docs: note git state panel",
++  ],
++  baseBranch: "main",
++  diffFromBase: {
++    filesChanged: 5,
++    insertions: 30,
++    deletions: 10,
 +  },
-+  {
-+    id: 2,
-+    category: "api",
-+    title: "Done Item B",
-+    description: "Done B",
-+    priority: 2,
-+    passes: true,
-+    verification: "Done B verification",
-+    steps: [],
-+    notes: "",
-+    status: "done",
-+    isCurrent: false,
-+  },
-+  {
-+    id: 3,
-+    category: "ui",
-+    title: "Current Item",
-+    description: "Current",
-+    priority: 1,
-+    passes: false,
-+    verification: "Current verification",
-+    steps: [],
-+    notes: "",
-+    status: "in_progress",
-+    isCurrent: true,
-+  },
-+  {
-+    id: 4,
-+    category: "tests",
-+    title: "Backlog Item",
-+    description: "Backlog",
-+    priority: 2,
-+    passes: false,
-+    verification: "Backlog verification",
-+    steps: [],
-+    notes: "",
-+    status: "backlog",
-+    isCurrent: false,
-+  },
-+];
++  error: null,
++};
 +
 +afterEach(() => {
 +  cleanup();
++  vi.restoreAllMocks();
 +});
 +
-+describe("ProgressPanel", () => {
-+  it("renders completion, progress, elapsed time, average, ETA, and current item", () => {
-+    render(
-+      <ProgressPanel
-+        items={items}
-+        startedAt="2026-02-05T10:00:00.000Z"
-+        now={new Date("2026-02-05T11:00:00.000Z")}
-+      />,
-+    );
++describe("GitPanel", () => {
++  it("renders branch, commit count, diff stats, and only the latest five commit messages", () => {
++    render(<GitPanel git={baseGit} />);
 +
-+    expect(screen.getByText("2 of 4 items complete")).toBeInTheDocument();
-+    expect(screen.getByText("50% complete")).toBeInTheDocument();
++    expect(screen.getByText("feature/git-panel")).toBeInTheDocument();
++    expect(screen.getByText("42 commits on this branch")).toBeInTheDocument();
++    expect(screen.getByText("Diff vs main")).toBeInTheDocument();
 +
-+    const progress = screen.getByRole("progressbar", { name: "Overall progress" });
-+    expect(progress).toHaveAttribute("aria-valuenow", "50");
++    expect(screen.getByText("5")).toBeInTheDocument();
++    expect(screen.getByText("30")).toBeInTheDocument();
++    expect(screen.getByText("10")).toBeInTheDocument();
 +
-+    expect(screen.getAllByText("1h 00m")).toHaveLength(2);
-+    expect(screen.getByText("30m 00s")).toBeInTheDocument();
-+    expect(screen.getAllByText("Current Item")).toHaveLength(2);
++    expect(screen.getByText("feat: add git panel")).toBeInTheDocument();
++    expect(screen.getByText("test: add git panel tests")).toBeInTheDocument();
++    expect(screen.getByText("refactor: tidy panel layout")).toBeInTheDocument();
++    expect(screen.getByText("fix: branch copy state")).toBeInTheDocument();
++    expect(screen.getByText("chore: update styles")).toBeInTheDocument();
++    expect(screen.queryByText("docs: note git state panel")).not.toBeInTheDocument();
 +  });
 +
-+  it("shows N/A values when there is no valid start or no completed items", () => {
-+    const noDoneItems = items.map((item) => ({ ...item, passes: false }));
++  it("copies the branch name when the copy button is pressed", async () => {
++    const writeText = vi.fn().mockResolvedValue(undefined);
++    Object.defineProperty(navigator, "clipboard", {
++      value: { writeText },
++      configurable: true,
++    });
 +
-+    render(<ProgressPanel items={noDoneItems} startedAt={null} now={new Date("2026-02-05T11:00:00.000Z")} />);
++    render(<GitPanel git={baseGit} />);
++    fireEvent.click(screen.getByRole("button", { name: "Copy branch name" }));
 +
-+    expect(screen.getByText("0 of 4 items complete")).toBeInTheDocument();
-+    expect(screen.getByText("0% complete")).toBeInTheDocument();
++    await waitFor(() => {
++      expect(writeText).toHaveBeenCalledWith("feature/git-panel");
++    });
 +
-+    const naLabels = screen.getAllByText("N/A");
-+    expect(naLabels).toHaveLength(3);
++    expect(screen.getByText("Copied.")).toBeInTheDocument();
 +  });
 +});
-diff --git a/components/ProgressPanel.tsx b/components/ProgressPanel.tsx
+diff --git a/components/GitPanel.tsx b/components/GitPanel.tsx
 new file mode 100644
-index 0000000000000000000000000000000000000000..6f798601dcbb1d0b4b3e98cc278b08d9983fe71c
+index 0000000000000000000000000000000000000000..e819601606978e1667fde1dc71380ce3278ddb08
 --- /dev/null
-+++ b/components/ProgressPanel.tsx
-@@ -0,0 +1,100 @@
++++ b/components/GitPanel.tsx
+@@ -0,0 +1,97 @@
 +"use client";
 +
-+import React, { useMemo } from "react";
++import React, { useState } from "react";
 +
-+import type { UnifiedPRDItem } from "@/lib/ralph-state";
++import type { GitState } from "@/lib/git-state";
 +
-+interface ProgressPanelProps {
-+  items: UnifiedPRDItem[];
-+  startedAt: string | null;
-+  now?: Date;
++type GitPanelData = Pick<GitState, "branch" | "commitCount" | "recentCommits" | "baseBranch" | "diffFromBase" | "error">;
++
++interface GitPanelProps {
++  git: GitPanelData;
 +}
 +
-+function formatDuration(ms: number): string {
-+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
-+  const days = Math.floor(totalSeconds / 86400);
-+  const hours = Math.floor((totalSeconds % 86400) / 3600);
-+  const minutes = Math.floor((totalSeconds % 3600) / 60);
-+  const seconds = totalSeconds % 60;
++export default function GitPanel({ git }: GitPanelProps) {
++  const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "error">("idle");
++  const commitsToShow = git.recentCommits.slice(0, 5);
++  const canCopyBranch = Boolean(git.branch);
++  const diffLabel = git.baseBranch ? `Diff vs ${git.baseBranch}` : "Diff summary";
 +
-+  if (days > 0) {
-+    return `${days}d ${hours.toString().padStart(2, "0")}h`;
-+  }
++  const handleCopyBranch = async () => {
++    if (!git.branch) {
++      return;
++    }
 +
-+  if (hours > 0) {
-+    return `${hours}h ${minutes.toString().padStart(2, "0")}m`;
-+  }
++    try {
++      if (!navigator.clipboard?.writeText) {
++        throw new Error("Clipboard API unavailable");
++      }
 +
-+  return `${minutes}m ${seconds.toString().padStart(2, "0")}s`;
-+}
-+
-+export default function ProgressPanel({ items, startedAt, now = new Date() }: ProgressPanelProps) {
-+  const stats = useMemo(() => {
-+    const totalItems = items.length;
-+    const completedItems = items.filter((item) => item.passes).length;
-+    const progressPercent = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
-+    const currentItem = items.find((item) => item.isCurrent && !item.passes) ?? items.find((item) => item.isCurrent) ?? null;
-+    const startedAtDate = startedAt ? new Date(startedAt) : null;
-+    const hasValidStart = startedAtDate !== null && !Number.isNaN(startedAtDate.getTime());
-+    const elapsedMs = hasValidStart ? Math.max(0, now.getTime() - startedAtDate.getTime()) : null;
-+    const averagePerItemMs = elapsedMs !== null && completedItems > 0 ? elapsedMs / completedItems : null;
-+    const remainingItems = Math.max(0, totalItems - completedItems);
-+    const etaMs = averagePerItemMs !== null ? averagePerItemMs * remainingItems : null;
-+
-+    return {
-+      totalItems,
-+      completedItems,
-+      progressPercent,
-+      currentItemTitle: currentItem?.title ?? "No item in progress",
-+      elapsedLabel: elapsedMs !== null ? formatDuration(elapsedMs) : "N/A",
-+      averageLabel: averagePerItemMs !== null ? formatDuration(averagePerItemMs) : "N/A",
-+      etaLabel: etaMs !== null ? formatDuration(etaMs) : "N/A",
-+    };
-+  }, [items, now, startedAt]);
++      await navigator.clipboard.writeText(git.branch);
++      setCopyStatus("copied");
++    } catch {
++      setCopyStatus("error");
++    }
++  };
 +
 +  return (
 +    <section className="rounded-lg border border-border bg-card p-4 text-card-foreground md:p-6">
-+      <h2 className="text-lg font-semibold">Run Progress</h2>
-+      <p className="mt-2 text-sm text-muted-foreground">
-+        {stats.completedItems} of {stats.totalItems} items complete
-+      </p>
++      <h2 className="text-lg font-semibold">Git State</h2>
 +
-+      <div className="mt-4">
-+        <div
-+          role="progressbar"
-+          aria-label="Overall progress"
-+          aria-valuemin={0}
-+          aria-valuemax={100}
-+          aria-valuenow={stats.progressPercent}
-+          className="h-2 w-full overflow-hidden rounded-full bg-muted"
-+        >
-+          <div
-+            className="h-full bg-primary transition-[width] duration-300"
-+            style={{ width: `${stats.progressPercent}%` }}
-+          />
++      <div className="mt-4 rounded-md border border-border bg-background/50 p-3">
++        <p className="text-xs uppercase tracking-wide text-muted-foreground">Branch</p>
++        <div className="mt-2 flex items-center justify-between gap-3">
++          <p className="truncate text-sm font-medium">{git.branch ?? "Detached / unavailable"}</p>
++          <button
++            type="button"
++            onClick={handleCopyBranch}
++            disabled={!canCopyBranch}
++            className="shrink-0 rounded border border-border bg-background px-2 py-1 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-50"
++            aria-label="Copy branch name"
++          >
++            Copy
++          </button>
 +        </div>
-+        <p className="mt-2 text-xs text-muted-foreground">{stats.progressPercent}% complete</p>
++        {copyStatus === "copied" ? <p className="mt-2 text-xs text-green-600">Copied.</p> : null}
++        {copyStatus === "error" ? <p className="mt-2 text-xs text-red-600">Unable to copy.</p> : null}
 +      </div>
 +
-+      <div className="mt-4 grid gap-3 sm:grid-cols-3">
-+        <div className="rounded-md border border-border bg-background/50 p-3">
-+          <p className="text-xs uppercase tracking-wide text-muted-foreground">Elapsed</p>
-+          <p className="mt-1 text-sm font-medium">{stats.elapsedLabel}</p>
-+        </div>
-+        <div className="rounded-md border border-border bg-background/50 p-3">
-+          <p className="text-xs uppercase tracking-wide text-muted-foreground">Avg / item</p>
-+          <p className="mt-1 text-sm font-medium">{stats.averageLabel}</p>
-+        </div>
-+        <div className="rounded-md border border-border bg-background/50 p-3">
-+          <p className="text-xs uppercase tracking-wide text-muted-foreground">ETA</p>
-+          <p className="mt-1 text-sm font-medium">{stats.etaLabel}</p>
-+        </div>
++      <div className="mt-4 rounded-md border border-border bg-background/50 p-3">
++        <p className="text-xs uppercase tracking-wide text-muted-foreground">Commits</p>
++        <p className="mt-1 text-sm font-medium">{git.commitCount} commits on this branch</p>
 +      </div>
 +
-+      <div className="mt-4 rounded-md border border-amber-400/50 bg-amber-400/10 p-3">
-+        <p className="text-xs uppercase tracking-wide text-muted-foreground">Current Item</p>
-+        <p className="mt-1 text-base font-semibold">{stats.currentItemTitle}</p>
-+      </div>
-+    </section>
-+  );
-+}
-
-file update:
-diff --git a/__tests__/ProgressPanel.test.tsx b/__tests__/ProgressPanel.test.tsx
-new file mode 100644
-index 0000000000000000000000000000000000000000..672507757d89121b5c9a70ee7d3c860c6336fa1a
---- /dev/null
-+++ b/__tests__/ProgressPanel.test.tsx
-@@ -0,0 +1,99 @@
-+import React from "react";
-+import { cleanup, render, screen } from "@testing-library/react";
-+import { afterEach, describe, expect, it } from "vitest";
-+
-+import ProgressPanel from "@/components/ProgressPanel";
-+import type { UnifiedPRDItem } from "@/lib/ralph-state";
-+
-+const items: UnifiedPRDItem[] = [
-+  {
-+    id: 1,
-+    category: "setup",
-+    title: "Done Item A",
-+    description: "Done A",
-+    priority: 1,
-+    passes: true,
-+    verification: "Done A verification",
-+    steps: [],
-+    notes: "",
-+    status: "done",
-+    isCurrent: false,
-+  },
-+  {
-+    id: 2,
-+    category: "api",
-+    title: "Done Item B",
-+    description: "Done B",
-+    priority: 2,
-+    passes: true,
-+    verification: "Done B verification",
-+    steps: [],
-+    notes: "",
-+    status: "done",
-+    isCurrent: false,
-+  },
-+  {
-+    id: 3,
-+    category: "ui",
-+    title: "Current Item",
-+    description: "Current",
-+    priority: 1,
-+    passes: false,
-+    verification: "Current verification",
-+    steps: [],
-+    notes: "",
-+    status: "in_progress",
-+    isCurrent: true,
-+  },
-+  {
-+    id: 4,
-+    category: "tests",
-+    title: "Backlog Item",
-+    description: "Backlog",
-+    priority: 2,
-+    passes: false,
-+    verification: "Backlog verification",
-+    steps: [],
-+    notes: "",
-+    status: "backlog",
-+    isCurrent: false,
-+  },
-+];
-+
-+afterEach(() => {
-+  cleanup();
-+});
-+
-+describe("ProgressPanel", () => {
-+  it("renders completion, progress, elapsed time, average, ETA, and current item", () => {
-+    render(
-+      <ProgressPanel
-+        items={items}
-+        startedAt="2026-02-05T10:00:00.000Z"
-+        now={new Date("2026-02-05T11:00:00.000Z")}
-+      />,
-+    );
-+
-+    expect(screen.getByText("2 of 4 items complete")).toBeInTheDocument();
-+    expect(screen.getByText("50% complete")).toBeInTheDocument();
-+
-+    const progress = screen.getByRole("progressbar", { name: "Overall progress" });
-+    expect(progress).toHaveAttribute("aria-valuenow", "50");
-+
-+    expect(screen.getAllByText("1h 00m")).toHaveLength(2);
-+    expect(screen.getByText("30m 00s")).toBeInTheDocument();
-+    expect(screen.getAllByText("Current Item")).toHaveLength(2);
-+  });
-+
-+  it("shows N/A values when there is no valid start or no completed items", () => {
-+    const noDoneItems = items.map((item) => ({ ...item, passes: false }));
-+
-+    render(<ProgressPanel items={noDoneItems} startedAt={null} now={new Date("2026-02-05T11:00:00.000Z")} />);
-+
-+    expect(screen.getByText("0 of 4 items complete")).toBeInTheDocument();
-+    expect(screen.getByText("0% complete")).toBeInTheDocument();
-+
-+    const naLabels = screen.getAllByText("N/A");
-+    expect(naLabels).toHaveLength(3);
-+  });
-+});
-diff --git a/components/ProgressPanel.tsx b/components/ProgressPanel.tsx
-new file mode 100644
-index 0000000000000000000000000000000000000000..6f798601dcbb1d0b4b3e98cc278b08d9983fe71c
---- /dev/null
-+++ b/components/ProgressPanel.tsx
-@@ -0,0 +1,100 @@
-+"use client";
-+
-+import React, { useMemo } from "react";
-+
-+import type { UnifiedPRDItem } from "@/lib/ralph-state";
-+
-+interface ProgressPanelProps {
-+  items: UnifiedPRDItem[];
-+  startedAt: string | null;
-+  now?: Date;
-+}
-+
-+function formatDuration(ms: number): string {
-+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
-+  const days = Math.floor(totalSeconds / 86400);
-+  const hours = Math.floor((totalSeconds % 86400) / 3600);
-+  const minutes = Math.floor((totalSeconds % 3600) / 60);
-+  const seconds = totalSeconds % 60;
-+
-+  if (days > 0) {
-+    return `${days}d ${hours.toString().padStart(2, "0")}h`;
-+  }
-+
-+  if (hours > 0) {
-+    return `${hours}h ${minutes.toString().padStart(2, "0")}m`;
-+  }
-+
-+  return `${minutes}m ${seconds.toString().padStart(2, "0")}s`;
-+}
-+
-+export default function ProgressPanel({ items, startedAt, now = new Date() }: ProgressPanelProps) {
-+  const stats = useMemo(() => {
-+    const totalItems = items.length;
-+    const completedItems = items.filter((item) => item.passes).length;
-+    const progressPercent = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
-+    const currentItem = items.find((item) => item.isCurrent && !item.passes) ?? items.find((item) => item.isCurrent) ?? null;
-+    const startedAtDate = startedAt ? new Date(startedAt) : null;
-+    const hasValidStart = startedAtDate !== null && !Number.isNaN(startedAtDate.getTime());
-+    const elapsedMs = hasValidStart ? Math.max(0, now.getTime() - startedAtDate.getTime()) : null;
-+    const averagePerItemMs = elapsedMs !== null && completedItems > 0 ? elapsedMs / completedItems : null;
-+    const remainingItems = Math.max(0, totalItems - completedItems);
-+    const etaMs = averagePerItemMs !== null ? averagePerItemMs * remainingItems : null;
-+
-+    return {
-+      totalItems,
-+      completedItems,
-+      progressPercent,
-+      currentItemTitle: currentItem?.title ?? "No item in progress",
-+      elapsedLabel: elapsedMs !== null ? formatDuration(elapsedMs) : "N/A",
-+      averageLabel: averagePerItemMs !== null ? formatDuration(averagePerItemMs) : "N/A",
-+      etaLabel: etaMs !== null ? formatDuration(etaMs) : "N/A",
-+    };
-+  }, [items, now, startedAt]);
-+
-+  return (
-+    <section className="rounded-lg border border-border bg-card p-4 text-card-foreground md:p-6">
-+      <h2 className="text-lg font-semibold">Run Progress</h2>
-+      <p className="mt-2 text-sm text-muted-foreground">
-+        {stats.completedItems} of {stats.totalItems} items complete
-+      </p>
-+
-+      <div className="mt-4">
-+        <div
-+          role="progressbar"
-+          aria-label="Overall progress"
-+          aria-valuemin={0}
-+          aria-valuemax={100}
-+          aria-valuenow={stats.progressPercent}
-+          className="h-2 w-full overflow-hidden rounded-full bg-muted"
-+        >
-+          <div
-+            className="h-full bg-primary transition-[width] duration-300"
-+            style={{ width: `${stats.progressPercent}%` }}
-+          />
-+        </div>
-+        <p className="mt-2 text-xs text-muted-foreground">{stats.progressPercent}% complete</p>
-+      </div>
-+
-+      <div className="mt-4 grid gap-3 sm:grid-cols-3">
-+        <div className="rounded-md border border-border bg-background/50 p-3">
-+          <p className="text-xs uppercase tracking-wide text-muted-foreground">Elapsed</p>
-+          <p className="mt-1 text-sm font-medium">{stats.elapsedLabel}</p>
-+        </div>
-+        <div className="rounded-md border border-border bg-background/50 p-3">
-+          <p className="text-xs uppercase tracking-wide text-muted-foreground">Avg / item</p>
-+          <p className="mt-1 text-sm font-medium">{stats.averageLabel}</p>
-+        </div>
-+        <div className="rounded-md border border-border bg-background/50 p-3">
-+          <p className="text-xs uppercase tracking-wide text-muted-foreground">ETA</p>
-+          <p className="mt-1 text-sm font-medium">{stats.etaLabel}</p>
++      <div className="mt-4 rounded-md border border-border bg-background/50 p-3">
++        <p className="text-xs uppercase tracking-wide text-muted-foreground">{diffLabel}</p>
++        <div className="mt-3 grid grid-cols-3 gap-3 text-sm">
++          <div>
++            <p className="text-xs text-muted-foreground">Files</p>
++            <p className="font-semibold">{git.diffFromBase.filesChanged}</p>
++          </div>
++          <div>
++            <p className="text-xs text-muted-foreground">+ Lines</p>
++            <p className="font-semibold">{git.diffFromBase.insertions}</p>
++          </div>
++          <div>
++            <p className="text-xs text-muted-foreground">- Lines</p>
++            <p className="font-semibold">{git.diffFromBase.deletions}</p>
++          </div>
 +        </div>
 +      </div>
 +
-+      <div className="mt-4 rounded-md border border-amber-400/50 bg-amber-400/10 p-3">
-+        <p className="text-xs uppercase tracking-wide text-muted-foreground">Current Item</p>
-+        <p className="mt-1 text-base font-semibold">{stats.currentItemTitle}</p>
-+      </div>
-+    </section>
-+  );
-+}
-
-exec
-/bin/zsh -lc 'npm test' in /Users/mcbee/Projects/agent-dashboard succeeded in 1.12s:
-
-> ralph-dashboard@0.1.0 test
-> vitest run
-
-
- RUN  v4.0.18 /Users/mcbee/Projects/agent-dashboard
-
- ✓ __tests__/git-state.test.ts (5 tests) 4ms
- ✓ __tests__/ralph-state.test.ts (9 tests) 23ms
- ✓ __tests__/code-metrics.test.ts (3 tests) 19ms
- ✓ __tests__/example.test.ts (1 test) 9ms
- ✓ __tests__/api-state.test.ts (6 tests) 35ms
- ✓ __tests__/ProgressPanel.test.tsx (2 tests) 58ms
- ✓ __tests__/KanbanBoard.test.tsx (3 tests) 84ms
-
- Test Files  7 passed (7)
-      Tests  29 passed (29)
-   Start at  14:47:12
-   Duration  644ms (transform 217ms, setup 295ms, import 334ms, tests 231ms, environment 2.09s)
-
-file update:
-diff --git a/__tests__/ProgressPanel.test.tsx b/__tests__/ProgressPanel.test.tsx
-new file mode 100644
-index 0000000000000000000000000000000000000000..672507757d89121b5c9a70ee7d3c860c6336fa1a
---- /dev/null
-+++ b/__tests__/ProgressPanel.test.tsx
-@@ -0,0 +1,99 @@
-+import React from "react";
-+import { cleanup, render, screen } from "@testing-library/react";
-+import { afterEach, describe, expect, it } from "vitest";
-+
-+import ProgressPanel from "@/components/ProgressPanel";
-+import type { UnifiedPRDItem } from "@/lib/ralph-state";
-+
-+const items: UnifiedPRDItem[] = [
-+  {
-+    id: 1,
-+    category: "setup",
-+    title: "Done Item A",
-+    description: "Done A",
-+    priority: 1,
-+    passes: true,
-+    verification: "Done A verification",
-+    steps: [],
-+    notes: "",
-+    status: "done",
-+    isCurrent: false,
-+  },
-+  {
-+    id: 2,
-+    category: "api",
-+    title: "Done Item B",
-+    description: "Done B",
-+    priority: 2,
-+    passes: true,
-+    verification: "Done B verification",
-+    steps: [],
-+    notes: "",
-+    status: "done",
-+    isCurrent: false,
-+  },
-+  {
-+    id: 3,
-+    category: "ui",
-+    title: "Current Item",
-+    description: "Current",
-+    priority: 1,
-+    passes: false,
-+    verification: "Current verification",
-+    steps: [],
-+    notes: "",
-+    status: "in_progress",
-+    isCurrent: true,
-+  },
-+  {
-+    id: 4,
-+    category: "tests",
-+    title: "Backlog Item",
-+    description: "Backlog",
-+    priority: 2,
-+    passes: false,
-+    verification: "Backlog verification",
-+    steps: [],
-+    notes: "",
-+    status: "backlog",
-+    isCurrent: false,
-+  },
-+];
-+
-+afterEach(() => {
-+  cleanup();
-+});
-+
-+describe("ProgressPanel", () => {
-+  it("renders completion, progress, elapsed time, average, ETA, and current item", () => {
-+    render(
-+      <ProgressPanel
-+        items={items}
-+        startedAt="2026-02-05T10:00:00.000Z"
-+        now={new Date("2026-02-05T11:00:00.000Z")}
-+      />,
-+    );
-+
-+    expect(screen.getByText("2 of 4 items complete")).toBeInTheDocument();
-+    expect(screen.getByText("50% complete")).toBeInTheDocument();
-+
-+    const progress = screen.getByRole("progressbar", { name: "Overall progress" });
-+    expect(progress).toHaveAttribute("aria-valuenow", "50");
-+
-+    expect(screen.getAllByText("1h 00m")).toHaveLength(2);
-+    expect(screen.getByText("30m 00s")).toBeInTheDocument();
-+    expect(screen.getAllByText("Current Item")).toHaveLength(2);
-+  });
-+
-+  it("shows N/A values when there is no valid start or no completed items", () => {
-+    const noDoneItems = items.map((item) => ({ ...item, passes: false }));
-+
-+    render(<ProgressPanel items={noDoneItems} startedAt={null} now={new Date("2026-02-05T11:00:00.000Z")} />);
-+
-+    expect(screen.getByText("0 of 4 items complete")).toBeInTheDocument();
-+    expect(screen.getByText("0% complete")).toBeInTheDocument();
-+
-+    const naLabels = screen.getAllByText("N/A");
-+    expect(naLabels).toHaveLength(3);
-+  });
-+});
-diff --git a/components/ProgressPanel.tsx b/components/ProgressPanel.tsx
-new file mode 100644
-index 0000000000000000000000000000000000000000..6f798601dcbb1d0b4b3e98cc278b08d9983fe71c
---- /dev/null
-+++ b/components/ProgressPanel.tsx
-@@ -0,0 +1,100 @@
-+"use client";
-+
-+import React, { useMemo } from "react";
-+
-+import type { UnifiedPRDItem } from "@/lib/ralph-state";
-+
-+interface ProgressPanelProps {
-+  items: UnifiedPRDItem[];
-+  startedAt: string | null;
-+  now?: Date;
-+}
-+
-+function formatDuration(ms: number): string {
-+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
-+  const days = Math.floor(totalSeconds / 86400);
-+  const hours = Math.floor((totalSeconds % 86400) / 3600);
-+  const minutes = Math.floor((totalSeconds % 3600) / 60);
-+  const seconds = totalSeconds % 60;
-+
-+  if (days > 0) {
-+    return `${days}d ${hours.toString().padStart(2, "0")}h`;
-+  }
-+
-+  if (hours > 0) {
-+    return `${hours}h ${minutes.toString().padStart(2, "0")}m`;
-+  }
-+
-+  return `${minutes}m ${seconds.toString().padStart(2, "0")}s`;
-+}
-+
-+export default function ProgressPanel({ items, startedAt, now = new Date() }: ProgressPanelProps) {
-+  const stats = useMemo(() => {
-+    const totalItems = items.length;
-+    const completedItems = items.filter((item) => item.passes).length;
-+    const progressPercent = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
-+    const currentItem = items.find((item) => item.isCurrent && !item.passes) ?? items.find((item) => item.isCurrent) ?? null;
-+    const startedAtDate = startedAt ? new Date(startedAt) : null;
-+    const hasValidStart = startedAtDate !== null && !Number.isNaN(startedAtDate.getTime());
-+    const elapsedMs = hasValidStart ? Math.max(0, now.getTime() - startedAtDate.getTime()) : null;
-+    const averagePerItemMs = elapsedMs !== null && completedItems > 0 ? elapsedMs / completedItems : null;
-+    const remainingItems = Math.max(0, totalItems - completedItems);
-+    const etaMs = averagePerItemMs !== null ? averagePerItemMs * remainingItems : null;
-+
-+    return {
-+      totalItems,
-+      completedItems,
-+      progressPercent,
-+      currentItemTitle: currentItem?.title ?? "No item in progress",
-+      elapsedLabel: elapsedMs !== null ? formatDuration(elapsedMs) : "N/A",
-+      averageLabel: averagePerItemMs !== null ? formatDuration(averagePerItemMs) : "N/A",
-+      etaLabel: etaMs !== null ? formatDuration(etaMs) : "N/A",
-+    };
-+  }, [items, now, startedAt]);
-+
-+  return (
-+    <section className="rounded-lg border border-border bg-card p-4 text-card-foreground md:p-6">
-+      <h2 className="text-lg font-semibold">Run Progress</h2>
-+      <p className="mt-2 text-sm text-muted-foreground">
-+        {stats.completedItems} of {stats.totalItems} items complete
-+      </p>
-+
-+      <div className="mt-4">
-+        <div
-+          role="progressbar"
-+          aria-label="Overall progress"
-+          aria-valuemin={0}
-+          aria-valuemax={100}
-+          aria-valuenow={stats.progressPercent}
-+          className="h-2 w-full overflow-hidden rounded-full bg-muted"
-+        >
-+          <div
-+            className="h-full bg-primary transition-[width] duration-300"
-+            style={{ width: `${stats.progressPercent}%` }}
-+          />
-+        </div>
-+        <p className="mt-2 text-xs text-muted-foreground">{stats.progressPercent}% complete</p>
++      <div className="mt-4 rounded-md border border-border bg-background/50 p-3">
++        <p className="text-xs uppercase tracking-wide text-muted-foreground">Recent commits</p>
++        {commitsToShow.length > 0 ? (
++          <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm">
++            {commitsToShow.map((commit) => (
++              <li key={commit}>{commit}</li>
++            ))}
++          </ol>
++        ) : (
++          <p className="mt-2 text-sm text-muted-foreground">No commits available.</p>
++        )}
 +      </div>
 +
-+      <div className="mt-4 grid gap-3 sm:grid-cols-3">
-+        <div className="rounded-md border border-border bg-background/50 p-3">
-+          <p className="text-xs uppercase tracking-wide text-muted-foreground">Elapsed</p>
-+          <p className="mt-1 text-sm font-medium">{stats.elapsedLabel}</p>
-+        </div>
-+        <div className="rounded-md border border-border bg-background/50 p-3">
-+          <p className="text-xs uppercase tracking-wide text-muted-foreground">Avg / item</p>
-+          <p className="mt-1 text-sm font-medium">{stats.averageLabel}</p>
-+        </div>
-+        <div className="rounded-md border border-border bg-background/50 p-3">
-+          <p className="text-xs uppercase tracking-wide text-muted-foreground">ETA</p>
-+          <p className="mt-1 text-sm font-medium">{stats.etaLabel}</p>
-+        </div>
-+      </div>
-+
-+      <div className="mt-4 rounded-md border border-amber-400/50 bg-amber-400/10 p-3">
-+        <p className="text-xs uppercase tracking-wide text-muted-foreground">Current Item</p>
-+        <p className="mt-1 text-base font-semibold">{stats.currentItemTitle}</p>
-+      </div>
-+    </section>
-+  );
-+}
-
-
-thinking
-**Verifying changed files**
-exec
-/bin/zsh -lc 'git status --short' in /Users/mcbee/Projects/agent-dashboard succeeded in 218ms:
- M .ralph/current.log
- M .ralph/state.json
- M prd-ralph-dashboard.json
-?? __tests__/ProgressPanel.test.tsx
-?? components/ProgressPanel.tsx
-file update:
-diff --git a/__tests__/ProgressPanel.test.tsx b/__tests__/ProgressPanel.test.tsx
-new file mode 100644
-index 0000000000000000000000000000000000000000..672507757d89121b5c9a70ee7d3c860c6336fa1a
---- /dev/null
-+++ b/__tests__/ProgressPanel.test.tsx
-@@ -0,0 +1,99 @@
-+import React from "react";
-+import { cleanup, render, screen } from "@testing-library/react";
-+import { afterEach, describe, expect, it } from "vitest";
-+
-+import ProgressPanel from "@/components/ProgressPanel";
-+import type { UnifiedPRDItem } from "@/lib/ralph-state";
-+
-+const items: UnifiedPRDItem[] = [
-+  {
-+    id: 1,
-+    category: "setup",
-+    title: "Done Item A",
-+    description: "Done A",
-+    priority: 1,
-+    passes: true,
-+    verification: "Done A verification",
-+    steps: [],
-+    notes: "",
-+    status: "done",
-+    isCurrent: false,
-+  },
-+  {
-+    id: 2,
-+    category: "api",
-+    title: "Done Item B",
-+    description: "Done B",
-+    priority: 2,
-+    passes: true,
-+    verification: "Done B verification",
-+    steps: [],
-+    notes: "",
-+    status: "done",
-+    isCurrent: false,
-+  },
-+  {
-+    id: 3,
-+    category: "ui",
-+    title: "Current Item",
-+    description: "Current",
-+    priority: 1,
-+    passes: false,
-+    verification: "Current verification",
-+    steps: [],
-+    notes: "",
-+    status: "in_progress",
-+    isCurrent: true,
-+  },
-+  {
-+    id: 4,
-+    category: "tests",
-+    title: "Backlog Item",
-+    description: "Backlog",
-+    priority: 2,
-+    passes: false,
-+    verification: "Backlog verification",
-+    steps: [],
-+    notes: "",
-+    status: "backlog",
-+    isCurrent: false,
-+  },
-+];
-+
-+afterEach(() => {
-+  cleanup();
-+});
-+
-+describe("ProgressPanel", () => {
-+  it("renders completion, progress, elapsed time, average, ETA, and current item", () => {
-+    render(
-+      <ProgressPanel
-+        items={items}
-+        startedAt="2026-02-05T10:00:00.000Z"
-+        now={new Date("2026-02-05T11:00:00.000Z")}
-+      />,
-+    );
-+
-+    expect(screen.getByText("2 of 4 items complete")).toBeInTheDocument();
-+    expect(screen.getByText("50% complete")).toBeInTheDocument();
-+
-+    const progress = screen.getByRole("progressbar", { name: "Overall progress" });
-+    expect(progress).toHaveAttribute("aria-valuenow", "50");
-+
-+    expect(screen.getAllByText("1h 00m")).toHaveLength(2);
-+    expect(screen.getByText("30m 00s")).toBeInTheDocument();
-+    expect(screen.getAllByText("Current Item")).toHaveLength(2);
-+  });
-+
-+  it("shows N/A values when there is no valid start or no completed items", () => {
-+    const noDoneItems = items.map((item) => ({ ...item, passes: false }));
-+
-+    render(<ProgressPanel items={noDoneItems} startedAt={null} now={new Date("2026-02-05T11:00:00.000Z")} />);
-+
-+    expect(screen.getByText("0 of 4 items complete")).toBeInTheDocument();
-+    expect(screen.getByText("0% complete")).toBeInTheDocument();
-+
-+    const naLabels = screen.getAllByText("N/A");
-+    expect(naLabels).toHaveLength(3);
-+  });
-+});
-diff --git a/components/ProgressPanel.tsx b/components/ProgressPanel.tsx
-new file mode 100644
-index 0000000000000000000000000000000000000000..6f798601dcbb1d0b4b3e98cc278b08d9983fe71c
---- /dev/null
-+++ b/components/ProgressPanel.tsx
-@@ -0,0 +1,100 @@
-+"use client";
-+
-+import React, { useMemo } from "react";
-+
-+import type { UnifiedPRDItem } from "@/lib/ralph-state";
-+
-+interface ProgressPanelProps {
-+  items: UnifiedPRDItem[];
-+  startedAt: string | null;
-+  now?: Date;
-+}
-+
-+function formatDuration(ms: number): string {
-+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
-+  const days = Math.floor(totalSeconds / 86400);
-+  const hours = Math.floor((totalSeconds % 86400) / 3600);
-+  const minutes = Math.floor((totalSeconds % 3600) / 60);
-+  const seconds = totalSeconds % 60;
-+
-+  if (days > 0) {
-+    return `${days}d ${hours.toString().padStart(2, "0")}h`;
-+  }
-+
-+  if (hours > 0) {
-+    return `${hours}h ${minutes.toString().padStart(2, "0")}m`;
-+  }
-+
-+  return `${minutes}m ${seconds.toString().padStart(2, "0")}s`;
-+}
-+
-+export default function ProgressPanel({ items, startedAt, now = new Date() }: ProgressPanelProps) {
-+  const stats = useMemo(() => {
-+    const totalItems = items.length;
-+    const completedItems = items.filter((item) => item.passes).length;
-+    const progressPercent = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
-+    const currentItem = items.find((item) => item.isCurrent && !item.passes) ?? items.find((item) => item.isCurrent) ?? null;
-+    const startedAtDate = startedAt ? new Date(startedAt) : null;
-+    const hasValidStart = startedAtDate !== null && !Number.isNaN(startedAtDate.getTime());
-+    const elapsedMs = hasValidStart ? Math.max(0, now.getTime() - startedAtDate.getTime()) : null;
-+    const averagePerItemMs = elapsedMs !== null && completedItems > 0 ? elapsedMs / completedItems : null;
-+    const remainingItems = Math.max(0, totalItems - completedItems);
-+    const etaMs = averagePerItemMs !== null ? averagePerItemMs * remainingItems : null;
-+
-+    return {
-+      totalItems,
-+      completedItems,
-+      progressPercent,
-+      currentItemTitle: currentItem?.title ?? "No item in progress",
-+      elapsedLabel: elapsedMs !== null ? formatDuration(elapsedMs) : "N/A",
-+      averageLabel: averagePerItemMs !== null ? formatDuration(averagePerItemMs) : "N/A",
-+      etaLabel: etaMs !== null ? formatDuration(etaMs) : "N/A",
-+    };
-+  }, [items, now, startedAt]);
-+
-+  return (
-+    <section className="rounded-lg border border-border bg-card p-4 text-card-foreground md:p-6">
-+      <h2 className="text-lg font-semibold">Run Progress</h2>
-+      <p className="mt-2 text-sm text-muted-foreground">
-+        {stats.completedItems} of {stats.totalItems} items complete
-+      </p>
-+
-+      <div className="mt-4">
-+        <div
-+          role="progressbar"
-+          aria-label="Overall progress"
-+          aria-valuemin={0}
-+          aria-valuemax={100}
-+          aria-valuenow={stats.progressPercent}
-+          className="h-2 w-full overflow-hidden rounded-full bg-muted"
-+        >
-+          <div
-+            className="h-full bg-primary transition-[width] duration-300"
-+            style={{ width: `${stats.progressPercent}%` }}
-+          />
-+        </div>
-+        <p className="mt-2 text-xs text-muted-foreground">{stats.progressPercent}% complete</p>
-+      </div>
-+
-+      <div className="mt-4 grid gap-3 sm:grid-cols-3">
-+        <div className="rounded-md border border-border bg-background/50 p-3">
-+          <p className="text-xs uppercase tracking-wide text-muted-foreground">Elapsed</p>
-+          <p className="mt-1 text-sm font-medium">{stats.elapsedLabel}</p>
-+        </div>
-+        <div className="rounded-md border border-border bg-background/50 p-3">
-+          <p className="text-xs uppercase tracking-wide text-muted-foreground">Avg / item</p>
-+          <p className="mt-1 text-sm font-medium">{stats.averageLabel}</p>
-+        </div>
-+        <div className="rounded-md border border-border bg-background/50 p-3">
-+          <p className="text-xs uppercase tracking-wide text-muted-foreground">ETA</p>
-+          <p className="mt-1 text-sm font-medium">{stats.etaLabel}</p>
-+        </div>
-+      </div>
-+
-+      <div className="mt-4 rounded-md border border-amber-400/50 bg-amber-400/10 p-3">
-+        <p className="text-xs uppercase tracking-wide text-muted-foreground">Current Item</p>
-+        <p className="mt-1 text-base font-semibold">{stats.currentItemTitle}</p>
-+      </div>
-+    </section>
-+  );
-+}
-
-
-thinking
-**Preparing final verification summary**
-codex
-Implemented item 9/17 with focused changes in:
-
-- `components/ProgressPanel.tsx`
-- `__tests__/ProgressPanel.test.tsx`
-
-What’s included in `components/ProgressPanel.tsx`:
-- Displays `X of Y items complete`
-- Renders a progress bar with percentage (`role="progressbar"`, `aria-valuenow`)
-- Shows elapsed time since `startedAt`
-- Computes and shows average time per completed item
-- Computes and shows ETA based on remaining items
-- Shows current item title prominently in a highlighted block
-
-Test coverage in `__tests__/ProgressPanel.test.tsx`:
-- Verifies correct rendering of completion count, percent, progressbar value, elapsed time, average, ETA, and current item title
-- Verifies `N/A` behavior when start time or completed-item data is insufficient
-
-Verification:
-- Ran full test suite with `npm test`
-- Result: `7 passed`, `29 passed`, `0 failed`
-- Verification criterion met: component renders progress correctly (unit test)
-file update:
-diff --git a/__tests__/ProgressPanel.test.tsx b/__tests__/ProgressPanel.test.tsx
-new file mode 100644
-index 0000000000000000000000000000000000000000..672507757d89121b5c9a70ee7d3c860c6336fa1a
---- /dev/null
-+++ b/__tests__/ProgressPanel.test.tsx
-@@ -0,0 +1,99 @@
-+import React from "react";
-+import { cleanup, render, screen } from "@testing-library/react";
-+import { afterEach, describe, expect, it } from "vitest";
-+
-+import ProgressPanel from "@/components/ProgressPanel";
-+import type { UnifiedPRDItem } from "@/lib/ralph-state";
-+
-+const items: UnifiedPRDItem[] = [
-+  {
-+    id: 1,
-+    category: "setup",
-+    title: "Done Item A",
-+    description: "Done A",
-+    priority: 1,
-+    passes: true,
-+    verification: "Done A verification",
-+    steps: [],
-+    notes: "",
-+    status: "done",
-+    isCurrent: false,
-+  },
-+  {
-+    id: 2,
-+    category: "api",
-+    title: "Done Item B",
-+    description: "Done B",
-+    priority: 2,
-+    passes: true,
-+    verification: "Done B verification",
-+    steps: [],
-+    notes: "",
-+    status: "done",
-+    isCurrent: false,
-+  },
-+  {
-+    id: 3,
-+    category: "ui",
-+    title: "Current Item",
-+    description: "Current",
-+    priority: 1,
-+    passes: false,
-+    verification: "Current verification",
-+    steps: [],
-+    notes: "",
-+    status: "in_progress",
-+    isCurrent: true,
-+  },
-+  {
-+    id: 4,
-+    category: "tests",
-+    title: "Backlog Item",
-+    description: "Backlog",
-+    priority: 2,
-+    passes: false,
-+    verification: "Backlog verification",
-+    steps: [],
-+    notes: "",
-+    status: "backlog",
-+    isCurrent: false,
-+  },
-+];
-+
-+afterEach(() => {
-+  cleanup();
-+});
-+
-+describe("ProgressPanel", () => {
-+  it("renders completion, progress, elapsed time, average, ETA, and current item", () => {
-+    render(
-+      <ProgressPanel
-+        items={items}
-+        startedAt="2026-02-05T10:00:00.000Z"
-+        now={new Date("2026-02-05T11:00:00.000Z")}
-+      />,
-+    );
-+
-+    expect(screen.getByText("2 of 4 items complete")).toBeInTheDocument();
-+    expect(screen.getByText("50% complete")).toBeInTheDocument();
-+
-+    const progress = screen.getByRole("progressbar", { name: "Overall progress" });
-+    expect(progress).toHaveAttribute("aria-valuenow", "50");
-+
-+    expect(screen.getAllByText("1h 00m")).toHaveLength(2);
-+    expect(screen.getByText("30m 00s")).toBeInTheDocument();
-+    expect(screen.getAllByText("Current Item")).toHaveLength(2);
-+  });
-+
-+  it("shows N/A values when there is no valid start or no completed items", () => {
-+    const noDoneItems = items.map((item) => ({ ...item, passes: false }));
-+
-+    render(<ProgressPanel items={noDoneItems} startedAt={null} now={new Date("2026-02-05T11:00:00.000Z")} />);
-+
-+    expect(screen.getByText("0 of 4 items complete")).toBeInTheDocument();
-+    expect(screen.getByText("0% complete")).toBeInTheDocument();
-+
-+    const naLabels = screen.getAllByText("N/A");
-+    expect(naLabels).toHaveLength(3);
-+  });
-+});
-diff --git a/components/ProgressPanel.tsx b/components/ProgressPanel.tsx
-new file mode 100644
-index 0000000000000000000000000000000000000000..6f798601dcbb1d0b4b3e98cc278b08d9983fe71c
---- /dev/null
-+++ b/components/ProgressPanel.tsx
-@@ -0,0 +1,100 @@
-+"use client";
-+
-+import React, { useMemo } from "react";
-+
-+import type { UnifiedPRDItem } from "@/lib/ralph-state";
-+
-+interface ProgressPanelProps {
-+  items: UnifiedPRDItem[];
-+  startedAt: string | null;
-+  now?: Date;
-+}
-+
-+function formatDuration(ms: number): string {
-+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
-+  const days = Math.floor(totalSeconds / 86400);
-+  const hours = Math.floor((totalSeconds % 86400) / 3600);
-+  const minutes = Math.floor((totalSeconds % 3600) / 60);
-+  const seconds = totalSeconds % 60;
-+
-+  if (days > 0) {
-+    return `${days}d ${hours.toString().padStart(2, "0")}h`;
-+  }
-+
-+  if (hours > 0) {
-+    return `${hours}h ${minutes.toString().padStart(2, "0")}m`;
-+  }
-+
-+  return `${minutes}m ${seconds.toString().padStart(2, "0")}s`;
-+}
-+
-+export default function ProgressPanel({ items, startedAt, now = new Date() }: ProgressPanelProps) {
-+  const stats = useMemo(() => {
-+    const totalItems = items.length;
-+    const completedItems = items.filter((item) => item.passes).length;
-+    const progressPercent = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
-+    const currentItem = items.find((item) => item.isCurrent && !item.passes) ?? items.find((item) => item.isCurrent) ?? null;
-+    const startedAtDate = startedAt ? new Date(startedAt) : null;
-+    const hasValidStart = startedAtDate !== null && !Number.isNaN(startedAtDate.getTime());
-+    const elapsedMs = hasValidStart ? Math.max(0, now.getTime() - startedAtDate.getTime()) : null;
-+    const averagePerItemMs = elapsedMs !== null && completedItems > 0 ? elapsedMs / completedItems : null;
-+    const remainingItems = Math.max(0, totalItems - completedItems);
-+    const etaMs = averagePerItemMs !== null ? averagePerItemMs * remainingItems : null;
-+
-+    return {
-+      totalItems,
-+      completedItems,
-+      progressPercent,
-+      currentItemTitle: currentItem?.title ?? "No item in progress",
-+      elapsedLabel: elapsedMs !== null ? formatDuration(elapsedMs) : "N/A",
-+      averageLabel: averagePerItemMs !== null ? formatDuration(averagePerItemMs) : "N/A",
-+      etaLabel: etaMs !== null ? formatDuration(etaMs) : "N/A",
-+    };
-+  }, [items, now, startedAt]);
-+
-+  return (
-+    <section className="rounded-lg border border-border bg-card p-4 text-card-foreground md:p-6">
-+      <h2 className="text-lg font-semibold">Run Progress</h2>
-+      <p className="mt-2 text-sm text-muted-foreground">
-+        {stats.completedItems} of {stats.totalItems} items complete
-+      </p>
-+
-+      <div className="mt-4">
-+        <div
-+          role="progressbar"
-+          aria-label="Overall progress"
-+          aria-valuemin={0}
-+          aria-valuemax={100}
-+          aria-valuenow={stats.progressPercent}
-+          className="h-2 w-full overflow-hidden rounded-full bg-muted"
-+        >
-+          <div
-+            className="h-full bg-primary transition-[width] duration-300"
-+            style={{ width: `${stats.progressPercent}%` }}
-+          />
-+        </div>
-+        <p className="mt-2 text-xs text-muted-foreground">{stats.progressPercent}% complete</p>
-+      </div>
-+
-+      <div className="mt-4 grid gap-3 sm:grid-cols-3">
-+        <div className="rounded-md border border-border bg-background/50 p-3">
-+          <p className="text-xs uppercase tracking-wide text-muted-foreground">Elapsed</p>
-+          <p className="mt-1 text-sm font-medium">{stats.elapsedLabel}</p>
-+        </div>
-+        <div className="rounded-md border border-border bg-background/50 p-3">
-+          <p className="text-xs uppercase tracking-wide text-muted-foreground">Avg / item</p>
-+          <p className="mt-1 text-sm font-medium">{stats.averageLabel}</p>
-+        </div>
-+        <div className="rounded-md border border-border bg-background/50 p-3">
-+          <p className="text-xs uppercase tracking-wide text-muted-foreground">ETA</p>
-+          <p className="mt-1 text-sm font-medium">{stats.etaLabel}</p>
-+        </div>
-+      </div>
-+
-+      <div className="mt-4 rounded-md border border-amber-400/50 bg-amber-400/10 p-3">
-+        <p className="text-xs uppercase tracking-wide text-muted-foreground">Current Item</p>
-+        <p className="mt-1 text-base font-semibold">{stats.currentItemTitle}</p>
-+      </div>
++      {git.error ? <p className="mt-4 text-xs text-red-600">Git error: {git.error}</p> : null}
 +    </section>
 +  );
 +}
 
 tokens used
-35,730
-Implemented item 9/17 with focused changes in:
+22,929
+Implemented item 10/17 with focused changes:
 
-- `components/ProgressPanel.tsx`
-- `__tests__/ProgressPanel.test.tsx`
+- Added `components/GitPanel.tsx`
+  - Branch display with copy button
+  - Commit count on branch
+  - Diff stats (`files changed`, `+ lines`, `- lines`) from `diffFromBase`
+  - Mini commit log capped to last 5 messages
+  - Basic copy feedback (`Copied.` / `Unable to copy.`)
+- Added unit tests in `__tests__/GitPanel.test.tsx`
+  - Verifies rendering of branch, commit count, diff stats, and 5-commit cap
+  - Verifies branch copy button writes to clipboard
 
-What’s included in `components/ProgressPanel.tsx`:
-- Displays `X of Y items complete`
-- Renders a progress bar with percentage (`role="progressbar"`, `aria-valuenow`)
-- Shows elapsed time since `startedAt`
-- Computes and shows average time per completed item
-- Computes and shows ETA based on remaining items
-- Shows current item title prominently in a highlighted block
+Verification run:
 
-Test coverage in `__tests__/ProgressPanel.test.tsx`:
-- Verifies correct rendering of completion count, percent, progressbar value, elapsed time, average, ETA, and current item title
-- Verifies `N/A` behavior when start time or completed-item data is insufficient
+- `npm test` passed
+- Result: `8` test files passed, `31` tests passed (including `__tests__/GitPanel.test.tsx`)
 
-Verification:
-- Ran full test suite with `npm test`
-- Result: `7 passed`, `29 passed`, `0 failed`
-- Verification criterion met: component renders progress correctly (unit test)
+This meets the requested verification criteria: the component renders git info correctly via unit tests.

@@ -162,7 +162,7 @@
       "title": "Progress overview panel",
       "description": "Summary panel showing overall progress: items done, time elapsed, ETA",
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "verification": "Component renders progress correctly (unit test)",
       "steps": [
         "Create components/ProgressPanel.tsx",
