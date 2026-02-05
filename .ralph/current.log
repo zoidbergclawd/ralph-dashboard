@@ -7,28 +7,30 @@ approval: never
 sandbox: danger-full-access
 reasoning effort: none
 reasoning summaries: auto
-session id: 019c2f50-bf73-7131-a5c5-272f82b16968
+session id: 019c2f53-e4b0-7672-b6af-9dfdd9fc1c45
 --------
 user
 You are working on the project: Ralph Dashboard
 
 Goal: A real-time web UI for watching Ralph runs. Kanban-style PRD progress, live metrics, git state, test coverage — watch the magic happen.
 
-Current Item (5/17): Code metrics reader
-Category: core
+Current Item (7/17): API routes for state
+Category: api
 Priority: 1
 
 Description:
-Module to gather code metrics: lines of code, file count, test count
+Next.js API routes to serve Ralph state, git state, metrics
 
 Steps:
-  1. Create lib/code-metrics.ts
-  2. Use simple file counting (no external deps)
-  3. Metrics: total LOC, LOC by language, file count, test file count
-  4. Write unit tests in __tests__/code-metrics.test.ts
+  1. Create app/api/state/route.ts
+  2. Accept project path as query param or env var
+  3. Return combined state: ralph, git, metrics, coverage
+  4. Add /api/health endpoint
+  5. Handle errors gracefully with proper HTTP codes
+  6. Write unit tests in __tests__/api-state.test.ts
 
 Verification:
-Unit tests pass for metrics calculation
+Unit tests for /api/state pass
 
 Please implement this item. After completion:
 1. Ensure all tests pass
@@ -36,13 +38,81 @@ Please implement this item. After completion:
 3. Keep changes focused on this item only
 
 mcp startup: no servers
+codex
+I’ll implement the new Next.js API routes and tests for `/api/state` and `/api/health`, then run the test suite to verify the state route tests pass. I’m starting by scanning the repo for existing API/test patterns and any existing Ralph/git/metrics helpers to reuse.
+exec
+/bin/zsh -lc 'ls -la' in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc 'rg --files' in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc "rg -n \"app/api|/api/|NextResponse|route\\.ts|coverage|metrics|git|ralph\" -S" in /Users/mcbee/Projects/agent-dashboard succeeded in 247ms:
+total 680
+drwxr-xr-x   23 mcbee  staff     736 Feb  5 14:34 .
+drwxr-xr-x    6 mcbee  staff     192 Feb  5 14:01 ..
+-rw-r--r--    1 mcbee  staff      61 Feb  5 14:28 .eslintrc.json
+drwxr-xr-x   12 mcbee  staff     384 Feb  5 14:40 .git
+-rw-r--r--    1 mcbee  staff     400 Feb  5 14:31 .gitignore
+drwxr-xr-x   11 mcbee  staff     352 Feb  5 14:32 .next
+drwxr-xr-x    4 mcbee  staff     128 Feb  5 14:31 .ralph
+-rw-r--r--    1 mcbee  staff    1450 Feb  5 14:28 README.md
+drwxr-xr-x    6 mcbee  staff     192 Feb  5 14:40 __tests__
+drwxr-xr-x    8 mcbee  staff     256 Feb  5 14:41 app
+-rw-r--r--    1 mcbee  staff     481 Feb  5 14:29 components.json
+drwxr-xr-x    7 mcbee  staff     224 Feb  5 14:41 lib
+-rw-r--r--    1 mcbee  staff     228 Feb  5 14:28 next-env.d.ts
+-rw-r--r--    1 mcbee  staff      92 Feb  5 14:28 next.config.mjs
+drwxr-xr-x  399 mcbee  staff   12768 Feb  5 14:34 node_modules
+-rw-r--r--    1 mcbee  staff  283646 Feb  5 14:34 package-lock.json
+-rw-r--r--    1 mcbee  staff     851 Feb  5 14:34 package.json
+-rw-r--r--    1 mcbee  staff     135 Feb  5 14:28 postcss.config.mjs
+-rw-r--r--    1 mcbee  wheel   11552 Feb  5 14:40 prd-ralph-dashboard.json
+ succeeded in 252ms:
+lib/git-state.ts:130:    const { stdout } = await execFileAsync("git", args, { cwd: projectPath });
+lib/git-state.ts:192:    const message = error instanceof Error ? error.message : "Unknown git error";
+lib/code-metrics.ts:16:const DEFAULT_EXCLUDED_DIRECTORIES = new Set([".git", "node_modules", ".next", ".ralph"]);
+lib/code-metrics.ts:110:    const metrics = defaultMetrics();
+lib/code-metrics.ts:111:    metrics.fileCount = files.length;
+lib/code-metrics.ts:118:      metrics.totalLoc += loc;
+lib/code-metrics.ts:119:      metrics.locByLanguage[language] = (metrics.locByLanguage[language] ?? 0) + loc;
+lib/code-metrics.ts:122:        metrics.testFileCount += 1;
+lib/code-metrics.ts:126:    return metrics;
+lib/code-metrics.ts:128:    const message = error instanceof Error ? error.message : "Unknown code metrics error";
+lib/coverage-state.ts:26:  path.join("coverage", "coverage-summary.json"),
+lib/coverage-state.ts:27:  path.join(".coverage", "coverage-summary.json"),
+lib/ralph-state.ts:73:const DEFAULT_STATE_PATH = path.join(".ralph", "state.json");
+package.json:2:  "name": "ralph-dashboard",
+package-lock.json:2:  "name": "ralph-dashboard",
+package-lock.json:8:      "name": "ralph-dashboard",
+package-lock.json:58:        "url": "https://github.com/sponsors/sindresorhus"
+package-lock.json:160:          "type": "github",
+package-lock.json:161:          "url": "https://github.com/sponsors/csstools"
+package-lock.json:180:          "type": "github",
+ succeeded in 252ms:
+vitest.setup.ts
+vitest.config.ts
+tsconfig.json
+components.json
+lib/git-state.ts
+lib/code-metrics.ts
+lib/utils.ts
+lib/coverage-state.ts
+lib/ralph-state.ts
+package.json
+package-lock.json
+__tests__/code-metrics.test.ts
+__tests__/git-state.test.ts
+__tests__/ralph-state.test.ts
+__tests__/example.test.ts
+tailwind.config.ts
+README.md
+prd-ralph-dashboard.json
+next.config.mjs
+postcss.config.mjs
 
 thinking
-**Preparing to use task queue skill**
+**Identifying skill usage and next steps**
 codex
-I’m implementing item 5/17 now and will keep scope to the code-metrics module plus its unit tests. I’ll first load the `do-work` skill instructions, then inspect the repository’s current patterns before adding `lib/code-metrics.ts` and `__tests__/code-metrics.test.ts`.
+I found that `app/api/state/route.ts` and `app/api/health/route.ts` already exist, so I’m now checking their contents and tests against your item requirements. I’ll also follow the `do-work` skill workflow since this is a queue-style implementation task.
 exec
-/bin/zsh -lc 'cat /Users/mcbee/.agents/skills/do-work/SKILL.md' in /Users/mcbee/Projects/agent-dashboard succeeded in 201ms:
+/bin/zsh -lc 'cat /Users/mcbee/.agents/skills/do-work/SKILL.md' in /Users/mcbee/Projects/agent-dashboard succeeded in 214ms:
 ---
 name: do-work
 description: Task queue - add requests or process pending work
@@ -65,196 +135,43 @@ A unified entry point for task capture and processing.
 ## Routing Decision
 
 thinking
-**Clarifying skill usage and workflow**
+**Assessing work workflow usage**
+exec
+/bin/zsh -lc 'cat /Users/mcbee/.agents/skills/do-work/actions/work.md' in /Users/mcbee/Projects/agent-dashboard succeeded in 214ms:
+# Work Action
+
+> **Part of the do-work skill.** Invoked when routing determines the user wants to process the queue. Processes requests from the `do-work/` folder in your project.
+
+An orchestrated build system that processes request files created by the do action. Uses complexity triage to avoid unnecessary overhead - simple requests go straight to implementation, complex ones get planning and exploration first.
+
+## Request Files as Living Logs
+
+**Each request file becomes a complete historical record of the work performed.** As you process a request, you append sections documenting each phase:
+
+1. **Triage** - Route decision and reasoning
+2. **Plan** - Either the full plan (Route C) or "Planning not required" (Routes A/B)
+3. **Exploration** - Codebase findings (Routes B/C)
+4. **Implementation Summary** - What was changed
+5. **Testing** - Test results and coverage
+
+This traceability ensures:
+- You can review what was planned vs what was done
+- Failed requests show exactly where things went wrong
+- Triage accuracy can be evaluated over time
+
+thinking
+**Assessing existing routes and tests**
 codex
-I’m using the `do-work` skill as guidance for processing this queued item, and now I’m checking existing project structure/tests to match local conventions before editing files.
+I’ve loaded the skill instructions and will keep the implementation in a direct “work” flow for this single request. Next I’m reviewing the current route files and test setup to see exactly what still needs to be added or corrected.
 exec
-/bin/zsh -lc 'ls -la' in /Users/mcbee/Projects/agent-dashboardexec
-/bin/zsh -lc 'rg --files' in /Users/mcbee/Projects/agent-dashboardexec
-/bin/zsh -lc 'rg -n "code metrics|LOC|test count|coverage|metrics" -S .' in /Users/mcbee/Projects/agent-dashboard succeeded in 264ms:
-total 680
-drwxr-xr-x   23 mcbee  staff     736 Feb  5 14:34 .
-drwxr-xr-x    6 mcbee  staff     192 Feb  5 14:01 ..
--rw-r--r--    1 mcbee  staff      61 Feb  5 14:28 .eslintrc.json
-drwxr-xr-x   12 mcbee  staff     384 Feb  5 14:39 .git
--rw-r--r--    1 mcbee  staff     400 Feb  5 14:31 .gitignore
-drwxr-xr-x   11 mcbee  staff     352 Feb  5 14:32 .next
-drwxr-xr-x    4 mcbee  staff     128 Feb  5 14:31 .ralph
--rw-r--r--    1 mcbee  staff    1450 Feb  5 14:28 README.md
-drwxr-xr-x    5 mcbee  staff     160 Feb  5 14:38 __tests__
-drwxr-xr-x    7 mcbee  staff     224 Feb  5 14:28 app
--rw-r--r--    1 mcbee  staff     481 Feb  5 14:29 components.json
-drwxr-xr-x    5 mcbee  staff     160 Feb  5 14:38 lib
--rw-r--r--    1 mcbee  staff     228 Feb  5 14:28 next-env.d.ts
--rw-r--r--    1 mcbee  staff      92 Feb  5 14:28 next.config.mjs
-drwxr-xr-x  399 mcbee  staff   12768 Feb  5 14:34 node_modules
--rw-r--r--    1 mcbee  staff  283646 Feb  5 14:34 package-lock.json
--rw-r--r--    1 mcbee  staff     851 Feb  5 14:34 package.json
--rw-r--r--    1 mcbee  staff     135 Feb  5 14:28 postcss.config.mjs
--rw-r--r--    1 mcbee  wheel   11553 Feb  5 14:39 prd-ralph-dashboard.json
- succeeded in 279ms:
-vitest.setup.ts
-vitest.config.ts
-tsconfig.json
-components.json
-lib/git-state.ts
-lib/utils.ts
-lib/ralph-state.ts
-package.json
-package-lock.json
-__tests__/git-state.test.ts
-__tests__/ralph-state.test.ts
-__tests__/example.test.ts
-tailwind.config.ts
-README.md
-prd-ralph-dashboard.json
-next.config.mjs
-postcss.config.mjs
-app/globals.css
-app/page.tsx
-app/fonts/GeistVF.woff
- succeeded in 260ms:
-./package-lock.json:6835:      "integrity": "sha512-HnLOCR3vjcY8beoNLtcjZ5/nxn2afmME6lhrDrebokqMap+XbeW8n9TXpPDOqdGK5qcI3oT0GKTW6wC7EMiVqA==",
-./prd-ralph-dashboard.json:3:  "goal": "A real-time web UI for watching Ralph runs. Kanban-style PRD progress, live metrics, git state, test coverage \u2014 watch the magic happen.",
-./prd-ralph-dashboard.json:16:    "references": "Ralph CLI, Linear/Jira for kanban inspiration, Codecov for coverage UI"
-./prd-ralph-dashboard.json:93:      "title": "Code metrics reader",
-./prd-ralph-dashboard.json:94:      "description": "Module to gather code metrics: lines of code, file count, test count",
-./prd-ralph-dashboard.json:97:      "verification": "Unit tests pass for metrics calculation",
-./prd-ralph-dashboard.json:99:        "Create lib/code-metrics.ts",
-./prd-ralph-dashboard.json:101:        "Metrics: total LOC, LOC by language, file count, test file count",
-./prd-ralph-dashboard.json:102:        "Write unit tests in __tests__/code-metrics.test.ts"
-./prd-ralph-dashboard.json:109:      "title": "Test coverage reader",
-./prd-ralph-dashboard.json:110:      "description": "Module to parse test coverage reports (coverage.json, lcov, etc.)",
-./prd-ralph-dashboard.json:113:      "verification": "Unit tests pass for coverage parsing",
-./prd-ralph-dashboard.json:115:        "Create lib/coverage-reader.ts",
-./prd-ralph-dashboard.json:116:        "Support coverage.json (Vitest/Istanbul format)",
-./prd-ralph-dashboard.json:119:        "Write unit tests in __tests__/coverage-reader.test.ts"
-./prd-ralph-dashboard.json:127:      "description": "Next.js API routes to serve Ralph state, git state, metrics",
-./prd-ralph-dashboard.json:134:        "Return combined state: ralph, git, metrics, coverage",
-./prd-ralph-dashboard.json:200:      "description": "Panel showing code metrics: LOC, files, tests, coverage",
-./prd-ralph-dashboard.json:203:      "verification": "Component renders metrics correctly (unit test)",
-./prd-ralph-dashboard.json:208:        "Show: test count",
-
-thinking
-**Reviewing library patterns and tests**
-exec
-/bin/zsh -lc "sed -n '1,220p' lib/git-state.ts" in /Users/mcbee/Projects/agent-dashboardexec
-/bin/zsh -lc "sed -n '1,240p' lib/ralph-state.ts" in /Users/mcbee/Projects/agent-dashboardexec
-/bin/zsh -lc "sed -n '1,280p' __tests__/ralph-state.test.ts" in /Users/mcbee/Projects/agent-dashboardexec
-/bin/zsh -lc "sed -n '1,260p' __tests__/git-state.test.ts" in /Users/mcbee/Projects/agent-dashboard succeeded in 265ms:
-import { promises as fs } from "node:fs";
-import path from "node:path";
-
-export interface Checkpoint {
-  item_id: number;
-  commit_sha: string;
-  timestamp: string;
-  files_changed: string[];
-  tests_passed: boolean;
-  route: string;
-}
-
-export interface RalphState {
-  branch: string | null;
-  prd_path: string | null;
-  current_item: number | null;
-  completed_items: number[];
-  started_at: string | null;
-  checkpoints: Checkpoint[];
-  agent: string | null;
- succeeded in 302ms:
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
-
-const execFileAsync = promisify(execFile);
-
-export interface GitDiffStats {
-  filesChanged: number;
-  insertions: number;
-  deletions: number;
-}
-
-export interface UncommittedChangesSummary {
-  staged: GitDiffStats;
-  unstaged: GitDiffStats;
-  untrackedFiles: number;
-  total: GitDiffStats;
-}
-
-export interface GitState {
-  branch: string | null;
- succeeded in 276ms:
-import { describe, expect, it } from "vitest";
-
-import { parseDiffShortStat, readGitState } from "../lib/git-state";
-
-function createMockRunner(outputs: Record<string, string>, failures: Set<string> = new Set()) {
-  return async (args: string[]): Promise<string> => {
-    const key = args.join(" ");
-
-    if (failures.has(key)) {
-      throw new Error(`command failed: ${key}`);
-    }
-
-    if (!(key in outputs)) {
-      throw new Error(`missing mock output: ${key}`);
-    }
-
-    return outputs[key];
-  };
-}
-
- succeeded in 276ms:
-import { promises as fs } from "node:fs";
-import os from "node:os";
-import path from "node:path";
-
-import { afterEach, describe, expect, it } from "vitest";
-
-import { getRalphUnifiedView, readPRD, readRalphState } from "../lib/ralph-state";
-
-const tempDirs: string[] = [];
-
-async function makeProjectDir(): Promise<string> {
-  const projectDir = await fs.mkdtemp(path.join(os.tmpdir(), "ralph-state-test-"));
-  tempDirs.push(projectDir);
-  return projectDir;
-}
-
-async function writeJson(filePath: string, value: unknown): Promise<void> {
-  await fs.mkdir(path.dirname(filePath), { recursive: true });
-  await fs.writeFile(filePath, JSON.stringify(value, null, 2), "utf8");
-}
-
-thinking
-**Planning further code exploration**
-exec
-/bin/zsh -lc "sed -n '240,520p' lib/ralph-state.ts" in /Users/mcbee/Projects/agent-dashboard succeeded in 212ms:
-    const parsed = JSON.parse(raw) as unknown;
-
-    return {
-      path: filePath,
-      data: parsed,
-      error: null,
-    };
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-
-    return {
-      path: filePath,
-      data: null,
-      error: message,
-    };
-  }
-}
-
-async function resolvePRDPath(projectPath: string, preferredPath?: string | null): Promise<string | null> {
-  if (preferredPath) {
-
-thinking
-**Inspecting test command for approach**
-exec
-/bin/zsh -lc 'cat package.json' in /Users/mcbee/Projects/agent-dashboard succeeded in 214ms:
+/bin/zsh -lc "sed -n '1,220p' app/api/state/route.ts" in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc 'cat package.json' in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc "sed -n '1,220p' app/api/health/route.ts" in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc "sed -n '1,260p' lib/ralph-state.ts" in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc "sed -n '1,260p' lib/coverage-state.ts" in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc "sed -n '1,260p' lib/git-state.ts" in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc "sed -n '1,260p' lib/code-metrics.ts" in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc "ls -la __tests__ && rg -n \"api/state|api/health|route|GET\\(\" __tests__ -S" in /Users/mcbee/Projects/agent-dashboard succeeded in 489ms:
 {
   "name": "ralph-dashboard",
   "version": "0.1.0",
@@ -275,43 +192,106 @@ exec
     "react-dom": "^18",
     "tailwind-merge": "^3.4.0",
     "tailwindcss-animate": "^1.0.7"
+ succeeded in 489ms:
+import { NextResponse } from "next/server";
 
-thinking
-**Designing code metrics API**
-exec
-/bin/zsh -lc 'rg -n "readGitState|getRalphUnifiedView|metrics" README.md lib __tests__ app -S' in /Users/mcbee/Projects/agent-dashboard succeeded in 234ms:
-__tests__/git-state.test.ts:3:import { parseDiffShortStat, readGitState } from "../lib/git-state";
-__tests__/git-state.test.ts:47:describe("readGitState", () => {
-__tests__/git-state.test.ts:60:    const state = await readGitState("/tmp/project", {
-__tests__/git-state.test.ts:99:    const state = await readGitState("/tmp/project", { runGitCommand });
-__tests__/git-state.test.ts:113:    const state = await readGitState("/tmp/project", { runGitCommand });
-lib/git-state.ts:151:export async function readGitState(projectPath: string, options: ReadGitStateOptions = {}): Promise<GitState> {
-app/page.tsx:6:        Ralph run metrics and kanban progress will render here.
-__tests__/ralph-state.test.ts:7:import { getRalphUnifiedView, readPRD, readRalphState } from "../lib/ralph-state";
-__tests__/ralph-state.test.ts:151:describe("getRalphUnifiedView", () => {
-__tests__/ralph-state.test.ts:201:    const result = await getRalphUnifiedView(projectDir);
-__tests__/ralph-state.test.ts:215:    const result = await getRalphUnifiedView(projectDir);
-lib/ralph-state.ts:351:export async function getRalphUnifiedView(projectPath: string): Promise<RalphUnifiedView> {
+export async function GET(): Promise<Response> {
+  return NextResponse.json(
+    {
+      ok: true,
+      service: "ralph-dashboard",
+      timestamp: new Date().toISOString(),
+    },
+    { status: 200 },
+  );
+}
+ succeeded in 481ms:
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 
-thinking
-**Planning helper function exports**
-codex
-I’ve confirmed the local style: small typed modules in `lib/` with async FS logic and Vitest temp-dir tests.  
-Plan:
-1. Add `lib/code-metrics.ts` with a recursive directory walker using `node:fs/promises` and no external deps.
-2. Implement metrics output: `totalLoc`, `locByLanguage`, `fileCount`, `testFileCount`.
-3. Exclude heavy/generated folders by default (`.git`, `node_modules`, `.next`, `.ralph`) and count LOC by non-empty lines to avoid whitespace inflation.
-4. Add `__tests__/code-metrics.test.ts` covering mixed languages, test-file detection, ignored directories, and missing-path error handling.
-5. Run full test suite and report results.
+const execFileAsync = promisify(execFile);
 
-thinking
-**Starting file creation with tests**
-codex
-I’m now creating `lib/code-metrics.ts` with the scanner and metric calculation helpers, then I’ll add focused unit tests in `__tests__/code-metrics.test.ts`.
-exec
-/bin/zsh -lc "cat > lib/code-metrics.ts <<'EOF'
-import { promises as fs } from \"node:fs\";
-import path from \"node:path\";
+export interface GitDiffStats {
+  filesChanged: number;
+  insertions: number;
+  deletions: number;
+}
+
+export interface UncommittedChangesSummary {
+  staged: GitDiffStats;
+  unstaged: GitDiffStats;
+  untrackedFiles: number;
+  total: GitDiffStats;
+}
+
+export interface GitState {
+  branch: string | null;
+ succeeded in 499ms:
+import { stat } from "node:fs/promises";
+import path from "node:path";
+
+import { NextResponse } from "next/server";
+
+import { readCodeMetrics } from "@/lib/code-metrics";
+import { readCoverageState } from "@/lib/coverage-state";
+import { readGitState } from "@/lib/git-state";
+import { getRalphUnifiedView } from "@/lib/ralph-state";
+
+function resolveProjectPath(request: Request): string | null {
+  const { searchParams } = new URL(request.url);
+
+  const fromQuery = searchParams.get("projectPath") ?? searchParams.get("path");
+  const fromEnv = process.env.RALPH_PROJECT_PATH;
+  const selected = fromQuery ?? fromEnv ?? null;
+
+  if (!selected) {
+    return null;
+  }
+ succeeded in 492ms:
+import { promises as fs } from "node:fs";
+import path from "node:path";
+
+export interface Checkpoint {
+  item_id: number;
+  commit_sha: string;
+  timestamp: string;
+  files_changed: string[];
+  tests_passed: boolean;
+  route: string;
+}
+
+export interface RalphState {
+  branch: string | null;
+  prd_path: string | null;
+  current_item: number | null;
+  completed_items: number[];
+  started_at: string | null;
+  checkpoints: Checkpoint[];
+  agent: string | null;
+ succeeded in 489ms:
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+
+interface CoverageMetric {
+  total: number;
+  covered: number;
+  skipped: number;
+  pct: number;
+}
+
+interface CoverageSummaryTotal {
+  lines: CoverageMetric;
+  statements: CoverageMetric;
+  functions: CoverageMetric;
+  branches: CoverageMetric;
+}
+
+export interface CoverageState {
+  available: boolean;
+  summaryPath: string | null;
+ succeeded in 486ms:
+import { promises as fs } from "node:fs";
+import path from "node:path";
 
 export interface CodeMetrics {
   totalLoc: number;
@@ -325,736 +305,465 @@ export interface ReadCodeMetricsOptions {
   excludeDirectories?: string[];
 }
 
-const DEFAULT_EXCLUDED_DIRECTORIES = new Set([\".git\", \"node_modules\", \".next\", \".ralph\"]);
+const DEFAULT_EXCLUDED_DIRECTORIES = new Set([".git", "node_modules", ".next", ".ralph"]);
 
 const EXTENSION_LANGUAGE_MAP: Record<string, string> = {
-  \".ts\": \"TypeScript\",
-  \".tsx\": \"TypeScript\",
-  \".js\": \"JavaScript\",
-  \".jsx\": \"JavaScript\",
-  \".mjs\": \"JavaScript\",
-  \".cjs\": \"JavaScript\",
-  \".json\": \"JSON\",
-  \".css\": \"CSS\",
-  \".scss\": \"SCSS\",
-  \".html\": \"HTML\",
-  \".md\": \"Markdown\",
-  \".yml\": \"YAML\",
-  \".yaml\": \"YAML\",
-};
+  ".ts": "TypeScript",
+  ".tsx": "TypeScript",
+ succeeded in 500ms:
+total 48
+drwxr-xr-x   6 mcbee  staff   192 Feb  5 14:40 .
+drwxr-xr-x  23 mcbee  staff   736 Feb  5 14:34 ..
+-rw-r--r--   1 mcbee  staff  3291 Feb  5 14:40 code-metrics.test.ts
+-rw-r--r--   1 mcbee  staff   360 Feb  5 14:34 example.test.ts
+-rw-r--r--   1 mcbee  staff  4289 Feb  5 14:38 git-state.test.ts
+-rw-r--r--   1 mcbee  staff  6400 Feb  5 14:36 ralph-state.test.ts
+__tests__/ralph-state.test.ts:43:          route: "fast",
 
-function defaultMetrics(error: string | null = null): CodeMetrics {
+thinking
+**Planning API state tests**
+exec
+/bin/zsh -lc 'cat vitest.config.ts' in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc 'cat vitest.setup.ts' in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc 'cat tsconfig.json' in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc "sed -n '220,520p' lib/ralph-state.ts" in /Users/mcbee/Projects/agent-dashboard succeeded in 287ms:
+{
+  "compilerOptions": {
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+ succeeded in 296ms:
+import { defineConfig } from "vitest/config";
+
+export default defineConfig({
+  test: {
+    environment: "jsdom",
+    setupFiles: "./vitest.setup.ts",
+  },
+});
+ succeeded in 289ms:
+import "@testing-library/jest-dom/vitest";
+ succeeded in 286ms:
+      project: null,
+      goal: null,
+      items: [],
+    };
+  }
+
+  const items = Array.isArray(value.items)
+    ? value.items.map((item) => normalizePRDItem(item)).filter((item): item is PRDItem => item !== null)
+    : [];
+
   return {
-    totalLoc: 0,
-    locByLanguage: {},
-    fileCount: 0,
-    testFileCount: 0,
-    error,
+    project: asString(value.project),
+    goal: asString(value.goal),
+    items,
   };
 }
 
-function countNonEmptyLines(content: string): number {
-  if (content.length === 0) {
-    return 0;
-  }
-
-  return content
-    .split(/\\r?\\n/)
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0).length;
-}
-
-function detectLanguage(filePath: string): string {
-  const ext = path.extname(filePath).toLowerCase();
-  return EXTENSION_LANGUAGE_MAP[ext] ?? \"Other\";
-}
-
-function isTestFile(filePath: string): boolean {
-  const normalizedPath = filePath.replace(/\\\\/g, \"/\");
-
-  return (
-    /("'^|'"\\/)__tests__(\\/|"'$)/.test(normalizedPath) ||
-    /'"\\.(test|spec)\\.["'^./]+$/i.test(normalizedPath) ||
-    /(''^|'"\\/)test["'^/]*'"\\.["'^/]+$/i.test(path.basename(normalizedPath))
-  );
-}
-
-async function collectFilePaths(
-  rootPath: string,
-  excludedDirectories: Set<string>,
-  acc: string[] = [],
-): Promise<string[]> {
-  const entries = await fs.readdir(rootPath, { withFileTypes: true });
-
-  for (const entry of entries) {
-    const fullPath = path.join(rootPath, entry.name);
-
-    if (entry.isDirectory()) {
-      if (excludedDirectories.has(entry.name)) {
-        continue;
-      }
-
-      await collectFilePaths(fullPath, excludedDirectories, acc);
-      continue;
-    }
-
-    if (entry.isFile()) {
-      acc.push(fullPath);
-    }
-  }
-
-  return acc;
-}
-
-export async function readCodeMetrics(
-  projectPath: string,
-  options: ReadCodeMetricsOptions = {},
-): Promise<CodeMetrics> {
-  const excludedDirectories = new Set(DEFAULT_EXCLUDED_DIRECTORIES);
-
-  for (const directory of options.excludeDirectories ?? []) {
-    excludedDirectories.add(directory);
-  }
-
+async function readJsonFile(filePath: string): Promise<FileReadResult<unknown>> {
   try {
-    const files = await collectFilePaths(projectPath, excludedDirectories);
+    const raw = await fs.readFile(filePath, "utf8");
 
-    const metrics = defaultMetrics();
-    metrics.fileCount = files.length;
+thinking
+**Assessing test import alias issues**
+codex
+I’ve confirmed the route logic is mostly in place; the remaining gap is the required unit tests for `/api/state` (and I’ll include `/api/health` coverage in the same test file). I’m running the current tests once to get a baseline before adding anything.
+exec
+/bin/zsh -lc 'npm test -- --reporter=dot' in /Users/mcbee/Projects/agent-dashboard succeeded in 890ms:
 
-    for (const filePath of files) {
-      const content = await fs.readFile(filePath, "utf8");
-      const loc = countNonEmptyLines(content);
-      const language = detectLanguage(filePath);
+> ralph-dashboard@0.1.0 test
+> vitest run --reporter=dot
 
-      metrics.totalLoc += loc;
-      metrics.locByLanguage[language] = (metrics.locByLanguage[language] ?? 0) + loc;
 
-      if (isTestFile(filePath)) {
-        metrics.testFileCount += 1;
-      }
-    }
+ RUN  v4.0.18 /Users/mcbee/Projects/agent-dashboard
 
-    return metrics;
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown code metrics error";
-    return defaultMetrics(message);
-  }
-}
+··················
 
-export const INTERNALS = {
-  countNonEmptyLines,
-  detectLanguage,
-  isTestFile,
-};
-EOF' in /Users/mcbee/Projects/agent-dashboard succeeded in 213ms:
+ Test Files  4 passed (4)
+      Tests  18 passed (18)
+   Start at  14:43:07
+   Duration  420ms (transform 95ms, setup 131ms, import 107ms, tests 29ms, environment 821ms)
 
 
 thinking
-**Deciding export strategy for internals**
+**Planning comprehensive state route tests**
+codex
+I have enough context and will now add `__tests__/api-state.test.ts` to cover: query-path success, env-var fallback, missing path (400), nonexistent path (404), non-directory path (400), plus `/api/health` (200). After that I’ll run the full test suite and verify the `/api/state` tests pass.
 exec
-/bin/zsh -lc "cat > __tests__/code-metrics.test.ts <<'EOF'
-import { promises as fs } from \"node:fs\";
+/bin/zsh -lc "cat > __tests__/api-state.test.ts <<'EOF'
 import os from \"node:os\";
 import path from \"node:path\";
+import { promises as fs } from \"node:fs\";
 
 import { afterEach, describe, expect, it } from \"vitest\";
 
-import { readCodeMetrics } from \"../lib/code-metrics\";
+import { GET as healthGET } from \"../app/api/health/route\";
+import { GET as stateGET } from \"../app/api/state/route\";
 
-const tempDirs: string[] = [];
+const createdDirs: string[] = [];
+const createdFiles: string[] = [];
 
-async function makeProjectDir(): Promise<string> {
-  const projectDir = await fs.mkdtemp(path.join(os.tmpdir(), \"code-metrics-test-\"));
-  tempDirs.push(projectDir);
+async function makeProjectFixture(): Promise<string> {
+  const projectDir = await fs.mkdtemp(path.join(os.tmpdir(), \"api-state-test-\"));
+  createdDirs.push(projectDir);
+
+  await fs.mkdir(path.join(projectDir, \".ralph\"), { recursive: true });
+  await fs.writeFile(
+    path.join(projectDir, \".ralph\", \"state.json\"),
+    JSON.stringify(
+      {
+        branch: \"main\",
+        prd_path: \"prd.json\",
+        current_item: 7,
+        completed_items: [1, 2, 3],
+        checkpoints: [],
+      },
+      null,
+      2,
+    ),
+    \"utf8\",
+  );
+
+  await fs.writeFile(
+    path.join(projectDir, \"prd.json\"),
+    JSON.stringify(
+      {
+        project: \"Ralph Dashboard\",
+        goal: \"A real-time web UI for watching Ralph runs.\",
+        items: [
+          {
+            id: 7,
+            category: \"api\",
+            title: \"API routes for state\",
+            description: \"Serve unified state\",
+            priority: 1,
+            passes: false,
+            verification: \"Unit tests for /api/state pass\",
+            steps: [\"Create endpoint\"],
+            notes: \"\",
+          },
+        ],
+      },
+      null,
+      2,
+    ),
+    \"utf8\",
+  );
+
   return projectDir;
 }
 
-async function writeFile(relativePath: string, content: string, projectDir: string): Promise<void> {
-  const fullPath = path.join(projectDir, relativePath);
-  await fs.mkdir(path.dirname(fullPath), { recursive: true });
-  await fs.writeFile(fullPath, content, \"utf8\");
+function makeStateRequest(projectPath?: string): Request {
+  const url = new URL(\"http://localhost/api/state\");
+  if (projectPath) {
+    url.searchParams.set(\"projectPath\", projectPath);
+  }
+
+  return new Request(url);
 }
 
 afterEach(async () => {
-  await Promise.all(
-    tempDirs.splice(0, tempDirs.length).map((dir) => fs.rm(dir, { recursive: true, force: true })),
-  );
+  delete process.env.RALPH_PROJECT_PATH;
+
+  await Promise.all(createdFiles.splice(0).map((filePath) => fs.rm(filePath, { force: true })));
+  await Promise.all(createdDirs.splice(0).map((dirPath) => fs.rm(dirPath, { recursive: true, force: true })));
 });
 
-describe(\"readCodeMetrics\", () => {
-  it(\"calculates LOC, language breakdown, file count, and test file count\", async () => {
-    const projectDir = await makeProjectDir();
+describe(\"GET /api/state\", () => {
+  it(\"returns combined state using projectPath query parameter\", async () => {
+    const projectDir = await makeProjectFixture();
 
-    await writeFile(
-      \"src/index.ts\",
-      [
-        \"import { sum } from './sum';\",
-        \"\",
-        \"export function run() {\",
-        \"  return sum(1, 2);\",
-        \"}\",
-        \"\",
-      ].join(\"\\n\"),
-      projectDir,
-    );
+    const response = await stateGET(makeStateRequest(projectDir));
+    const body = (await response.json()) as Record<string, unknown>;
 
-    await writeFile(
-      \"src/sum.js\",
-      [\"export const sum = (a, b) => {\", \"  return a + b;\", \"};\", \"\"].join(\"\\n\"),
-      projectDir,
-    );
-
-    await writeFile(\"README.md\", [\"# Ralph Dashboard\", \"\", \"watch the magic happen\", \"\"].join(\"\\n\"), projectDir);
-
-    await writeFile(\"src/sum.test.ts\", [\"import { sum } from './sum';\", \"\", \"test('sum', () => {\", \"});\"].join(\"\\n\"), projectDir);
-
-    await writeFile(
-      \"__tests__/integration.spec.ts\",
-      [\"describe('integration', () => {\", \"  it('runs', () => {\", \"  });\", \"});\"].join(\"\\n\"),
-      projectDir,
-    );
-
-    const metrics = await readCodeMetrics(projectDir);
-
-    expect(metrics.error).toBeNull();
-    expect(metrics.fileCount).toBe(5);
-    expect(metrics.testFileCount).toBe(2);
-    expect(metrics.totalLoc).toBe(18);
-    expect(metrics.locByLanguage).toEqual({
-      TypeScript: 9,
-      JavaScript: 3,
-      Markdown: 2,
-      Other: 4,
-    });
+    expect(response.status).toBe(200);
+    expect(body.projectPath).toBe(projectDir);
+    expect(body).toHaveProperty(\"timestamp\");
+    expect(body).toHaveProperty(\"ralph\");
+    expect(body).toHaveProperty(\"git\");
+    expect(body).toHaveProperty(\"metrics\");
+    expect(body).toHaveProperty(\"coverage\");
   });
 
-  it(\"ignores default excluded directories\", async () => {
-    const projectDir = await makeProjectDir();
+  it(\"uses RALPH_PROJECT_PATH when query param is not provided\", async () => {
+    const projectDir = await makeProjectFixture();
+    process.env.RALPH_PROJECT_PATH = projectDir;
 
-    await writeFile(\"src/app.ts\", \"export const app = true;\", projectDir);
-    await writeFile(\"node_modules/pkg/index.js\", \"line1\\nline2\", projectDir);
-    await writeFile(\".next/cache.js\", \"line1\\nline2\", projectDir);
-    await writeFile(\".git/HEAD\", \"ref: refs/heads/main\", projectDir);
+    const response = await stateGET(makeStateRequest());
+    const body = (await response.json()) as Record<string, unknown>;
 
-    const metrics = await readCodeMetrics(projectDir);
-
-    expect(metrics.error).toBeNull();
-    expect(metrics.fileCount).toBe(1);
-    expect(metrics.totalLoc).toBe(1);
-    expect(metrics.locByLanguage).toEqual({
-      TypeScript: 1,
-    });
+    expect(response.status).toBe(200);
+    expect(body.projectPath).toBe(projectDir);
   });
 
-  it(\"returns default metrics with error when path does not exist\", async () => {
-    const missingPath = path.join(os.tmpdir(), \"missing-code-metrics-path\", String(Date.now()));
+  it(\"returns 400 when project path is missing from query and env\", async () => {
+    const response = await stateGET(makeStateRequest());
+    const body = (await response.json()) as { error: string };
 
-    const metrics = await readCodeMetrics(missingPath);
+    expect(response.status).toBe(400);
+    expect(body.error).toContain(\"Missing project path\");
+  });
 
-    expect(metrics.totalLoc).toBe(0);
-    expect(metrics.fileCount).toBe(0);
-    expect(metrics.testFileCount).toBe(0);
-    expect(metrics.locByLanguage).toEqual({});
-    expect(metrics.error).toBeTruthy();
+  it(\"returns 404 when project path does not exist\", async () => {
+    const missingPath = path.join(os.tmpdir(), \"api-state-missing\", String(Date.now()));
+    const response = await stateGET(makeStateRequest(missingPath));
+    const body = (await response.json()) as { error: string };
+
+    expect(response.status).toBe(404);
+    expect(body.error).toContain(\"not found\");
+  });
+
+  it(\"returns 400 when project path is not a directory\", async () => {
+    const tempFile = path.join(os.tmpdir(), "'`api-state-file-${Date.now()}.txt`);
+    createdFiles.push(tempFile);
+    await fs.writeFile(tempFile, "not a directory", "utf8");
+
+    const response = await stateGET(makeStateRequest(tempFile));
+    const body = (await response.json()) as { error: string };
+
+    expect(response.status).toBe(400);
+    expect(body.error).toContain("not a directory");
   });
 });
-EOF" in /Users/mcbee/Projects/agent-dashboard succeeded in 213ms:
+
+describe("GET /api/health", () => {
+  it("returns healthy response", async () => {
+    const response = await healthGET();
+    const body = (await response.json()) as Record<string, unknown>;
+
+    expect(response.status).toBe(200);
+    expect(body.ok).toBe(true);
+    expect(body.service).toBe("ralph-dashboard");
+    expect(body).toHaveProperty("timestamp");
+  });
+});
+EOF' in /Users/mcbee/Projects/agent-dashboard succeeded in 214ms:
 
 
 thinking
-**Revising test expectations and file counts**
+**Reviewing test run potential failure**
 codex
-I’ve added the module and tests; next I’m running the test suite to validate behavior and then I’ll fix any expectation mismatches immediately.
+I’ve added focused API route tests in `__tests__/api-state.test.ts`. Next I’m running tests; if alias resolution for `@/lib/*` causes failures in Vitest, I’ll apply the smallest config fix and rerun.
 exec
-/bin/zsh -lc 'npm test -- --runInBand' in /Users/mcbee/Projects/agent-dashboard exited 1 in 421ms:
+/bin/zsh -lc 'npm test -- --reporter=dot' in /Users/mcbee/Projects/agent-dashboard exited 1 in 965ms:
 
 > ralph-dashboard@0.1.0 test
-> vitest run --runInBand
-
-file:///Users/mcbee/Projects/agent-dashboard/node_modules/vitest/dist/chunks/cac.DVeoLl0M.js:404
-          throw new CACError(`Unknown option \`${name.length > 1 ? `--${name}` : `-${name}`}\``);
-                ^
-
-CACError: Unknown option `--runInBand`
-    at Command.checkUnknownOptions (file:///Users/mcbee/Projects/agent-dashboard/node_modules/vitest/dist/chunks/cac.DVeoLl0M.js:404:17)
-    at CAC.runMatchedCommand (file:///Users/mcbee/Projects/agent-dashboard/node_modules/vitest/dist/chunks/cac.DVeoLl0M.js:604:13)
-    at CAC.parse (file:///Users/mcbee/Projects/agent-dashboard/node_modules/vitest/dist/chunks/cac.DVeoLl0M.js:545:12)
-    at file:///Users/mcbee/Projects/agent-dashboard/node_modules/vitest/dist/cli.js:28:13
-    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
-    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
-    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:655:26)
-    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
-
-Node.js v25.5.0
-
-thinking
-**Running npm tests**
-exec
-/bin/zsh -lc 'npm test' in /Users/mcbee/Projects/agent-dashboard exited 1 in 893ms:
-
-> ralph-dashboard@0.1.0 test
-> vitest run
+> vitest run --reporter=dot
 
 
  RUN  v4.0.18 /Users/mcbee/Projects/agent-dashboard
 
- ✓ __tests__/git-state.test.ts (5 tests) 2ms
- ✓ __tests__/ralph-state.test.ts (9 tests) 10ms
- ❯ __tests__/code-metrics.test.ts (3 tests | 1 failed) 11ms
-     × calculates LOC, language breakdown, file count, and test file count 8ms
-     ✓ ignores default excluded directories 2ms
-     ✓ returns default metrics with error when path does not exist 0ms
- ✓ __tests__/example.test.ts (1 test) 8ms
+··················
 
-⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
 
- FAIL  __tests__/code-metrics.test.ts > readCodeMetrics > calculates LOC, language breakdown, file count, and test file count
-AssertionError: expected 16 to be 18 // Object.is equality
-
+ FAIL  __tests__/api-state.test.ts [ __tests__/api-state.test.ts ]
+Error: Failed to resolve import "@/lib/code-metrics" from "app/api/state/route.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /Users/mcbee/Projects/agent-dashboard/app/api/state/route.ts:6:32
+  2  |  import path from "node:path";
+  3  |  import { NextResponse } from "next/server";
+  4  |  import { readCodeMetrics } from "@/lib/code-metrics";
+     |                                   ^
+  5  |  import { readCoverageState } from "@/lib/coverage-state";
 
 thinking
-**Assessing language stats and patch needs**
+**Fixing test alias configuration**
 codex
-One test failed due incorrect expected LOC totals in my assertion; I’m updating the expected values to the actual non-empty-line counting behavior and rerunning all tests.
-file update
-M /Users/mcbee/Projects/agent-dashboard/__tests__/code-metrics.test.ts
-@@ -66,8 +66,7 @@
-     expect(metrics.testFileCount).toBe(2);
--    expect(metrics.totalLoc).toBe(18);
-+    expect(metrics.totalLoc).toBe(16);
-     expect(metrics.locByLanguage).toEqual({
--      TypeScript: 9,
-+      TypeScript: 11,
-       JavaScript: 3,
-       Markdown: 2,
--      Other: 4,
-     });
-apply_patch(auto_approved=true) exited 0 in 25ms:
-Success. Updated the following files:
-M __tests__/code-metrics.test.ts
-file update:
-diff --git a/__tests__/code-metrics.test.ts b/__tests__/code-metrics.test.ts
-index 230bf2fa503e82e7ebc486be8b505a8089701eae..f51e2f8d1a1ff73c5299857db15b4ed352565c16
---- a/__tests__/code-metrics.test.ts
-+++ b/__tests__/code-metrics.test.ts
-@@ -64,12 +64,11 @@
-     expect(metrics.error).toBeNull();
-     expect(metrics.fileCount).toBe(5);
-     expect(metrics.testFileCount).toBe(2);
--    expect(metrics.totalLoc).toBe(18);
-+    expect(metrics.totalLoc).toBe(16);
-     expect(metrics.locByLanguage).toEqual({
--      TypeScript: 9,
-+      TypeScript: 11,
-       JavaScript: 3,
-       Markdown: 2,
--      Other: 4,
-     });
-   });
- 
+The implementation itself is fine; failure is test-only path alias resolution. I’m applying a minimal `vitest.config.ts` alias for `@` to project root, then rerunning tests.
+exec
+/bin/zsh -lc "cat > vitest.config.ts <<'EOF'
+import path from \"node:path\";
 
-file update:
-diff --git a/__tests__/code-metrics.test.ts b/__tests__/code-metrics.test.ts
-index 230bf2fa503e82e7ebc486be8b505a8089701eae..f51e2f8d1a1ff73c5299857db15b4ed352565c16
---- a/__tests__/code-metrics.test.ts
-+++ b/__tests__/code-metrics.test.ts
-@@ -64,12 +64,11 @@
-     expect(metrics.error).toBeNull();
-     expect(metrics.fileCount).toBe(5);
-     expect(metrics.testFileCount).toBe(2);
--    expect(metrics.totalLoc).toBe(18);
-+    expect(metrics.totalLoc).toBe(16);
-     expect(metrics.locByLanguage).toEqual({
--      TypeScript: 9,
-+      TypeScript: 11,
-       JavaScript: 3,
-       Markdown: 2,
--      Other: 4,
-     });
-   });
- 
+import { defineConfig } from \"vitest/config\";
+
+export default defineConfig({
+  resolve: {
+    alias: {
+      \"@\": path.resolve(__dirname, \".\"),
+    },
+  },
+  test: {
+    environment: \"jsdom\",
+    setupFiles: \"./vitest.setup.ts\",
+  },
+});
+EOF" in /Users/mcbee/Projects/agent-dashboard succeeded in 215ms:
 
 exec
-/bin/zsh -lc 'npm test' in /Users/mcbee/Projects/agent-dashboard succeeded in 907ms:
+/bin/zsh -lc 'npm test -- --reporter=dot' in /Users/mcbee/Projects/agent-dashboard succeeded in 954ms:
 
 > ralph-dashboard@0.1.0 test
-> vitest run
+> vitest run --reporter=dot
 
 
  RUN  v4.0.18 /Users/mcbee/Projects/agent-dashboard
 
- ✓ __tests__/git-state.test.ts (5 tests) 3ms
- ✓ __tests__/code-metrics.test.ts (3 tests) 9ms
- ✓ __tests__/ralph-state.test.ts (9 tests) 11ms
- ✓ __tests__/example.test.ts (1 test) 8ms
+························
 
- Test Files  4 passed (4)
-      Tests  18 passed (18)
-   Start at  14:40:26
-   Duration  428ms (transform 97ms, setup 162ms, import 106ms, tests 30ms, environment 830ms)
-
-file update:
-diff --git a/__tests__/code-metrics.test.ts b/__tests__/code-metrics.test.ts
-index 230bf2fa503e82e7ebc486be8b505a8089701eae..f51e2f8d1a1ff73c5299857db15b4ed352565c16
---- a/__tests__/code-metrics.test.ts
-+++ b/__tests__/code-metrics.test.ts
-@@ -64,12 +64,11 @@
-     expect(metrics.error).toBeNull();
-     expect(metrics.fileCount).toBe(5);
-     expect(metrics.testFileCount).toBe(2);
--    expect(metrics.totalLoc).toBe(18);
-+    expect(metrics.totalLoc).toBe(16);
-     expect(metrics.locByLanguage).toEqual({
--      TypeScript: 9,
-+      TypeScript: 11,
-       JavaScript: 3,
-       Markdown: 2,
--      Other: 4,
-     });
-   });
- 
+ Test Files  5 passed (5)
+      Tests  24 passed (24)
+   Start at  14:43:46
+   Duration  467ms (transform 134ms, setup 184ms, import 153ms, tests 63ms, environment 1.18s)
 
 
 thinking
-**Verifying test pass and clean diff**
+**Verifying unit test coverage**
 codex
-All tests now pass. I’m doing a quick diff check to confirm changes are limited to this item (`lib/code-metrics.ts` and its unit tests) before I summarize.
+All tests now pass, including the new `/api/state` unit tests. I’m doing a quick diff check to confirm changes stayed focused on this item before I summarize.
 exec
-/bin/zsh -lc 'git status --short' in /Users/mcbee/Projects/agent-dashboard succeeded in 218ms:
+/bin/zsh -lc 'git status --short' in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc 'git diff -- __tests__/api-state.test.ts vitest.config.ts app/api/state/route.ts app/api/health/route.ts' in /Users/mcbee/Projects/agent-dashboard succeeded in 253ms:
  M .ralph/current.log
  M .ralph/state.json
  M prd-ralph-dashboard.json
-?? __tests__/code-metrics.test.ts
-?? lib/code-metrics.ts
-file update:
-diff --git a/__tests__/code-metrics.test.ts b/__tests__/code-metrics.test.ts
-index 230bf2fa503e82e7ebc486be8b505a8089701eae..f51e2f8d1a1ff73c5299857db15b4ed352565c16
---- a/__tests__/code-metrics.test.ts
-+++ b/__tests__/code-metrics.test.ts
-@@ -64,12 +64,11 @@
-     expect(metrics.error).toBeNull();
-     expect(metrics.fileCount).toBe(5);
-     expect(metrics.testFileCount).toBe(2);
--    expect(metrics.totalLoc).toBe(18);
-+    expect(metrics.totalLoc).toBe(16);
-     expect(metrics.locByLanguage).toEqual({
--      TypeScript: 9,
-+      TypeScript: 11,
-       JavaScript: 3,
-       Markdown: 2,
--      Other: 4,
-     });
-   });
+ M vitest.config.ts
+?? __tests__/api-state.test.ts
+?? app/api/
+?? lib/coverage-state.ts
+ succeeded in 237ms:
+diff --git a/vitest.config.ts b/vitest.config.ts
+index 9b665a6..36c31fc 100644
+--- a/vitest.config.ts
++++ b/vitest.config.ts
+@@ -1,6 +1,13 @@
++import path from "node:path";
++
+ import { defineConfig } from "vitest/config";
  
-
+ export default defineConfig({
++  resolve: {
++    alias: {
++      "@": path.resolve(__dirname, "."),
++    },
++  },
+   test: {
+     environment: "jsdom",
+     setupFiles: "./vitest.setup.ts",
 
 thinking
-**Removing unnecessary internal exports**
+**Noticing unrelated untracked files**
 codex
-I found unrelated tracked changes already present (`.ralph/*` and `prd-ralph-dashboard.json`) and left them untouched; I’m making one small cleanup to keep the new module API minimal, then I’ll re-run tests.
-file update
-M /Users/mcbee/Projects/agent-dashboard/lib/code-metrics.ts
-@@ -131,7 +131 @@
- }
--
--export const INTERNALS = {
--  countNonEmptyLines,
--  detectLanguage,
--  isTestFile,
--};
-apply_patch(auto_approved=true) exited 0 in 36ms:
-Success. Updated the following files:
-M lib/code-metrics.ts
-file update:
-diff --git a/__tests__/code-metrics.test.ts b/__tests__/code-metrics.test.ts
-index 230bf2fa503e82e7ebc486be8b505a8089701eae..f51e2f8d1a1ff73c5299857db15b4ed352565c16
---- a/__tests__/code-metrics.test.ts
-+++ b/__tests__/code-metrics.test.ts
-@@ -64,12 +64,11 @@
-     expect(metrics.error).toBeNull();
-     expect(metrics.fileCount).toBe(5);
-     expect(metrics.testFileCount).toBe(2);
--    expect(metrics.totalLoc).toBe(18);
-+    expect(metrics.totalLoc).toBe(16);
-     expect(metrics.locByLanguage).toEqual({
--      TypeScript: 9,
-+      TypeScript: 11,
-       JavaScript: 3,
-       Markdown: 2,
--      Other: 4,
-     });
-   });
- 
-diff --git a/lib/code-metrics.ts b/lib/code-metrics.ts
-index 2f41db1631f068dadc2004772438f0257ed21504..0666e5322b93e02d40aad38162e75d2990eeca7b
---- a/lib/code-metrics.ts
-+++ b/lib/code-metrics.ts
-@@ -129,9 +129,3 @@
-     return defaultMetrics(message);
-   }
- }
--
--export const INTERNALS = {
--  countNonEmptyLines,
--  detectLanguage,
--  isTestFile,
--};
-
-file update:
-diff --git a/__tests__/code-metrics.test.ts b/__tests__/code-metrics.test.ts
-index 230bf2fa503e82e7ebc486be8b505a8089701eae..f51e2f8d1a1ff73c5299857db15b4ed352565c16
---- a/__tests__/code-metrics.test.ts
-+++ b/__tests__/code-metrics.test.ts
-@@ -64,12 +64,11 @@
-     expect(metrics.error).toBeNull();
-     expect(metrics.fileCount).toBe(5);
-     expect(metrics.testFileCount).toBe(2);
--    expect(metrics.totalLoc).toBe(18);
-+    expect(metrics.totalLoc).toBe(16);
-     expect(metrics.locByLanguage).toEqual({
--      TypeScript: 9,
-+      TypeScript: 11,
-       JavaScript: 3,
-       Markdown: 2,
--      Other: 4,
-     });
-   });
- 
-diff --git a/lib/code-metrics.ts b/lib/code-metrics.ts
-index 2f41db1631f068dadc2004772438f0257ed21504..0666e5322b93e02d40aad38162e75d2990eeca7b
---- a/lib/code-metrics.ts
-+++ b/lib/code-metrics.ts
-@@ -129,9 +129,3 @@
-     return defaultMetrics(message);
-   }
- }
--
--export const INTERNALS = {
--  countNonEmptyLines,
--  detectLanguage,
--  isTestFile,
--};
-
+I confirmed there are unrelated pre-existing working tree changes, and I only modified test-related files for this item. I’ll run the new API test file directly once to explicitly verify the `/api/state` criterion.
 exec
-/bin/zsh -lc 'npm test' in /Users/mcbee/Projects/agent-dashboard succeeded in 901ms:
+/bin/zsh -lc 'npm test -- __tests__/api-state.test.ts --reporter=dot' in /Users/mcbee/Projects/agent-dashboard succeeded in 855ms:
 
 > ralph-dashboard@0.1.0 test
-> vitest run
+> vitest run __tests__/api-state.test.ts --reporter=dot
 
 
  RUN  v4.0.18 /Users/mcbee/Projects/agent-dashboard
 
- ✓ __tests__/git-state.test.ts (5 tests) 2ms
- ✓ __tests__/code-metrics.test.ts (3 tests) 8ms
- ✓ __tests__/ralph-state.test.ts (9 tests) 11ms
- ✓ __tests__/example.test.ts (1 test) 8ms
+······
 
- Test Files  4 passed (4)
-      Tests  18 passed (18)
-   Start at  14:40:43
-   Duration  427ms (transform 95ms, setup 149ms, import 108ms, tests 29ms, environment 830ms)
-
-file update:
-diff --git a/__tests__/code-metrics.test.ts b/__tests__/code-metrics.test.ts
-index 230bf2fa503e82e7ebc486be8b505a8089701eae..f51e2f8d1a1ff73c5299857db15b4ed352565c16
---- a/__tests__/code-metrics.test.ts
-+++ b/__tests__/code-metrics.test.ts
-@@ -64,12 +64,11 @@
-     expect(metrics.error).toBeNull();
-     expect(metrics.fileCount).toBe(5);
-     expect(metrics.testFileCount).toBe(2);
--    expect(metrics.totalLoc).toBe(18);
-+    expect(metrics.totalLoc).toBe(16);
-     expect(metrics.locByLanguage).toEqual({
--      TypeScript: 9,
-+      TypeScript: 11,
-       JavaScript: 3,
-       Markdown: 2,
--      Other: 4,
-     });
-   });
- 
-diff --git a/lib/code-metrics.ts b/lib/code-metrics.ts
-index 2f41db1631f068dadc2004772438f0257ed21504..0666e5322b93e02d40aad38162e75d2990eeca7b
---- a/lib/code-metrics.ts
-+++ b/lib/code-metrics.ts
-@@ -129,9 +129,3 @@
-     return defaultMetrics(message);
-   }
- }
--
--export const INTERNALS = {
--  countNonEmptyLines,
--  detectLanguage,
--  isTestFile,
--};
-
-exec
-/bin/zsh -lc "nl -ba lib/code-metrics.ts | sed -n '1,260p'" in /Users/mcbee/Projects/agent-dashboardexec
-/bin/zsh -lc "nl -ba __tests__/code-metrics.test.ts | sed -n '1,260p'" in /Users/mcbee/Projects/agent-dashboard succeeded in 242ms:
-     1	import { promises as fs } from "node:fs";
-     2	import path from "node:path";
-     3	
-     4	export interface CodeMetrics {
-     5	  totalLoc: number;
-     6	  locByLanguage: Record<string, number>;
-     7	  fileCount: number;
-     8	  testFileCount: number;
-     9	  error: string | null;
-    10	}
-    11	
-    12	export interface ReadCodeMetricsOptions {
-    13	  excludeDirectories?: string[];
-    14	}
-    15	
-    16	const DEFAULT_EXCLUDED_DIRECTORIES = new Set([".git", "node_modules", ".next", ".ralph"]);
-    17	
-    18	const EXTENSION_LANGUAGE_MAP: Record<string, string> = {
-    19	  ".ts": "TypeScript",
-    20	  ".tsx": "TypeScript",
- succeeded in 238ms:
-     1	import { promises as fs } from "node:fs";
-     2	import os from "node:os";
-     3	import path from "node:path";
-     4	
-     5	import { afterEach, describe, expect, it } from "vitest";
-     6	
-     7	import { readCodeMetrics } from "../lib/code-metrics";
-     8	
-     9	const tempDirs: string[] = [];
-    10	
-    11	async function makeProjectDir(): Promise<string> {
-    12	  const projectDir = await fs.mkdtemp(path.join(os.tmpdir(), "code-metrics-test-"));
-    13	  tempDirs.push(projectDir);
-    14	  return projectDir;
-    15	}
-    16	
-    17	async function writeFile(relativePath: string, content: string, projectDir: string): Promise<void> {
-    18	  const fullPath = path.join(projectDir, relativePath);
-    19	  await fs.mkdir(path.dirname(fullPath), { recursive: true });
-    20	  await fs.writeFile(fullPath, content, "utf8");
-file update:
-diff --git a/__tests__/code-metrics.test.ts b/__tests__/code-metrics.test.ts
-index 230bf2fa503e82e7ebc486be8b505a8089701eae..f51e2f8d1a1ff73c5299857db15b4ed352565c16
---- a/__tests__/code-metrics.test.ts
-+++ b/__tests__/code-metrics.test.ts
-@@ -64,12 +64,11 @@
-     expect(metrics.error).toBeNull();
-     expect(metrics.fileCount).toBe(5);
-     expect(metrics.testFileCount).toBe(2);
--    expect(metrics.totalLoc).toBe(18);
-+    expect(metrics.totalLoc).toBe(16);
-     expect(metrics.locByLanguage).toEqual({
--      TypeScript: 9,
-+      TypeScript: 11,
-       JavaScript: 3,
-       Markdown: 2,
--      Other: 4,
-     });
-   });
- 
-diff --git a/lib/code-metrics.ts b/lib/code-metrics.ts
-index 2f41db1631f068dadc2004772438f0257ed21504..0666e5322b93e02d40aad38162e75d2990eeca7b
---- a/lib/code-metrics.ts
-+++ b/lib/code-metrics.ts
-@@ -129,9 +129,3 @@
-     return defaultMetrics(message);
-   }
- }
--
--export const INTERNALS = {
--  countNonEmptyLines,
--  detectLanguage,
--  isTestFile,
--};
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+   Start at  14:43:59
+   Duration  355ms (transform 29ms, setup 27ms, import 28ms, tests 22ms, environment 168ms)
 
 
 thinking
-**Summarizing test results**
+**Considering line number checking**
+exec
+/bin/zsh -lc "nl -ba __tests__/api-state.test.ts | sed -n '1,260p'" in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc 'nl -ba vitest.config.ts' in /Users/mcbee/Projects/agent-dashboard succeeded in 246ms:
+     1	import path from "node:path";
+     2	
+     3	import { defineConfig } from "vitest/config";
+     4	
+     5	export default defineConfig({
+     6	  resolve: {
+     7	    alias: {
+     8	      "@": path.resolve(__dirname, "."),
+     9	    },
+    10	  },
+    11	  test: {
+    12	    environment: "jsdom",
+    13	    setupFiles: "./vitest.setup.ts",
+    14	  },
+    15	});
+ succeeded in 246ms:
+     1	import os from "node:os";
+     2	import path from "node:path";
+     3	import { promises as fs } from "node:fs";
+     4	
+     5	import { afterEach, describe, expect, it } from "vitest";
+     6	
+     7	import { GET as healthGET } from "../app/api/health/route";
+     8	import { GET as stateGET } from "../app/api/state/route";
+     9	
+    10	const createdDirs: string[] = [];
+    11	const createdFiles: string[] = [];
+    12	
+    13	async function makeProjectFixture(): Promise<string> {
+    14	  const projectDir = await fs.mkdtemp(path.join(os.tmpdir(), "api-state-test-"));
+    15	  createdDirs.push(projectDir);
+    16	
+    17	  await fs.mkdir(path.join(projectDir, ".ralph"), { recursive: true });
+    18	  await fs.writeFile(
+    19	    path.join(projectDir, ".ralph", "state.json"),
+    20	    JSON.stringify(
+
+thinking
+**Summarizing implementation and tests**
 codex
-Implemented item 5/17 with focused changes:
+Implemented and verified this item with focused changes.
 
-- Added `readCodeMetrics` in `lib/code-metrics.ts:97`:
-  - Recursively counts files (no external deps)
-  - Computes `totalLoc`, `locByLanguage`, `fileCount`, `testFileCount`
-  - Uses non-empty line counting for LOC (`lib/code-metrics.ts:44`)
-  - Ignores default heavy dirs: `.git`, `node_modules`, `.next`, `.ralph` (`lib/code-metrics.ts:16`)
-  - Returns safe default metrics + `error` on failure (`lib/code-metrics.ts:34`, `lib/code-metrics.ts:127`)
+**What I changed**
+1. Added API route unit tests in `__tests__/api-state.test.ts:1` covering:
+- `/api/state` success with `?projectPath=...`
+- `/api/state` success using `RALPH_PROJECT_PATH`
+- `/api/state` missing path -> `400`
+- `/api/state` missing directory -> `404`
+- `/api/state` non-directory path -> `400`
+- `/api/health` success -> `200`
 
-- Added unit tests in `__tests__/code-metrics.test.ts:29`:
-  - Validates aggregate metrics and language breakdown
-  - Validates excluded-directory behavior
-  - Validates missing-path error handling
+2. Added Vitest alias resolution for `@/*` imports in `vitest.config.ts:1` so route tests can import `app/api/state/route.ts` (which imports `@/lib/*`).
 
-Verification:
+**Verification**
+1. Ran full suite: `npm test -- --reporter=dot`
+- Result: `5` test files passed, `24` tests passed.
 
-- Ran `npm test` successfully.
-- Result: 4 test files passed, 18 tests passed.
-- Verification criterion met: metrics calculation tests pass.
+2. Ran route-specific test file: `npm test -- __tests__/api-state.test.ts --reporter=dot`
+- Result: `1` test file passed, `6` tests passed.
 
-Scope note:
-
-- Code changes for this item are only `lib/code-metrics.ts` and `__tests__/code-metrics.test.ts`.
-- Existing unrelated modified files (`.ralph/current.log`, `.ralph/state.json`, `prd-ralph-dashboard.json`) were left untouched.
-file update:
-diff --git a/__tests__/code-metrics.test.ts b/__tests__/code-metrics.test.ts
-index 230bf2fa503e82e7ebc486be8b505a8089701eae..f51e2f8d1a1ff73c5299857db15b4ed352565c16
---- a/__tests__/code-metrics.test.ts
-+++ b/__tests__/code-metrics.test.ts
-@@ -64,12 +64,11 @@
-     expect(metrics.error).toBeNull();
-     expect(metrics.fileCount).toBe(5);
-     expect(metrics.testFileCount).toBe(2);
--    expect(metrics.totalLoc).toBe(18);
-+    expect(metrics.totalLoc).toBe(16);
-     expect(metrics.locByLanguage).toEqual({
--      TypeScript: 9,
-+      TypeScript: 11,
-       JavaScript: 3,
-       Markdown: 2,
--      Other: 4,
-     });
-   });
- 
-diff --git a/lib/code-metrics.ts b/lib/code-metrics.ts
-index 2f41db1631f068dadc2004772438f0257ed21504..0666e5322b93e02d40aad38162e75d2990eeca7b
---- a/lib/code-metrics.ts
-+++ b/lib/code-metrics.ts
-@@ -129,9 +129,3 @@
-     return defaultMetrics(message);
-   }
- }
--
--export const INTERNALS = {
--  countNonEmptyLines,
--  detectLanguage,
--  isTestFile,
--};
-
+This satisfies the verification criterion: unit tests for `/api/state` pass.
 tokens used
-28,233
-Implemented item 5/17 with focused changes:
+41,010
+Implemented and verified this item with focused changes.
 
-- Added `readCodeMetrics` in `lib/code-metrics.ts:97`:
-  - Recursively counts files (no external deps)
-  - Computes `totalLoc`, `locByLanguage`, `fileCount`, `testFileCount`
-  - Uses non-empty line counting for LOC (`lib/code-metrics.ts:44`)
-  - Ignores default heavy dirs: `.git`, `node_modules`, `.next`, `.ralph` (`lib/code-metrics.ts:16`)
-  - Returns safe default metrics + `error` on failure (`lib/code-metrics.ts:34`, `lib/code-metrics.ts:127`)
+**What I changed**
+1. Added API route unit tests in `__tests__/api-state.test.ts:1` covering:
+- `/api/state` success with `?projectPath=...`
+- `/api/state` success using `RALPH_PROJECT_PATH`
+- `/api/state` missing path -> `400`
+- `/api/state` missing directory -> `404`
+- `/api/state` non-directory path -> `400`
+- `/api/health` success -> `200`
 
-- Added unit tests in `__tests__/code-metrics.test.ts:29`:
-  - Validates aggregate metrics and language breakdown
-  - Validates excluded-directory behavior
-  - Validates missing-path error handling
+2. Added Vitest alias resolution for `@/*` imports in `vitest.config.ts:1` so route tests can import `app/api/state/route.ts` (which imports `@/lib/*`).
 
-Verification:
+**Verification**
+1. Ran full suite: `npm test -- --reporter=dot`
+- Result: `5` test files passed, `24` tests passed.
 
-- Ran `npm test` successfully.
-- Result: 4 test files passed, 18 tests passed.
-- Verification criterion met: metrics calculation tests pass.
+2. Ran route-specific test file: `npm test -- __tests__/api-state.test.ts --reporter=dot`
+- Result: `1` test file passed, `6` tests passed.
 
-Scope note:
-
-- Code changes for this item are only `lib/code-metrics.ts` and `__tests__/code-metrics.test.ts`.
-- Existing unrelated modified files (`.ralph/current.log`, `.ralph/state.json`, `prd-ralph-dashboard.json`) were left untouched.
+This satisfies the verification criterion: unit tests for `/api/state` pass.
