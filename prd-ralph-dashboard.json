@@ -107,7 +107,7 @@
       "title": "API routes for state",
       "description": "Next.js API routes to serve Ralph state, git state, metrics",
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "verification": "Unit tests for /api/state pass (mocked request)",
       "steps": [
         "Create app/api/state/route.ts",
