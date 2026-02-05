@@ -1,6 +1,6 @@
 {
   "project": "Ralph Dashboard",
-  "goal": "A real-time web UI for watching Ralph runs. Kanban-style PRD progress, live metrics, git state, test coverage — watch the magic happen.",
+  "goal": "A real-time web UI for watching Ralph runs. Kanban-style PRD progress, live metrics, git state, test coverage \u2014 watch the magic happen.",
   "tech_stack": {
     "language": "TypeScript",
     "framework": "Next.js 14 (App Router)",
@@ -22,7 +22,7 @@
       "title": "Project scaffolding",
       "description": "Initialize Next.js 14 project with Tailwind, shadcn/ui, and basic layout",
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "verification": "npm run dev serves app at localhost:3000 with basic layout",
       "steps": [
         "npx create-next-app@latest with TypeScript, Tailwind, App Router",
@@ -39,7 +39,7 @@
       "title": "Test infrastructure",
       "description": "Set up Vitest and React Testing Library for unit testing",
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "verification": "npm test runs and passes with at least one example test",
       "steps": [
         "Install vitest, @testing-library/react, @testing-library/jest-dom",
@@ -56,7 +56,7 @@
       "title": "Ralph state reader",
       "description": "Module to read and parse Ralph run state from .ralph/state.json and prd.json",
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "verification": "Unit tests pass for state parsing, handles missing/malformed files gracefully",
       "steps": [
         "Create lib/ralph-state.ts",
@@ -75,7 +75,7 @@
       "title": "Git state reader",
       "description": "Module to extract git information: branch, commits, diff stats",
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "verification": "Unit tests pass for git state parsing",
       "steps": [
         "Create lib/git-state.ts",
@@ -93,7 +93,7 @@
       "title": "Code metrics reader",
       "description": "Module to gather code metrics: lines of code, file count, test count",
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "verification": "Unit tests pass for metrics calculation",
       "steps": [
         "Create lib/code-metrics.ts",
@@ -109,7 +109,7 @@
       "title": "Test coverage reader",
       "description": "Module to parse test coverage reports (coverage.json, lcov, etc.)",
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "verification": "Unit tests pass for coverage parsing",
       "steps": [
         "Create lib/coverage-reader.ts",
@@ -126,7 +126,7 @@
       "title": "API routes for state",
       "description": "Next.js API routes to serve Ralph state, git state, metrics",
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "verification": "Unit tests for /api/state pass",
       "steps": [
         "Create app/api/state/route.ts",
@@ -144,7 +144,7 @@
       "title": "Kanban board component",
       "description": "Kanban-style board showing PRD items in columns: Todo, In Progress, Done",
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "verification": "Component renders with items in correct columns (unit test)",
       "steps": [
         "Create components/KanbanBoard.tsx",
@@ -162,7 +162,7 @@
       "title": "Progress overview panel",
       "description": "Summary panel showing overall progress: items done, time elapsed, ETA",
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "verification": "Component renders progress correctly (unit test)",
       "steps": [
         "Create components/ProgressPanel.tsx",
@@ -181,7 +181,7 @@
       "title": "Git state panel",
       "description": "Panel showing git information: branch, commits, diff summary",
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "verification": "Component renders git info correctly (unit test)",
       "steps": [
         "Create components/GitPanel.tsx",
@@ -199,7 +199,7 @@
       "title": "Metrics panel",
       "description": "Panel showing code metrics: LOC, files, tests, coverage",
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "verification": "Component renders metrics correctly (unit test)",
       "steps": [
         "Create components/MetricsPanel.tsx",
@@ -217,7 +217,7 @@
       "title": "Activity log panel",
       "description": "Scrolling log of Ralph activity: checkpoints, commits, test runs",
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "verification": "Component renders activity log correctly (unit test)",
       "steps": [
         "Create components/ActivityLog.tsx",
@@ -235,7 +235,7 @@
       "title": "Polling for live updates",
       "description": "Poll API for state changes, trigger UI updates",
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "verification": "UI updates within 2 seconds of state.json change",
       "steps": [
         "Use React Query with refetchInterval (2 seconds)",
@@ -251,7 +251,7 @@
       "title": "Main dashboard layout",
       "description": "Compose all panels into a cohesive dashboard layout",
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "verification": "Dashboard shows all panels in responsive grid layout",
       "steps": [
         "Create app/page.tsx as main dashboard",
@@ -268,7 +268,7 @@
       "title": "Project configuration",
       "description": "Allow configuring which project/path to monitor",
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "verification": "Can set project path via env var or URL param",
       "steps": [
         "Support RALPH_PROJECT_PATH env var",
@@ -284,13 +284,13 @@
       "title": "Animations and visual polish",
       "description": "Add animations for state changes and visual feedback",
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "verification": "Cards animate when moving columns",
       "steps": [
         "Use Framer Motion for animations",
         "Card entrance/exit animations",
         "Pulse animation on current item",
-        "Celebration animation when all items complete 🎉"
+        "Celebration animation when all items complete \ud83c\udf89"
       ],
       "notes": ""
     },

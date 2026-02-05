@@ -1,0 +1,259 @@
+{
+  "branch": "ralph/ralph-dashboard-20260205-1427",
+  "prd_path": "/Users/mcbee/Projects/agent-dashboard/prd-ralph-dashboard.json",
+  "current_item": 17,
+  "completed_items": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    7,
+    8,
+    9,
+    10,
+    11,
+    13,
+    14,
+    6,
+    12,
+    15,
+    16
+  ],
+  "started_at": "2026-02-05T14:27:30.511747",
+  "checkpoints": [
+    {
+      "item_id": 2,
+      "commit_sha": "2f511516b68b78a91915dc7fd838e6eba8e8bdf4",
+      "timestamp": "2026-02-05T14:34:48.967683",
+      "files_changed": [
+        "__tests__/example.test.ts",
+        "vitest.config.ts",
+        "vitest.setup.ts",
+        ".ralph/current.log",
+        ".ralph/state.json",
+        "package-lock.json",
+        "package.json"
+      ],
+      "tests_passed": true,
+      "route": ""
+    },
+    {
+      "item_id": 3,
+      "commit_sha": "0c284f77ca0b7cbe8ff49ec95b11686b2a65e9a3",
+      "timestamp": "2026-02-05T14:37:37.642872",
+      "files_changed": [
+        "__tests__/ralph-state.test.ts",
+        "lib/ralph-state.ts",
+        ".ralph/current.log",
+        ".ralph/state.json",
+        "prd-ralph-dashboard.json"
+      ],
+      "tests_passed": true,
+      "route": ""
+    },
+    {
+      "item_id": 4,
+      "commit_sha": "679833611f7fd81860256bcf695a55949b860d64",
+      "timestamp": "2026-02-05T14:39:06.422732",
+      "files_changed": [
+        "__tests__/git-state.test.ts",
+        "lib/git-state.ts",
+        ".ralph/current.log",
+        ".ralph/state.json",
+        "prd-ralph-dashboard.json"
+      ],
+      "tests_passed": true,
+      "route": ""
+    },
+    {
+      "item_id": 5,
+      "commit_sha": "8fb17fb09df6877593b453b90c7e6df037b3bab4",
+      "timestamp": "2026-02-05T14:40:56.030708",
+      "files_changed": [
+        "__tests__/code-metrics.test.ts",
+        "lib/code-metrics.ts",
+        ".ralph/current.log",
+        ".ralph/state.json",
+        "prd-ralph-dashboard.json"
+      ],
+      "tests_passed": true,
+      "route": ""
+    },
+    {
+      "item_id": 7,
+      "commit_sha": "659e67cfd61399bbe8b4ef71b847e40ee413a4e7",
+      "timestamp": "2026-02-05T14:44:10.842705",
+      "files_changed": [
+        "__tests__/api-state.test.ts",
+        "app/api/health/route.ts",
+        "app/api/state/route.ts",
+        "lib/coverage-state.ts",
+        ".ralph/current.log",
+        ".ralph/state.json",
+        "prd-ralph-dashboard.json",
+        "vitest.config.ts"
+      ],
+      "tests_passed": true,
+      "route": ""
+    },
+    {
+      "item_id": 8,
+      "commit_sha": "67d5d5cdf9671593f383ec6c8597c4b78683d910",
+      "timestamp": "2026-02-05T14:46:01.352426",
+      "files_changed": [
+        "__tests__/KanbanBoard.test.tsx",
+        "components/KanbanBoard.tsx",
+        ".ralph/current.log",
+        ".ralph/state.json",
+        "prd-ralph-dashboard.json"
+      ],
+      "tests_passed": true,
+      "route": ""
+    },
+    {
+      "item_id": 9,
+      "commit_sha": "4451e43e54dac4a508341cf88aabc0e7a8a5a375",
+      "timestamp": "2026-02-05T14:47:21.285483",
+      "files_changed": [
+        "__tests__/ProgressPanel.test.tsx",
+        "components/ProgressPanel.tsx",
+        ".ralph/current.log",
+        ".ralph/state.json",
+        "prd-ralph-dashboard.json"
+      ],
+      "tests_passed": true,
+      "route": ""
+    },
+    {
+      "item_id": 10,
+      "commit_sha": "2cb166809564492a65baed614b76cb3a247ae610",
+      "timestamp": "2026-02-05T14:49:00.905503",
+      "files_changed": [
+        "__tests__/GitPanel.test.tsx",
+        "components/GitPanel.tsx",
+        ".ralph/current.log",
+        ".ralph/state.json",
+        "prd-ralph-dashboard.json"
+      ],
+      "tests_passed": true,
+      "route": ""
+    },
+    {
+      "item_id": 11,
+      "commit_sha": "73d5bcf183c4e492814e5e3d3a2107ead198d969",
+      "timestamp": "2026-02-05T14:50:16.579617",
+      "files_changed": [
+        "__tests__/MetricsPanel.test.tsx",
+        "components/MetricsPanel.tsx",
+        ".ralph/current.log",
+        ".ralph/state.json",
+        "prd-ralph-dashboard.json"
+      ],
+      "tests_passed": true,
+      "route": ""
+    },
+    {
+      "item_id": 13,
+      "commit_sha": "abada3b56f1586ab4cd6ea5f82806136eead64f3",
+      "timestamp": "2026-02-05T14:55:01.158514",
+      "files_changed": [
+        "__tests__/use-dashboard-state.test.tsx",
+        "components/LiveDashboard.tsx",
+        "hooks/use-dashboard-state.ts",
+        ".ralph/current.log",
+        ".ralph/state.json",
+        "app/page.tsx",
+        "package-lock.json",
+        "package.json",
+        "prd-ralph-dashboard.json"
+      ],
+      "tests_passed": true,
+      "route": ""
+    },
+    {
+      "item_id": 14,
+      "commit_sha": "8f0cc2859ecb0e0f6c67c334e614cd24a104e082",
+      "timestamp": "2026-02-05T14:56:15.839823",
+      "files_changed": [
+        ".ralph/current.log",
+        ".ralph/state.json",
+        "components/LiveDashboard.tsx",
+        "prd-ralph-dashboard.json"
+      ],
+      "tests_passed": true,
+      "route": ""
+    },
+    {
+      "item_id": 6,
+      "commit_sha": "7569c1388b5c3ba37c21dcb1c06fbfe0c22922ef",
+      "timestamp": "2026-02-05T14:57:55.346342",
+      "files_changed": [
+        "__tests__/coverage-reader.test.ts",
+        "lib/coverage-reader.ts",
+        ".ralph/current.log",
+        ".ralph/state.json",
+        "prd-ralph-dashboard.json"
+      ],
+      "tests_passed": true,
+      "route": ""
+    },
+    {
+      "item_id": 12,
+      "commit_sha": "aba428cc4b73901a757f4f110127d374ad71ebe5",
+      "timestamp": "2026-02-05T15:00:10.816635",
+      "files_changed": [
+        "__tests__/ActivityLog.test.tsx",
+        "components/ActivityLog.tsx",
+        ".ralph/current.log",
+        ".ralph/state.json",
+        "components/LiveDashboard.tsx",
+        "prd-ralph-dashboard.json"
+      ],
+      "tests_passed": true,
+      "route": ""
+    },
+    {
+      "item_id": 15,
+      "commit_sha": "b5fb226e37f25c9bb5ad6f592340282ddc7b858f",
+      "timestamp": "2026-02-05T15:02:04.773702",
+      "files_changed": [
+        ".ralph/current.log",
+        ".ralph/state.json",
+        "__tests__/api-state.test.ts",
+        "__tests__/use-dashboard-state.test.tsx",
+        "components/LiveDashboard.tsx",
+        "hooks/use-dashboard-state.ts",
+        "prd-ralph-dashboard.json"
+      ],
+      "tests_passed": true,
+      "route": ""
+    },
+    {
+      "item_id": 16,
+      "commit_sha": "e0c17ac1d29756172ee597c465c51198ddc79d07",
+      "timestamp": "2026-02-05T15:04:57.547350",
+      "files_changed": [
+        ".ralph/current.log",
+        ".ralph/state.json",
+        "__tests__/KanbanBoard.test.tsx",
+        "components/KanbanBoard.tsx",
+        "package-lock.json",
+        "package.json",
+        "prd-ralph-dashboard.json"
+      ],
+      "tests_passed": true,
+      "route": ""
+    }
+  ],
+  "agent": "codex",
+  "model": "gpt-5.3-codex",
+  "auto_push": true,
+  "pr_url": null,
+  "base_branch": "main",
+  "current_action": "Staging changes...",
+  "action_started_at": "2026-02-05T15:05:59.931415",
+  "watchdog_timeout": 600,
+  "last_output_at": "2026-02-05T15:05:59.918474",
+  "watchdog_triggered": false
+}

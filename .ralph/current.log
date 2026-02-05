@@ -1,0 +1,613 @@
+OpenAI Codex v0.98.0 (research preview)
+--------
+workdir: /Users/mcbee/Projects/agent-dashboard
+model: gpt-5.3-codex
+provider: openai
+approval: never
+sandbox: danger-full-access
+reasoning effort: none
+reasoning summaries: auto
+session id: 019c2f68-6ad4-7a03-9608-7384685fd4ac
+--------
+user
+You are working on the project: Ralph Dashboard
+
+Goal: A real-time web UI for watching Ralph runs. Kanban-style PRD progress, live metrics, git state, test coverage — watch the magic happen.
+
+Current Item (17/17): Documentation and README
+Category: polish
+Priority: 3
+
+Description:
+Add README with setup instructions and usage guide
+
+Steps:
+  1. Installation: npm install, configure path
+  2. Usage: npm run dev, or npm run build for production
+  3. Configuration options
+  4. Integration with Ralph CLI
+
+Verification:
+README has install instructions and usage
+
+Please implement this item. After completion:
+1. Ensure all tests pass
+2. Verify the implementation meets the verification criteria
+3. Keep changes focused on this item only
+
+mcp startup: no servers
+
+thinking
+**Preparing to implement README with skill**
+codex
+Using the `do-work` skill because this is a queued implementation item; I’ll read its `SKILL.md` first, then apply the README changes and run tests.
+exec
+/bin/zsh -lc 'cat /Users/mcbee/.agents/skills/do-work/SKILL.md' in /Users/mcbee/Projects/agent-dashboard succeeded in 208ms:
+---
+name: do-work
+description: Task queue - add requests or process pending work
+argument-hint: run | (task to capture) | verify | cleanup | version
+upstream: https://raw.githubusercontent.com/bladnman/do-work/main/SKILL.md
+---
+
+# Do-Work Skill
+
+A unified entry point for task capture and processing.
+
+**Actions:**
+- **do**: Capture new tasks/requests → creates UR folder (verbatim input) + REQ files (queue items), always paired
+- **work**: Process pending requests → executes the queue
+- **verify**: Evaluate captured REQs against original input → quality check
+- **cleanup**: Consolidate archive → moves loose REQs into UR folders, closes completed URs
+
+> **Core concept:** The do action always produces both a UR folder (preserving the original input) and REQ files (the queue items). Each REQ links back to its UR via `user_request` frontmatter. This pairing is mandatory for all requests — simple or complex.
+
+## Routing Decision
+
+thinking
+**Opening workflow documentation**
+codex
+I’ve loaded the skill entrypoint; next I’m reading the `work` action instructions to follow its workflow while implementing this queued item.
+exec
+/bin/zsh -lc 'cat /Users/mcbee/.agents/skills/do-work/actions/work.md' in /Users/mcbee/Projects/agent-dashboard succeeded in 211ms:
+# Work Action
+
+> **Part of the do-work skill.** Invoked when routing determines the user wants to process the queue. Processes requests from the `do-work/` folder in your project.
+
+An orchestrated build system that processes request files created by the do action. Uses complexity triage to avoid unnecessary overhead - simple requests go straight to implementation, complex ones get planning and exploration first.
+
+## Request Files as Living Logs
+
+**Each request file becomes a complete historical record of the work performed.** As you process a request, you append sections documenting each phase:
+
+1. **Triage** - Route decision and reasoning
+2. **Plan** - Either the full plan (Route C) or "Planning not required" (Routes A/B)
+3. **Exploration** - Codebase findings (Routes B/C)
+4. **Implementation Summary** - What was changed
+5. **Testing** - Test results and coverage
+
+This traceability ensures:
+- You can review what was planned vs what was done
+- Failed requests show exactly where things went wrong
+- Triage accuracy can be evaluated over time
+
+thinking
+**Assessing repo structure**
+codex
+I’m moving to the project files now to locate existing docs/config and update only what’s needed for this final documentation item.
+exec
+/bin/zsh -lc 'ls -la' in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc 'rg --files' in /Users/mcbee/Projects/agent-dashboard succeeded in 242ms:
+total 680
+drwxr-xr-x   25 mcbee  staff     800 Feb  5 14:51 .
+drwxr-xr-x    6 mcbee  staff     192 Feb  5 14:01 ..
+-rw-r--r--    1 mcbee  staff      61 Feb  5 14:28 .eslintrc.json
+drwxr-xr-x   12 mcbee  staff     384 Feb  5 15:04 .git
+-rw-r--r--    1 mcbee  staff     400 Feb  5 14:31 .gitignore
+drwxr-xr-x   11 mcbee  staff     352 Feb  5 14:32 .next
+drwxr-xr-x    4 mcbee  staff     128 Feb  5 14:31 .ralph
+-rw-r--r--    1 mcbee  staff    1450 Feb  5 14:28 README.md
+drwxr-xr-x   14 mcbee  staff     448 Feb  5 14:59 __tests__
+drwxr-xr-x    8 mcbee  staff     256 Feb  5 14:41 app
+drwxr-xr-x    8 mcbee  staff     256 Feb  5 14:59 components
+-rw-r--r--    1 mcbee  staff     481 Feb  5 14:29 components.json
+drwxr-xr-x    3 mcbee  staff      96 Feb  5 14:51 hooks
+drwxr-xr-x    8 mcbee  staff     256 Feb  5 14:57 lib
+-rw-r--r--    1 mcbee  staff     228 Feb  5 14:28 next-env.d.ts
+-rw-r--r--    1 mcbee  staff      92 Feb  5 14:28 next.config.mjs
+drwxr-xr-x  403 mcbee  staff   12896 Feb  5 15:02 node_modules
+-rw-r--r--    1 mcbee  staff  286205 Feb  5 15:02 package-lock.json
+-rw-r--r--    1 mcbee  staff     925 Feb  5 15:02 package.json
+ succeeded in 251ms:
+vitest.setup.ts
+vitest.config.ts
+tsconfig.json
+components.json
+lib/git-state.ts
+lib/code-metrics.ts
+lib/utils.ts
+lib/coverage-state.ts
+lib/coverage-reader.ts
+lib/ralph-state.ts
+hooks/use-dashboard-state.ts
+package.json
+package-lock.json
+__tests__/KanbanBoard.test.tsx
+__tests__/code-metrics.test.ts
+__tests__/GitPanel.test.tsx
+__tests__/api-state.test.ts
+__tests__/git-state.test.ts
+__tests__/MetricsPanel.test.tsx
+__tests__/ProgressPanel.test.tsx
+
+thinking
+**Inspecting README and config sources**
+codex
+I found an existing `README.md`; I’ll inspect it and the runtime config points so we can replace it with accurate setup, usage, and Ralph CLI integration guidance.
+exec
+/bin/zsh -lc 'cat README.md' in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc 'cat package.json' in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc 'cat lib/ralph-state.ts' in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc 'cat app/api/state/route.ts' in /Users/mcbee/Projects/agent-dashboard succeeded in 290ms:
+{
+  "name": "ralph-dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.90.20",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "framer-motion": "^11.18.2",
+    "lucide-react": "^0.563.0",
+    "next": "14.2.35",
+    "react": "^18",
+    "react-dom": "^18",
+ succeeded in 292ms:
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+
+## Getting Started
+
+First, run the development server:
+
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+
+ succeeded in 290ms:
+import { promises as fs } from "node:fs";
+import path from "node:path";
+
+export interface Checkpoint {
+  item_id: number;
+  commit_sha: string;
+  timestamp: string;
+  files_changed: string[];
+  tests_passed: boolean;
+  route: string;
+}
+
+export interface RalphState {
+  branch: string | null;
+  prd_path: string | null;
+  current_item: number | null;
+  completed_items: number[];
+  started_at: string | null;
+  checkpoints: Checkpoint[];
+  agent: string | null;
+ succeeded in 272ms:
+import { stat } from "node:fs/promises";
+import path from "node:path";
+
+import { NextResponse } from "next/server";
+
+import { readCodeMetrics } from "@/lib/code-metrics";
+import { readCoverageState } from "@/lib/coverage-state";
+import { readGitState } from "@/lib/git-state";
+import { getRalphUnifiedView } from "@/lib/ralph-state";
+
+function resolveProjectPath(request: Request): string | null {
+  const { searchParams } = new URL(request.url);
+
+  const fromQuery = searchParams.get("projectPath") ?? searchParams.get("path");
+  const fromEnv = process.env.RALPH_PROJECT_PATH;
+  const selected = fromQuery ?? fromEnv ?? null;
+
+  if (!selected) {
+    return null;
+  }
+
+thinking
+**Planning config options**
+codex
+I identified the main path configuration (`RALPH_PROJECT_PATH` or `?projectPath=`); I’m checking the UI hook and other readers for any additional configurable knobs to document correctly.
+exec
+/bin/zsh -lc 'cat hooks/use-dashboard-state.ts' in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc 'cat lib/code-metrics.ts' in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc 'cat lib/git-state.ts' in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc 'cat lib/coverage-state.ts' in /Users/mcbee/Projects/agent-dashboard succeeded in 298ms:
+"use client";
+
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+
+import type { CodeMetrics } from "@/lib/code-metrics";
+import type { CoverageState } from "@/lib/coverage-state";
+import type { GitState } from "@/lib/git-state";
+import type { RalphUnifiedView } from "@/lib/ralph-state";
+
+export const DASHBOARD_POLL_INTERVAL_MS = 2000;
+
+export interface DashboardStateResponse {
+  projectPath: string;
+  timestamp: string;
+  ralph: RalphUnifiedView;
+  git: GitState;
+  metrics: CodeMetrics;
+  coverage: CoverageState;
+}
+
+ succeeded in 283ms:
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+
+const execFileAsync = promisify(execFile);
+
+export interface GitDiffStats {
+  filesChanged: number;
+  insertions: number;
+  deletions: number;
+}
+
+export interface UncommittedChangesSummary {
+  staged: GitDiffStats;
+  unstaged: GitDiffStats;
+  untrackedFiles: number;
+  total: GitDiffStats;
+}
+
+export interface GitState {
+  branch: string | null;
+ succeeded in 259ms:
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+
+interface CoverageMetric {
+  total: number;
+  covered: number;
+  skipped: number;
+  pct: number;
+}
+
+interface CoverageSummaryTotal {
+  lines: CoverageMetric;
+  statements: CoverageMetric;
+  functions: CoverageMetric;
+  branches: CoverageMetric;
+}
+
+export interface CoverageState {
+  available: boolean;
+  summaryPath: string | null;
+ succeeded in 287ms:
+import { promises as fs } from "node:fs";
+import path from "node:path";
+
+export interface CodeMetrics {
+  totalLoc: number;
+  locByLanguage: Record<string, number>;
+  fileCount: number;
+  testFileCount: number;
+  error: string | null;
+}
+
+export interface ReadCodeMetricsOptions {
+  excludeDirectories?: string[];
+}
+
+const DEFAULT_EXCLUDED_DIRECTORIES = new Set([".git", "node_modules", ".next", ".ralph"]);
+
+const EXTENSION_LANGUAGE_MAP: Record<string, string> = {
+  ".ts": "TypeScript",
+  ".tsx": "TypeScript",
+
+thinking
+**Checking app page query param UI**
+codex
+I have enough backend config detail; I’m checking the main UI components so README instructions match how users actually provide a project path in the app.
+exec
+/bin/zsh -lc 'cat app/page.tsx' in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc 'cat components/LiveDashboard.tsx' in /Users/mcbee/Projects/agent-dashboard succeeded in 240ms:
+import LiveDashboard from "@/components/LiveDashboard";
+
+export default function Home() {
+  return <LiveDashboard />;
+}
+ succeeded in 235ms:
+"use client";
+
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
+import React, { useEffect, useMemo, useState } from "react";
+
+import ActivityLog from "@/components/ActivityLog";
+import GitPanel from "@/components/GitPanel";
+import KanbanBoard from "@/components/KanbanBoard";
+import MetricsPanel from "@/components/MetricsPanel";
+import ProgressPanel from "@/components/ProgressPanel";
+import { useDashboardState } from "@/hooks/use-dashboard-state";
+
+const DEFAULT_ERROR_MESSAGE = "Unable to load dashboard state.";
+const PROJECT_PATH_STORAGE_KEY = "ralph-dashboard:last-project-path";
+
+function normalizeProjectPath(value: string | null | undefined): string | null {
+  if (!value) {
+    return null;
+  }
+
+thinking
+**Reviewing API health endpoint**
+exec
+/bin/zsh -lc 'cat app/api/health/route.ts' in /Users/mcbee/Projects/agent-dashboard succeeded in 212ms:
+import { NextResponse } from "next/server";
+
+export async function GET(): Promise<Response> {
+  return NextResponse.json(
+    {
+      ok: true,
+      service: "ralph-dashboard",
+      timestamp: new Date().toISOString(),
+    },
+    { status: 200 },
+  );
+}
+
+thinking
+**Planning README updates and test check**
+codex
+Next I’m checking the local `.ralph` and PRD files to document the Ralph CLI integration using the project’s actual state/PRD conventions.
+exec
+/bin/zsh -lc 'ls -la .ralph && cat .ralph/state.json' in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc 'cat prd-ralph-dashboard.json' in /Users/mcbee/Projects/agent-dashboard succeeded in 240ms:
+total 48
+drwxr-xr-x   4 mcbee  staff    128 Feb  5 14:31 .
+drwxr-xr-x  25 mcbee  staff    800 Feb  5 14:51 ..
+-rw-r--r--   1 mcbee  staff  12982 Feb  5 15:05 current.log
+-rw-r--r--   1 mcbee  wheel   7049 Feb  5 15:04 state.json
+{
+  "branch": "ralph/ralph-dashboard-20260205-1427",
+  "prd_path": "/Users/mcbee/Projects/agent-dashboard/prd-ralph-dashboard.json",
+  "current_item": 17,
+  "completed_items": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    7,
+    8,
+    9,
+    10,
+    11,
+ succeeded in 206ms:
+{
+  "project": "Ralph Dashboard",
+  "goal": "A real-time web UI for watching Ralph runs. Kanban-style PRD progress, live metrics, git state, test coverage \u2014 watch the magic happen.",
+  "tech_stack": {
+    "language": "TypeScript",
+    "framework": "Next.js 14 (App Router)",
+    "styling": "Tailwind CSS + shadcn/ui",
+    "state": "React Query + WebSocket for real-time",
+    "backend": "Ralph CLI exposes status via JSON file or simple HTTP endpoint",
+    "testing": "Vitest + React Testing Library",
+    "notes": "Static export possible for simplicity, or full Next.js for WebSocket support"
+  },
+  "context": {
+    "target_user": "Developers watching Ralph autonomous coding loops",
+    "constraints": "Must work with existing Ralph CLI, read .ralph/state.json and git state",
+    "references": "Ralph CLI, Linear/Jira for kanban inspiration, Codecov for coverage UI"
+  },
+  "items": [
+    {
+      "id": 1,
+
+thinking
+**Outlining README update**
+codex
+I’m about to replace `README.md` with project-specific docs covering install, run modes, configuration (`RALPH_PROJECT_PATH` / `?path=`), and how it reads Ralph CLI outputs from `.ralph/state.json`.
+exec
+/bin/zsh -lc "cat > README.md <<'EOF'
+# Ralph Dashboard
+
+Real-time dashboard for watching Ralph runs with live PRD progress, git state, code metrics, and coverage.
+
+## Requirements
+
+- Node.js 18+
+- npm
+- A target project that contains Ralph outputs (at minimum "'`.ralph/state.json`)
+
+## Installation
+
+```bash
+npm install
+```
+
+## Usage
+
+### Development
+
+```bash
+npm run dev
+```
+
+Open `http://localhost:3000`.
+
+### Production build
+
+```bash
+npm run build
+npm run start
+```
+
+## Configure Which Project To Monitor
+
+You can set the monitored project path in two ways:
+
+1. Environment variable:
+
+```bash
+RALPH_PROJECT_PATH=/absolute/path/to/target-project npm run dev
+```
+
+2. URL query parameter:
+
+```text
+http://localhost:3000/?path=/absolute/path/to/target-project
+```
+
+Notes:
+- `?path=` overrides `RALPH_PROJECT_PATH` when both are present.
+- The dashboard persists the last successful project path in `localStorage`.
+- The path must be an existing directory.
+
+## Configuration Details
+
+The dashboard reads data from these sources inside the monitored project:
+
+- Ralph state: `.ralph/state.json`
+- PRD: `prd_path` from Ralph state (if present), otherwise `prd.json`, otherwise first `prd*.json`
+- Git: local repository state via `git` commands
+- Coverage summary: `coverage/coverage-summary.json` or `.coverage/coverage-summary.json`
+
+Live updates are polled every 2 seconds.
+
+## Integration With Ralph CLI
+
+1. Run Ralph in your target repository so it produces and updates `.ralph/state.json`.
+2. Make sure the state file references your PRD (`prd_path`) or that the repo has a discoverable PRD JSON file.
+3. Start Ralph Dashboard and point it at that repository using `RALPH_PROJECT_PATH` or `?path=`.
+4. Keep Ralph running; the dashboard will reflect checkpoints, current item progress, and related git/metrics updates automatically.
+
+## API Endpoints
+
+- `GET /api/health` - health check
+- `GET /api/state?path=/absolute/path` - combined Ralph, git, metrics, and coverage state
+
+## Testing
+
+```bash
+npm test
+```
+EOF' in /Users/mcbee/Projects/agent-dashboard succeeded in 212ms:
+
+
+thinking
+**Running tests**
+codex
+README has been updated; next I’m running the test suite to satisfy the completion requirement and confirm nothing regressed.
+exec
+/bin/zsh -lc 'npm test' in /Users/mcbee/Projects/agent-dashboard succeeded in 1.60s:
+
+> ralph-dashboard@0.1.0 test
+> vitest run
+
+
+ RUN  v4.0.18 /Users/mcbee/Projects/agent-dashboard
+
+ ✓ __tests__/ralph-state.test.ts (9 tests) 34ms
+ ✓ __tests__/coverage-reader.test.ts (7 tests) 14ms
+ ✓ __tests__/use-dashboard-state.test.tsx (3 tests) 36ms
+ ✓ __tests__/api-state.test.ts (7 tests) 86ms
+ ✓ __tests__/MetricsPanel.test.tsx (3 tests) 66ms
+ ✓ __tests__/GitPanel.test.tsx (2 tests) 114ms
+ ✓ __tests__/ActivityLog.test.tsx (4 tests) 136ms
+ ✓ __tests__/ProgressPanel.test.tsx (2 tests) 126ms
+ ✓ __tests__/KanbanBoard.test.tsx (5 tests) 160ms
+ ✓ __tests__/code-metrics.test.ts (3 tests) 7ms
+ ✓ __tests__/example.test.ts (1 test) 10ms
+ ✓ __tests__/git-state.test.ts (5 tests) 2ms
+
+
+thinking
+**Verifying README install instructions**
+codex
+Tests pass. I’m doing a quick verification pass on the README content against the item checklist, then I’ll summarize exactly what changed.
+exec
+/bin/zsh -lc 'rg -n "Installation|Usage|Configure|Configuration|Integration With Ralph CLI|npm install|npm run dev|npm run build" README.md' in /Users/mcbee/Projects/agent-dashboardexec
+/bin/zsh -lc 'git status --short' in /Users/mcbee/Projects/agent-dashboard succeeded in 245ms:
+11:## Installation
+14:npm install
+17:## Usage
+22:npm run dev
+30:npm run build
+34:## Configure Which Project To Monitor
+41:RALPH_PROJECT_PATH=/absolute/path/to/target-project npm run dev
+55:## Configuration Details
+66:## Integration With Ralph CLI
+ succeeded in 201ms:
+ M .ralph/current.log
+ M .ralph/state.json
+ M README.md
+ M prd-ralph-dashboard.json
+
+thinking
+**Summarizing README update only**
+codex
+Implemented item 17 by replacing `README.md` with project-specific documentation for Ralph Dashboard.
+
+What was added in `README.md`:
+- Installation instructions with `npm install`
+- Usage instructions for:
+  - Development: `npm run dev`
+  - Production: `npm run build` + `npm run start`
+- Configuration options:
+  - `RALPH_PROJECT_PATH` env var
+  - `?path=` URL query parameter
+  - precedence and localStorage behavior
+- Integration guidance for Ralph CLI:
+  - expected `.ralph/state.json`
+  - PRD path behavior (`prd_path`, fallback `prd.json`/`prd*.json`)
+  - live polling behavior and dashboard expectations
+- API endpoint reference and test command
+
+Verification:
+- README includes install + usage sections and required config/integration details.
+- Tests pass: `12` test files, `51` tests all passing via `npm test`.
+tokens used
+57,958
+Implemented item 17 by replacing `README.md` with project-specific documentation for Ralph Dashboard.
+
+What was added in `README.md`:
+- Installation instructions with `npm install`
+- Usage instructions for:
+  - Development: `npm run dev`
+  - Production: `npm run build` + `npm run start`
+- Configuration options:
+  - `RALPH_PROJECT_PATH` env var
+  - `?path=` URL query parameter
+  - precedence and localStorage behavior
+- Integration guidance for Ralph CLI:
+  - expected `.ralph/state.json`
+  - PRD path behavior (`prd_path`, fallback `prd.json`/`prd*.json`)
+  - live polling behavior and dashboard expectations
+- API endpoint reference and test command
+
+Verification:
+- README includes install + usage sections and required config/integration details.
+- Tests pass: `12` test files, `51` tests all passing via `npm test`.
