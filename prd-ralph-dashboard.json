@@ -1,6 +1,6 @@
 {
   "project": "Ralph Dashboard",
-  "goal": "A real-time web UI for watching Ralph runs. Kanban-style PRD progress, live metrics, git state, test coverage — watch the magic happen.",
+  "goal": "A real-time web UI for watching Ralph runs. Kanban-style PRD progress, live metrics, git state, test coverage \u2014 watch the magic happen.",
   "tech_stack": {
     "language": "TypeScript",
     "framework": "Next.js 14 (App Router)",
@@ -39,7 +39,7 @@
       "title": "Test infrastructure",
       "description": "Set up Vitest and React Testing Library for unit testing",
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "verification": "npm test runs and passes with at least one example test",
       "steps": [
         "Install vitest, @testing-library/react, @testing-library/jest-dom",
@@ -290,7 +290,7 @@
         "Use Framer Motion for animations",
         "Card entrance/exit animations",
         "Pulse animation on current item",
-        "Celebration animation when all items complete 🎉"
+        "Celebration animation when all items complete \ud83c\udf89"
       ],
       "notes": ""
     },
