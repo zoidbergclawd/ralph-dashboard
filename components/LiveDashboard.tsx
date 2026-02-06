@@ -11,6 +11,7 @@ import KanbanBoard from "@/components/KanbanBoard";
 import MetricsPanel from "@/components/MetricsPanel";
 import PRDEditor from "@/components/PRDEditor";
 import ProgressPanel from "@/components/ProgressPanel";
+import TerminalView, { type TerminalSocketConfig } from "@/components/TerminalView";
 import { useDashboardState } from "@/hooks/use-dashboard-state";
 
 const DEFAULT_ERROR_MESSAGE = "Unable to load dashboard state.";
@@ -58,6 +59,7 @@ function DashboardBody() {
   const searchParams = useSearchParams();
   const urlProjectPath = normalizeProjectPath(searchParams.get("path"));
   const [selectedProjectPath, setSelectedProjectPath] = useState<string | undefined>(urlProjectPath ?? undefined);
+  const [socketConfig, setSocketConfig] = useState<TerminalSocketConfig | undefined>(undefined);
   const { data, error, isPending, isFetching, dataUpdatedAt } = useDashboardState(selectedProjectPath);
   const [showUpdated, setShowUpdated] = useState(false);
 
@@ -149,7 +151,13 @@ function DashboardBody() {
         </div>
       </section>
 
-      <ControlBar projectPath={data.projectPath ?? selectedProjectPath} initialStatus={runStatus} />
+      <ControlBar
+        projectPath={data.projectPath ?? selectedProjectPath}
+        initialStatus={runStatus}
+        onSocketConfigChange={setSocketConfig}
+      />
+
+      <TerminalView socketConfig={socketConfig} />
 
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-12">
         <div className="xl:col-span-8">

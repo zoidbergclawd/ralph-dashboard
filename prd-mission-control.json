@@ -86,7 +86,7 @@
       "title": "Terminal WebSocket Stream",
       "description": "Stream stdout/stderr from Ralph to the UI via WebSocket.",
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "verification": "Client receives logs from running process",
       "steps": [
         "Set up Socket.io server in Next.js (or separate server if needed for app router)",

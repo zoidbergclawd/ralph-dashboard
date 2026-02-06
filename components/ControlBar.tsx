@@ -2,9 +2,12 @@
 
 import React, { useMemo, useState } from "react";
 
+import type { TerminalSocketConfig } from "@/components/TerminalView";
+
 interface ControlBarProps {
   projectPath?: string;
   initialStatus?: "running" | "stopped";
+  onSocketConfigChange?: (socket: TerminalSocketConfig | undefined) => void;
 }
 
 type RunStatus = "running" | "stopped";
@@ -12,6 +15,10 @@ type Agent = "codex" | "claude";
 
 interface ApiError {
   error?: string;
+}
+
+interface RunActionResponse {
+  socket?: TerminalSocketConfig;
 }
 
 const AGENT_OPTIONS: Array<{ value: Agent; label: string }> = [
@@ -42,7 +49,16 @@ async function parseError(response: Response): Promise<string> {
   return "Run action failed.";
 }
 
-export default function ControlBar({ projectPath, initialStatus = "stopped" }: ControlBarProps) {
+function isSocketConfig(value: unknown): value is TerminalSocketConfig {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const candidate = value as Partial<TerminalSocketConfig>;
+  return typeof candidate.host === "string" && typeof candidate.port === "number" && typeof candidate.path === "string";
+}
+
+export default function ControlBar({ projectPath, initialStatus = "stopped", onSocketConfigChange }: ControlBarProps) {
   const [agent, setAgent] = useState<Agent>("codex");
   const [teamSize, setTeamSize] = useState("2");
   const [status, setStatus] = useState<RunStatus>(initialStatus);
@@ -76,6 +92,11 @@ export default function ControlBar({ projectPath, initialStatus = "stopped" }: C
         throw new Error(await parseError(response));
       }
 
+      const payload = (await response.json().catch(() => ({}))) as RunActionResponse;
+      if (isSocketConfig(payload.socket)) {
+        onSocketConfigChange?.(payload.socket);
+      }
+
       setStatus("running");
     } catch (requestError) {
       const message = requestError instanceof Error ? requestError.message : "Run action failed.";
@@ -102,6 +123,7 @@ export default function ControlBar({ projectPath, initialStatus = "stopped" }: C
         throw new Error(await parseError(response));
       }
 
+      onSocketConfigChange?.(undefined);
       setStatus("stopped");
     } catch (requestError) {
       const message = requestError instanceof Error ? requestError.message : "Run action failed.";
