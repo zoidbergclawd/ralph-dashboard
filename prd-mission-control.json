@@ -1,0 +1,149 @@
+{
+  "project": "Ralph Mission Control",
+  "goal": "Upgrade the read-only Ralph Dashboard into a full command center for managing PRDs and orchestrating Ralph runs.",
+  "tech_stack": {
+    "language": "TypeScript",
+    "framework": "Next.js 14 (App Router)",
+    "state": "React Query + WebSocket (Socket.io)",
+    "testing": "Vitest + React Testing Library",
+    "notes": "Must integrate with local filesystem and shell execution"
+  },
+  "context": {
+    "target_user": "Developers using Ralph CLI",
+    "constraints": "Must run locally, requires shell access to spawn processes",
+    "references": "Existing Ralph Dashboard codebase"
+  },
+  "items": [
+    {
+      "id": 1,
+      "category": "setup",
+      "title": "Test Infrastructure Update",
+      "description": "Ensure Vitest is configured for API route testing and component testing with user interactions.",
+      "priority": 1,
+      "passes": true,
+      "verification": "npm test runs successfully",
+      "steps": [
+        "Verify vitest.config.ts includes coverage and environment setup",
+        "Ensure @testing-library/user-event is installed",
+        "Add a basic test for a mocked API interaction"
+      ],
+      "notes": ""
+    },
+    {
+      "id": 2,
+      "category": "backend",
+      "title": "PRD Management API",
+      "description": "API endpoints to Read and Write the PRD JSON file.",
+      "priority": 1,
+      "passes": true,
+      "verification": "Unit tests pass for GET and POST /api/prd",
+      "steps": [
+        "Create app/api/prd/route.ts",
+        "Implement GET to read prd.json",
+        "Implement POST to save updates to prd.json",
+        "Add input validation (zod or manual)",
+        "Write unit tests for read/write operations"
+      ],
+      "notes": ""
+    },
+    {
+      "id": 3,
+      "category": "ui",
+      "title": "PRD Editor Interface",
+      "description": "UI for editing PRD items: add, edit, delete, and reorder.",
+      "priority": 1,
+      "passes": true,
+      "verification": "Can add and edit items in the UI and persist to file",
+      "steps": [
+        "Create PRDEditor component",
+        "Add form for editing item fields (title, description, steps)",
+        "Add drag-and-drop for reordering (dnd-kit or similar)",
+        "Connect to PRD Management API",
+        "Write component tests for editing flow"
+      ],
+      "notes": ""
+    },
+    {
+      "id": 4,
+      "category": "backend",
+      "title": "Process Control API",
+      "description": "API to spawn, stop, and resume Ralph processes.",
+      "priority": 1,
+      "passes": true,
+      "verification": "API can spawn a mock process and return PID",
+      "steps": [
+        "Create lib/process-manager.ts to handle spawn/kill",
+        "Create app/api/run/start/route.ts (accepts flags like --team)",
+        "Create app/api/run/stop/route.ts",
+        "Create app/api/run/resume/route.ts",
+        "Write tests for process manager (mocked spawn)"
+      ],
+      "notes": ""
+    },
+    {
+      "id": 5,
+      "category": "backend",
+      "title": "Terminal WebSocket Stream",
+      "description": "Stream stdout/stderr from Ralph to the UI via WebSocket.",
+      "priority": 2,
+      "passes": true,
+      "verification": "Client receives logs from running process",
+      "steps": [
+        "Set up Socket.io server in Next.js (or separate server if needed for app router)",
+        "Connect process stdout/stderr to socket emissions",
+        "Handle client connection/disconnection",
+        "Write tests for socket connection"
+      ],
+      "notes": ""
+    },
+    {
+      "id": 6,
+      "category": "ui",
+      "title": "Mission Control Bar",
+      "description": "Global control bar for managing the run.",
+      "priority": 1,
+      "passes": true,
+      "verification": "Buttons trigger correct API calls",
+      "steps": [
+        "Create ControlBar component",
+        "Add Start/Stop/Resume buttons",
+        "Add configuration dropdowns (Agent: Codex/Claude, Team Size)",
+        "Display current status (Running/Stopped)",
+        "Write interactions tests"
+      ],
+      "notes": ""
+    },
+    {
+      "id": 7,
+      "category": "ui",
+      "title": "Terminal View Component",
+      "description": "XTerm.js or simple scrollable view for logs.",
+      "priority": 2,
+      "passes": true,
+      "verification": "Logs appear in the view",
+      "steps": [
+        "Install xterm.js or create simple log viewer",
+        "Connect to WebSocket stream",
+        "Add auto-scroll and clear button",
+        "Write rendering tests"
+      ],
+      "notes": ""
+    },
+    {
+      "id": 8,
+      "category": "ui",
+      "title": "Integrated Dashboard Layout",
+      "description": "Combine Editor, Controls, and Terminal into the main view.",
+      "priority": 2,
+      "passes": false,
+      "verification": "All components render in the correct layout",
+      "steps": [
+        "Update page.tsx to include new components",
+        "Add tabs or split view for Editor vs Monitor",
+        "Ensure responsive layout",
+        "Verify end-to-end flow"
+      ],
+      "notes": ""
+    }
+  ]
+}

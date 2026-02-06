@@ -5,10 +5,13 @@ import { useSearchParams } from "next/navigation";
 import React, { useEffect, useMemo, useState } from "react";
 
 import ActivityLog from "@/components/ActivityLog";
+import ControlBar from "@/components/ControlBar";
 import GitPanel from "@/components/GitPanel";
 import KanbanBoard from "@/components/KanbanBoard";
 import MetricsPanel from "@/components/MetricsPanel";
+import PRDEditor from "@/components/PRDEditor";
 import ProgressPanel from "@/components/ProgressPanel";
+import TerminalView, { type TerminalSocketConfig } from "@/components/TerminalView";
 import { useDashboardState } from "@/hooks/use-dashboard-state";
 
 const DEFAULT_ERROR_MESSAGE = "Unable to load dashboard state.";
@@ -56,6 +59,8 @@ function DashboardBody() {
   const searchParams = useSearchParams();
   const urlProjectPath = normalizeProjectPath(searchParams.get("path"));
   const [selectedProjectPath, setSelectedProjectPath] = useState<string | undefined>(urlProjectPath ?? undefined);
+  const [socketConfig, setSocketConfig] = useState<TerminalSocketConfig | undefined>(undefined);
+  const [workspaceTab, setWorkspaceTab] = useState<"monitor" | "editor">("monitor");
   const { data, error, isPending, isFetching, dataUpdatedAt } = useDashboardState(selectedProjectPath);
   const [showUpdated, setShowUpdated] = useState(false);
 
@@ -131,6 +136,7 @@ function DashboardBody() {
 
   const coveragePct = data.coverage.total?.lines.pct ?? null;
   const startedAt = data.ralph.state?.started_at ?? null;
+  const runStatus = data.ralph.state?.current_action ? "running" : "stopped";
 
   return (
     <div className="space-y-6">
@@ -146,24 +152,72 @@ function DashboardBody() {
         </div>
       </section>
 
-      <section className="grid grid-cols-1 gap-6 xl:grid-cols-12">
-        <div className="xl:col-span-8">
-          <KanbanBoard items={data.ralph.items} />
+      <section className="rounded-lg border border-border bg-card p-4 text-card-foreground md:p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold">Mission Workspace</h2>
+          <div className="inline-flex rounded-md border border-border p-1" role="tablist" aria-label="Workspace view">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={workspaceTab === "monitor"}
+              onClick={() => setWorkspaceTab("monitor")}
+              className={[
+                "rounded-sm px-3 py-1 text-sm",
+                workspaceTab === "monitor" ? "bg-accent font-medium" : "text-muted-foreground hover:text-foreground",
+              ].join(" ")}
+            >
+              Monitor
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={workspaceTab === "editor"}
+              onClick={() => setWorkspaceTab("editor")}
+              className={[
+                "rounded-sm px-3 py-1 text-sm",
+                workspaceTab === "editor" ? "bg-accent font-medium" : "text-muted-foreground hover:text-foreground",
+              ].join(" ")}
+            >
+              Editor
+            </button>
+          </div>
         </div>
 
-        <aside className="space-y-6 xl:col-span-4">
-          <ProgressPanel items={data.ralph.items} startedAt={startedAt} />
-          <GitPanel git={data.git} />
-          <MetricsPanel
-            totalLoc={data.metrics.totalLoc}
-            fileCount={data.metrics.fileCount}
-            testCount={data.metrics.testFileCount}
-            coveragePct={coveragePct}
+        <div className="mt-4 space-y-4">
+          <ControlBar
+            projectPath={data.projectPath ?? selectedProjectPath}
+            initialStatus={runStatus}
+            onSocketConfigChange={setSocketConfig}
           />
-        </aside>
-      </section>
 
-      <ActivityLog state={data.ralph.state} items={data.ralph.items} />
+          <TerminalView socketConfig={socketConfig} />
+
+          {workspaceTab === "monitor" ? (
+            <div className="space-y-4">
+              <section className="grid grid-cols-1 gap-6 xl:grid-cols-12">
+                <div className="xl:col-span-8">
+                  <KanbanBoard items={data.ralph.items} />
+                </div>
+
+                <aside className="space-y-6 xl:col-span-4">
+                  <ProgressPanel items={data.ralph.items} startedAt={startedAt} />
+                  <GitPanel git={data.git} />
+                  <MetricsPanel
+                    totalLoc={data.metrics.totalLoc}
+                    fileCount={data.metrics.fileCount}
+                    testCount={data.metrics.testFileCount}
+                    coveragePct={coveragePct}
+                  />
+                </aside>
+              </section>
+
+              <ActivityLog state={data.ralph.state} items={data.ralph.items} />
+            </div>
+          ) : (
+            <PRDEditor projectPath={data.projectPath ?? selectedProjectPath} />
+          )}
+        </div>
+      </section>
     </div>
   );
 }
