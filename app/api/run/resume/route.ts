@@ -4,6 +4,7 @@ import path from "node:path";
 import { NextResponse } from "next/server";
 
 import { ProcessManagerError, processManager } from "@/lib/process-manager";
+import { terminalSocketServer } from "@/lib/terminal-socket-server";
 
 interface ResumeRunPayload {
   projectPath?: unknown;
@@ -96,12 +97,13 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   try {
+    const socket = await terminalSocketServer.ensureStarted();
     const processInfo = processManager.resumeRalph({
       cwd: projectPath,
       flags: normalizedFlags.flags,
     });
 
-    return NextResponse.json({ ok: true, process: processInfo });
+    return NextResponse.json({ ok: true, process: processInfo, socket });
   } catch (error) {
     if (error instanceof ProcessManagerError) {
       return NextResponse.json({ error: error.message, code: error.code }, { status: toStatusCode(error) });

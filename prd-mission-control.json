@@ -102,7 +102,7 @@
       "title": "Mission Control Bar",
       "description": "Global control bar for managing the run.",
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "verification": "Buttons trigger correct API calls",
       "steps": [
         "Create ControlBar component",

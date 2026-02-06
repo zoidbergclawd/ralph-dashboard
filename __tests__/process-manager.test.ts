@@ -9,6 +9,8 @@ import { ProcessManager, ProcessManagerError } from "@/lib/process-manager";
 class MockChildProcess extends EventEmitter {
   pid: number;
   kill = vi.fn(() => true);
+  stdout = new EventEmitter();
+  stderr = new EventEmitter();
 
   constructor(pid: number) {
     super();
@@ -92,5 +94,33 @@ describe("ProcessManager", () => {
 
     expect(() => manager.stopProcess({ pid: 9877 })).toThrowError(ProcessManagerError);
     expect(() => manager.stopProcess({ pid: 9877 })).toThrowError(/does not match/i);
+  });
+
+  it("emits stdout and stderr output through the output listener", () => {
+    const child = new MockChildProcess(4100);
+    const outputListener = vi.fn();
+    const manager = new ProcessManager(vi.fn(() => child as never), outputListener);
+
+    manager.startRalph({ cwd: "/tmp/project" });
+    child.stdout.emit("data", Buffer.from("build started\\n"));
+    child.stderr.emit("data", "warning: partial failure\\n");
+
+    expect(outputListener).toHaveBeenCalledTimes(2);
+    expect(outputListener).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        pid: 4100,
+        stream: "stdout",
+        message: "build started\\n",
+      }),
+    );
+    expect(outputListener).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        pid: 4100,
+        stream: "stderr",
+        message: "warning: partial failure\\n",
+      }),
+    );
   });
 });

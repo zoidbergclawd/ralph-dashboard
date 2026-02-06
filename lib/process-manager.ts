@@ -1,7 +1,10 @@
 import { spawn, type ChildProcess, type SpawnOptions } from "node:child_process";
 
+import { terminalSocketServer } from "@/lib/terminal-socket-server";
+
 type ProcessStatus = "running" | "exited";
 type ProcessErrorCode = "ALREADY_RUNNING" | "NO_ACTIVE_PROCESS" | "PID_MISMATCH" | "SPAWN_FAILED" | "STOP_FAILED";
+export type ProcessOutputStream = "stdout" | "stderr";
 
 export interface ProcessInfo {
   pid: number;
@@ -37,6 +40,13 @@ export interface ResumeRalphOptions {
   env?: NodeJS.ProcessEnv;
 }
 
+export interface ProcessOutputEvent {
+  pid: number;
+  stream: ProcessOutputStream;
+  message: string;
+  timestamp: string;
+}
+
 interface ManagedProcess {
   pid: number;
   command: string;
@@ -47,6 +57,7 @@ interface ManagedProcess {
 }
 
 type SpawnProcess = (command: string, args: readonly string[], options: SpawnOptions) => ChildProcess;
+type ProcessOutputListener = (event: ProcessOutputEvent) => void;
 
 export class ProcessManagerError extends Error {
   constructor(
@@ -61,7 +72,10 @@ export class ProcessManagerError extends Error {
 export class ProcessManager {
   private activeProcess: ManagedProcess | null = null;
 
-  constructor(private readonly spawnProcess: SpawnProcess = spawn) {}
+  constructor(
+    private readonly spawnProcess: SpawnProcess = spawn,
+    private readonly outputListener?: ProcessOutputListener,
+  ) {}
 
   getActiveProcess(): ProcessInfo | null {
     if (!this.activeProcess) {
@@ -104,6 +118,9 @@ export class ProcessManager {
       startedAt,
       child,
     };
+
+    this.bindOutputStream(child, pid, "stdout");
+    this.bindOutputStream(child, pid, "stderr");
 
     child.once("exit", () => {
       if (this.activeProcess?.pid === pid) {
@@ -172,6 +189,41 @@ export class ProcessManager {
       status: "running",
     };
   }
+
+  private bindOutputStream(child: ChildProcess, pid: number, stream: ProcessOutputStream): void {
+    const source = stream === "stdout" ? child.stdout : child.stderr;
+    if (!source) {
+      return;
+    }
+
+    source.on("data", (chunk) => {
+      const message = this.normalizeOutputChunk(chunk);
+      if (message.length === 0) {
+        return;
+      }
+
+      this.outputListener?.({
+        pid,
+        stream,
+        message,
+        timestamp: new Date().toISOString(),
+      });
+    });
+  }
+
+  private normalizeOutputChunk(chunk: unknown): string {
+    if (typeof chunk === "string") {
+      return chunk;
+    }
+
+    if (Buffer.isBuffer(chunk)) {
+      return chunk.toString("utf8");
+    }
+
+    return String(chunk ?? "");
+  }
 }
 
-export const processManager = new ProcessManager();
+export const processManager = new ProcessManager(spawn, (event) => {
+  terminalSocketServer.broadcastTerminalOutput(event);
+});

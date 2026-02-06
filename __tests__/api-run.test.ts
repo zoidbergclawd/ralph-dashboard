@@ -5,6 +5,7 @@ import { promises as fs } from "node:fs";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const startRalphMock = vi.fn();
+const ensureStartedMock = vi.fn();
 
 vi.mock("@/lib/process-manager", () => {
   class ProcessManagerError extends Error {
@@ -27,6 +28,12 @@ vi.mock("@/lib/process-manager", () => {
   };
 });
 
+vi.mock("@/lib/terminal-socket-server", () => ({
+  terminalSocketServer: {
+    ensureStarted: ensureStartedMock,
+  },
+}));
+
 const createdDirs: string[] = [];
 
 async function makeProjectFixture(): Promise<string> {
@@ -37,6 +44,7 @@ async function makeProjectFixture(): Promise<string> {
 
 afterEach(async () => {
   startRalphMock.mockReset();
+  ensureStartedMock.mockReset();
   delete process.env.RALPH_PROJECT_PATH;
 
   await Promise.all(createdDirs.splice(0).map((dirPath) => fs.rm(dirPath, { recursive: true, force: true })));
@@ -45,6 +53,11 @@ afterEach(async () => {
 describe("POST /api/run/start", () => {
   it("spawns a mocked process and returns the PID", async () => {
     const projectDir = await makeProjectFixture();
+    ensureStartedMock.mockResolvedValue({
+      host: "127.0.0.1",
+      port: 3210,
+      path: "/socket.io",
+    });
     startRalphMock.mockReturnValue({
       pid: 2468,
       command: "ralph",
@@ -77,6 +90,7 @@ describe("POST /api/run/start", () => {
     expect(body.process.pid).toBe(2468);
     expect(body.process.args).toEqual(["start", "prd.json", "--team", "alpha"]);
     expect(body.process.cwd).toBe(projectDir);
+    expect(ensureStartedMock).toHaveBeenCalledTimes(1);
 
     expect(startRalphMock).toHaveBeenCalledWith({
       cwd: projectDir,
