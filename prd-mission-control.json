@@ -20,13 +20,14 @@
       "title": "Test Infrastructure Update",
       "description": "Ensure Vitest is configured for API route testing and component testing with user interactions.",
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "verification": "npm test runs successfully",
       "steps": [
         "Verify vitest.config.ts includes coverage and environment setup",
         "Ensure @testing-library/user-event is installed",
         "Add a basic test for a mocked API interaction"
-      ]
+      ],
+      "notes": ""
     },
     {
       "id": 2,
@@ -42,7 +43,8 @@
         "Implement POST to save updates to prd.json",
         "Add input validation (zod or manual)",
         "Write unit tests for read/write operations"
-      ]
+      ],
+      "notes": ""
     },
     {
       "id": 3,
@@ -58,7 +60,8 @@
         "Add drag-and-drop for reordering (dnd-kit or similar)",
         "Connect to PRD Management API",
         "Write component tests for editing flow"
-      ]
+      ],
+      "notes": ""
     },
     {
       "id": 4,
@@ -74,7 +77,8 @@
         "Create app/api/run/stop/route.ts",
         "Create app/api/run/resume/route.ts",
         "Write tests for process manager (mocked spawn)"
-      ]
+      ],
+      "notes": ""
     },
     {
       "id": 5,
@@ -89,7 +93,8 @@
         "Connect process stdout/stderr to socket emissions",
         "Handle client connection/disconnection",
         "Write tests for socket connection"
-      ]
+      ],
+      "notes": ""
     },
     {
       "id": 6,
@@ -105,7 +110,8 @@
         "Add configuration dropdowns (Agent: Codex/Claude, Team Size)",
         "Display current status (Running/Stopped)",
         "Write interactions tests"
-      ]
+      ],
+      "notes": ""
     },
     {
       "id": 7,
@@ -120,7 +126,8 @@
         "Connect to WebSocket stream",
         "Add auto-scroll and clear button",
         "Write rendering tests"
-      ]
+      ],
+      "notes": ""
     },
     {
       "id": 8,
@@ -135,7 +142,8 @@
         "Add tabs or split view for Editor vs Monitor",
         "Ensure responsive layout",
         "Verify end-to-end flow"
-      ]
+      ],
+      "notes": ""
     }
   ]
 }
