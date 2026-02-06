@@ -119,7 +119,7 @@
       "title": "Terminal View Component",
       "description": "XTerm.js or simple scrollable view for logs.",
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "verification": "Logs appear in the view",
       "steps": [
         "Install xterm.js or create simple log viewer",
