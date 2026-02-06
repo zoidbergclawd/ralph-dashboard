@@ -10,6 +10,12 @@ export default defineConfig({
   },
   test: {
     environment: "jsdom",
+    environmentMatchGlobs: [["**/__tests__/api-*.test.ts", "node"]],
     setupFiles: "./vitest.setup.ts",
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "html"],
+      reportsDirectory: "./coverage",
+    },
   },
 });
