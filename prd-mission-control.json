@@ -52,7 +52,7 @@
       "title": "PRD Editor Interface",
       "description": "UI for editing PRD items: add, edit, delete, and reorder.",
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "verification": "Can add and edit items in the UI and persist to file",
       "steps": [
         "Create PRDEditor component",
