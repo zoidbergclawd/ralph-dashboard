@@ -8,6 +8,7 @@ import ActivityLog from "@/components/ActivityLog";
 import GitPanel from "@/components/GitPanel";
 import KanbanBoard from "@/components/KanbanBoard";
 import MetricsPanel from "@/components/MetricsPanel";
+import PRDEditor from "@/components/PRDEditor";
 import ProgressPanel from "@/components/ProgressPanel";
 import { useDashboardState } from "@/hooks/use-dashboard-state";
 
@@ -162,6 +163,8 @@ function DashboardBody() {
           />
         </aside>
       </section>
+
+      <PRDEditor projectPath={data.projectPath ?? selectedProjectPath} />
 
       <ActivityLog state={data.ralph.state} items={data.ralph.items} />
     </div>

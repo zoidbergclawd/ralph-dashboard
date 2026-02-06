@@ -35,7 +35,7 @@
       "title": "PRD Management API",
       "description": "API endpoints to Read and Write the PRD JSON file.",
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "verification": "Unit tests pass for GET and POST /api/prd",
       "steps": [
         "Create app/api/prd/route.ts",
