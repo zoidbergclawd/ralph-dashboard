@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import React, { useEffect, useMemo, useState } from "react";
 
 import ActivityLog from "@/components/ActivityLog";
+import ControlBar from "@/components/ControlBar";
 import GitPanel from "@/components/GitPanel";
 import KanbanBoard from "@/components/KanbanBoard";
 import MetricsPanel from "@/components/MetricsPanel";
@@ -132,6 +133,7 @@ function DashboardBody() {
 
   const coveragePct = data.coverage.total?.lines.pct ?? null;
   const startedAt = data.ralph.state?.started_at ?? null;
+  const runStatus = data.ralph.state?.current_action ? "running" : "stopped";
 
   return (
     <div className="space-y-6">
@@ -146,6 +148,8 @@ function DashboardBody() {
           <p className="text-muted-foreground">Last updated: {formatLastUpdated(data.timestamp)}</p>
         </div>
       </section>
+
+      <ControlBar projectPath={data.projectPath ?? selectedProjectPath} initialStatus={runStatus} />
 
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-12">
         <div className="xl:col-span-8">

@@ -69,7 +69,7 @@
       "title": "Process Control API",
       "description": "API to spawn, stop, and resume Ralph processes.",
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "verification": "API can spawn a mock process and return PID",
       "steps": [
         "Create lib/process-manager.ts to handle spawn/kill",
